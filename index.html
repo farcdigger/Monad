@@ -518,6 +518,7 @@
     let isConnected = false;
     let walletType = null; // 'farcaster' or 'browser'
     let farcasterContext = null;
+    let farcasterWalletProvider = null;
 
     // Initialize Farcaster SDK
     window.addEventListener('DOMContentLoaded', async () => {
@@ -535,9 +536,12 @@
           isInFarcaster = true;
           console.log('Running in Farcaster app');
           
-          // If we have Farcaster context and user, auto-connect
-          if (farcasterContext.user) {
-            console.log('Farcaster user detected:', farcasterContext.user);
+          // Get the wallet provider immediately
+          try {
+            farcasterWalletProvider = await sdk.wallet.ethProvider;
+            console.log('Farcaster wallet provider available:', !!farcasterWalletProvider);
+          } catch (e) {
+            console.log('Farcaster wallet provider not available:', e);
           }
         }
       } catch (error) {
@@ -559,6 +563,13 @@
         browserBtn.style.display = "none";
         farcasterBtn.style.width = "100%";
         farcasterBtn.innerHTML = '<span class="button-icon">🟣</span> Connect Wallet';
+        
+        // Auto-connect if wallet provider is available
+        if (farcasterWalletProvider) {
+          setTimeout(() => {
+            connectFarcasterWallet();
+          }, 1000);
+        }
       } else {
         // In regular browser - show both options
         farcasterBtn.style.display = "block";
@@ -578,29 +589,66 @@
           throw new Error('Farcaster SDK not available');
         }
 
-        // Use the newer Mini Apps wallet integration
-        // First check if we have context and user
-        if (!farcasterContext) {
-          // Try to get context first
-          farcasterContext = await sdk.context;
+        // Get the EIP-1193 provider from Farcaster SDK
+        if (!farcasterWalletProvider) {
+          farcasterWalletProvider = await sdk.wallet.ethProvider;
         }
 
-        if (!farcasterContext) {
-          throw new Error('No Farcaster context available');
+        if (!farcasterWalletProvider) {
+          throw new Error('Farcaster wallet provider not available');
         }
 
-        console.log('Farcaster context:', farcasterContext);
+        console.log('Using Farcaster wallet provider');
 
-        // Use Wagmi-style wallet connection for Mini Apps
-        // This is the new approach for Farcaster Mini Apps
-        if (window.ethereum) {
-          // If user has browser wallet in Farcaster, use that
-          provider = new ethers.providers.Web3Provider(window.ethereum);
-          await provider.send("eth_requestAccounts", []);
-          signer = provider.getSigner();
-          userAddress = await signer.getAddress();
-        } else {
-          throw new Error('No wallet provider available in Farcaster app');
+        // Create ethers provider from Farcaster's EIP-1193 provider
+        provider = new ethers.providers.Web3Provider(farcasterWalletProvider);
+        
+        // Request account access
+        const accounts = await farcasterWalletProvider.request({
+          method: 'eth_requestAccounts'
+        });
+
+        if (!accounts || accounts.length === 0) {
+          throw new Error('No accounts available');
+        }
+
+        signer = provider.getSigner();
+        userAddress = accounts[0];
+        
+        // Check if we need to switch to Monad Testnet
+        const chainId = await farcasterWalletProvider.request({
+          method: 'eth_chainId'
+        });
+
+        const MONAD_TESTNET_CHAIN_ID = '0x279F'; // 10143 in hex
+
+        if (chainId !== MONAD_TESTNET_CHAIN_ID) {
+          try {
+            await farcasterWalletProvider.request({
+              method: 'wallet_switchEthereumChain',
+              params: [{ chainId: MONAD_TESTNET_CHAIN_ID }],
+            });
+          } catch (switchError) {
+            // Try to add the network
+            try {
+              await farcasterWalletProvider.request({
+                method: 'wallet_addEthereumChain',
+                params: [{
+                  chainId: MONAD_TESTNET_CHAIN_ID,
+                  chainName: 'Monad Testnet',
+                  nativeCurrency: {
+                    name: 'Monad',
+                    symbol: 'MONAD',
+                    decimals: 18
+                  },
+                  rpcUrls: ['https://rpc.monad.xyz/monad-testnet'],
+                  blockExplorerUrls: ['https://explorer.monad.xyz/']
+                }]
+              });
+            } catch (addError) {
+              console.error('Failed to add network:', addError);
+            }
+          }
         }
         
         walletType = 'farcaster';
@@ -612,22 +660,12 @@
       } catch (error) {
         console.error('Farcaster wallet connection error:', error);
         
-        // Fallback to show user-friendly message
-        const errorMsg = error.message.includes('not a function') 
-          ? 'Farcaster wallet connection is not supported in this version. Please use a browser wallet.'
+        // Show user-friendly error message
+        const errorMsg = error.message.includes('not available') 
+          ? 'Farcaster wallet is not available. Please make sure you have a connected wallet in Farcaster.'
           : error.message;
           
-        // Instead of alert, show in status
-        const statusEl = document.createElement('div');
-        statusEl.textContent = `Farcaster wallet error: ${errorMsg}`;
-        statusEl.style.cssText = 'background: rgba(255,0,0,0.1); border: 1px solid rgba(255,0,0,0.3); padding: 10px; border-radius: 8px; margin: 10px 0; font-size: 14px;';
-        
-        const connectBox = document.querySelector('.connect-box');
-        connectBox.appendChild(statusEl);
-        
-        setTimeout(() => {
-          statusEl.remove();
-        }, 5000);
+        showError(`Farcaster wallet error: ${errorMsg}`);
       }
     }
 
