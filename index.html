@@ -521,6 +521,8 @@
 
     // Initialize Farcaster SDK
     window.addEventListener('DOMContentLoaded', async () => {
+      let isInFarcaster = false;
+      
       try {
         await sdk.actions.ready();
         
@@ -528,21 +530,45 @@
         farcasterContext = await sdk.context;
         console.log('Farcaster context:', farcasterContext);
         
-        // If we have Farcaster context and user, auto-connect
-        if (farcasterContext?.user) {
-          console.log('Farcaster user detected:', farcasterContext.user);
+        // If we have Farcaster context, we're in Farcaster app
+        if (farcasterContext) {
+          isInFarcaster = true;
+          console.log('Running in Farcaster app');
+          
+          // If we have Farcaster context and user, auto-connect
+          if (farcasterContext.user) {
+            console.log('Farcaster user detected:', farcasterContext.user);
+          }
         }
       } catch (error) {
         console.log('Not in Farcaster context or error:', error);
+        isInFarcaster = false;
       }
       
-      setupEventListeners();
+      setupEventListeners(isInFarcaster);
       populateLeaderboard();
     });
 
-    function setupEventListeners() {
-      document.getElementById("connectFarcasterBtn").onclick = connectFarcasterWallet;
-      document.getElementById("connectBrowserBtn").onclick = connectBrowserWallet;
+    function setupEventListeners(isInFarcaster = false) {
+      const farcasterBtn = document.getElementById("connectFarcasterBtn");
+      const browserBtn = document.getElementById("connectBrowserBtn");
+      
+      if (isInFarcaster) {
+        // In Farcaster app - show only Farcaster wallet option
+        farcasterBtn.style.display = "block";
+        browserBtn.style.display = "none";
+        farcasterBtn.style.width = "100%";
+        farcasterBtn.innerHTML = '<span class="button-icon">🟣</span> Connect Wallet';
+      } else {
+        // In regular browser - show both options
+        farcasterBtn.style.display = "block";
+        browserBtn.style.display = "block";
+        farcasterBtn.style.width = "";
+        farcasterBtn.innerHTML = '<span class="button-icon">🟣</span> Farcaster Wallet';
+      }
+      
+      farcasterBtn.onclick = connectFarcasterWallet;
+      browserBtn.onclick = connectBrowserWallet;
       document.getElementById("disconnectBtn").onclick = disconnect;
     }
 
