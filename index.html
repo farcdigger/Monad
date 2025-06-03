@@ -411,81 +411,129 @@
       setTimeout(() => div.remove(), 5000);
     }
 
-    // Game functions
-    function petDog() {
+    // Contract addresses and ABIs
+    const CONTRACTS = {
+      PET: "0xc53abe4c593b9440407f8ac1b346f3f999e6d8ed",
+      GREET: "0xbc8b78f3e2348d4b5e0390fe700ce54b59931da4",
+      FLIP: "0xc5b2280d1e2f155f9a2be2af7e78190658874106"
+    };
+
+    const ABIS = {
+      PET: ["function pet() public"],
+      GREET: ["function gm() public", "function gn() public"],
+      FLIP: ["function flip() public"]
+    };
+
+    // Real transaction function
+    async function executeTransaction(contractAddress, abi, methodName, statusId, successMsg, xpAmount) {
       if (!appState.connected) {
         showError('Connect wallet first');
         return;
       }
-      
-      document.getElementById('dog-img').src = `https://placedog.net/400/300?id=${Math.floor(Math.random() * 50) + 1}`;
-      
-      showStatus('pet-status', 'Petting dog...', 'pending');
-      
-      setTimeout(() => {
-        showStatus('pet-status', 'Dog petted! +10 XP', 'success');
-        addXP(10);
-        setTimeout(() => hideStatus('pet-status'), 3000);
-      }, 2000);
+
+      try {
+        showStatus(statusId, 'Preparing transaction...', 'pending');
+
+        // Switch to Monad Testnet if needed
+        await ensureMonadNetwork();
+
+        // Create contract instance
+        const contract = new ethers.Contract(contractAddress, abi, appState.signer);
+        
+        showStatus(statusId, 'Please confirm transaction in your wallet...', 'pending');
+
+        // Send transaction
+        const tx = await contract[methodName]({
+          gasLimit: 1000000
+        });
+
+        console.log('Transaction sent:', tx.hash);
+        showStatus(statusId, `Transaction sent: ${tx.hash.slice(0,10)}...`, 'pending');
+
+        // Since Farcaster wallet doesn't support eth_getTransactionReceipt,
+        // we'll assume success after a delay
+        setTimeout(() => {
+          showStatus(statusId, successMsg, 'success');
+          addXP(xpAmount);
+          setTimeout(() => hideStatus(statusId), 3000);
+        }, 5000); // Wait 5 seconds
+
+      } catch (error) {
+        console.error('Transaction error:', error);
+        
+        let errorMsg = 'Transaction failed';
+        if (error.message.includes('user rejected')) {
+          errorMsg = 'Transaction cancelled by user';
+        } else if (error.message.includes('insufficient funds')) {
+          errorMsg = 'Insufficient funds for gas';
+        } else if (error.code === 4001) {
+          errorMsg = 'Transaction rejected by user';
+        }
+
+        showStatus(statusId, errorMsg, 'error');
+        setTimeout(() => hideStatus(statusId), 5000);
+      }
     }
 
-    function sayGM() {
-      if (!appState.connected) {
-        showError('Connect wallet first');
-        return;
-      }
+    async function ensureMonadNetwork() {
+      const MONAD_CHAIN_ID = '0x279F'; // 10143 in hex
       
-      showStatus('greet-status', 'Sending GM...', 'pending');
-      
-      setTimeout(() => {
-        showStatus('greet-status', 'GM sent! +5 XP', 'success');
-        addXP(5);
-        setTimeout(() => hideStatus('greet-status'), 3000);
-      }, 2000);
-    }
+      try {
+        // Get current provider (Farcaster or browser)
+        const provider = sdk && sdk.wallet && sdk.wallet.ethProvider 
+          ? sdk.wallet.ethProvider 
+          : window.ethereum;
 
-    function sayGN() {
-      if (!appState.connected) {
-        showError('Connect wallet first');
-        return;
-      }
-      
-      showStatus('greet-status', 'Sending GN...', 'pending');
-      
-      setTimeout(() => {
-        showStatus('greet-status', 'GN sent! +5 XP', 'success');
-        addXP(5);
-        setTimeout(() => hideStatus('greet-status'), 3000);
-      }, 2000);
-    }
+        if (!provider) {
+          throw new Error('No wallet provider available');
+        }
 
-    function flipCoin() {
-      if (!appState.connected) {
-        showError('Connect wallet first');
-        return;
+        // Check current network
+        const chainId = await provider.request({ method: 'eth_chainId' });
+        console.log('Current chain ID:', chainId);
+
+        if (chainId !== MONAD_CHAIN_ID) {
+          console.log('Switching to Monad Testnet...');
+          
+          try {
+            // Try to switch to Monad Testnet
+            await provider.request({
+              method: 'wallet_switchEthereumChain',
+              params: [{ chainId: MONAD_CHAIN_ID }],
+            });
+            console.log('Switched to Monad Testnet');
+          } catch (switchError) {
+            if (switchError.code === 4902) {
+              // Network not added, add it
+              console.log('Adding Monad Testnet...');
+              await provider.request({
+                method: 'wallet_addEthereumChain',
+                params: [{
+                  chainId: MONAD_CHAIN_ID,
+                  chainName: 'Monad Testnet',
+                  nativeCurrency: {
+                    name: 'Monad',
+                    symbol: 'MONAD',
+                    decimals: 18
+                  },
+                  rpcUrls: ['https://rpc.monad.xyz/monad-testnet'],
+                  blockExplorerUrls: ['https://explorer.monad.xyz/']
+                }]
+              });
+              console.log('Monad Testnet added');
+            } else {
+              throw switchError;
+            }
+          }
+
+          // Recreate provider after network switch
+          appState.provider = new ethers.providers.Web3Provider(provider);
+          appState.signer = appState.provider.getSigner();
+        }
+      } catch (error) {
+        console.error('Network switch error:', error);
+        throw new Error('Failed to switch to Monad Testnet');
       }
-      
-      const coin = document.getElementById('coin');
-      const result = document.getElementById('flip-result');
-      
-      showStatus('flip-status', 'Flipping...', 'pending');
-      result.textContent = 'Flipping...';
-      
-      let rotation = 0;
-      const interval = setInterval(() => {
-        rotation += 180;
-        coin.style.transform = `rotateY(${rotation}deg)`;
-      }, 100);
-      
-      setTimeout(() => {
-        clearInterval(interval);
-        const finalResult = Math.random() < 0.5 ? 'Heads' : 'Tails';
-        coin.style.transform = `rotateY(${finalResult === 'Heads' ? 0 : 180}deg)`;
-        result.textContent = `Result: ${finalResult}!`;
-        showStatus('flip-status', 'Coin flipped! +3 XP', 'success');
-        addXP(3);
-        setTimeout(() => hideStatus('flip-status'), 3000);
-      }, 3000);
     }
 
     function showTab(tabName) {
