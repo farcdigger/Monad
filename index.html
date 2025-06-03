@@ -648,23 +648,32 @@
     }
 
     function updateWalletUI() {
-      const walletSelector = document.getElementById("walletSelector");
-      const connectedWallet = document.getElementById("connectedWallet");
-      const walletInfo = document.getElementById("walletInfo");
+      try {
+        const walletSelector = document.getElementById("walletSelector");
+        const connectedWallet = document.getElementById("connectedWallet");
+        const walletInfo = document.getElementById("walletInfo");
 
-      if (isConnected) {
-        walletSelector.style.display = "none";
-        connectedWallet.style.display = "block";
-        
-        walletInfo.innerHTML = `
-          🟣 Farcaster Wallet<br>
-          <span style="font-family: monospace;">${userAddress.slice(0, 6)}...${userAddress.slice(-4)}</span>
-        `;
-        
-        highlightUserOnLeaderboard();
-      } else {
-        walletSelector.style.display = "flex";
-        connectedWallet.style.display = "none";
+        if (!walletSelector || !connectedWallet || !walletInfo) {
+          console.error('Wallet UI elements not found');
+          return;
+        }
+
+        if (isConnected && userAddress) {
+          walletSelector.style.display = "none";
+          connectedWallet.style.display = "block";
+          
+          walletInfo.innerHTML = `
+            🟣 Farcaster Wallet<br>
+            <span style="font-family: monospace;">${userAddress.slice(0, 6)}...${userAddress.slice(-4)}</span>
+          `;
+          
+          highlightUserOnLeaderboard();
+        } else {
+          walletSelector.style.display = "flex";
+          connectedWallet.style.display = "none";
+        }
+      } catch (error) {
+        console.error('Error updating wallet UI:', error);
       }
     }
 
@@ -968,9 +977,106 @@
       });
     }
 
-    // Make functions available globally
-    window.connectWallet = connectWallet;
-    window.disconnect = disconnect;
+    // Leaderboard functionality
+    const leaderboardData = [
+      { rank: 1, address: "0x742e791fe67e08c5fc9e1978efa8b8d881e426da", txCount: 278, badge: "Early Adopter" },
+      { rank: 2, address: "0x934a2b0b5f709a0d59845beddc3e698b9ad9621c", txCount: 203 },
+      { rank: 3, address: "0x1fa369d46516e4e0150b48b5b0f4880d3f8f257a", txCount: 186, badge: "VIP" },
+      { rank: 4, address: "0x6b78e84a68bf1df348542d8fd2b9bd1a7ce2b954", txCount: 149 },
+      { rank: 5, address: "0x8392f8fe8fe2535d5764f693a146b01acfd29824", txCount: 134 },
+      { rank: 6, address: "0xc54abf65c24a48e94f43609f5d4e65416853f3ac", txCount: 112 },
+      { rank: 7, address: "0x3a1d9e24bd7aea22a99177a3c28e3fe71f4e6b1e", txCount: 98, badge: "Builder" },
+      { rank: 8, address: "0x925f1b78d5ccf2e4b652dc9c4c748195f3d9bf4e", txCount: 87 },
+      { rank: 9, address: "0x2d3856a85a7a6eb8d7932f48d3fd738a83f6bc12", txCount: 76 },
+      { rank: 10, address: "0xf432b9d3fe8cfd8d8fcf347841a27edaef6b37d1", txCount: 63 }
+    ];
+    
+    function maskAddress(address) {
+      if (!address) return "";
+      return address.substring(0, 6) + "..." + address.substring(address.length - 4);
+    }
+    
+    function populateLeaderboard() {
+      const tbody = document.getElementById("leaderboardBody");
+      if (!tbody) return;
+      
+      tbody.innerHTML = "";
+      
+      leaderboardData.forEach(item => {
+        const row = document.createElement("tr");
+        
+        // Rank cell
+        const rankCell = document.createElement("td");
+        rankCell.className = "rank";
+        rankCell.textContent = "#" + item.rank;
+        
+        // Address cell
+        const addressCell = document.createElement("td");
+        addressCell.className = "wallet-address";
+        addressCell.textContent = maskAddress(item.address);
+        
+        // Add badge if exists
+        if (item.badge) {
+          const badge = document.createElement("span");
+          badge.className = "badge";
+          badge.textContent = item.badge;
+          addressCell.appendChild(badge);
+        }
+        
+        // TX count cell
+        const txCell = document.createElement("td");
+        txCell.className = "tx-count";
+        txCell.textContent = item.txCount;
+        
+        // Append all cells to row
+        row.appendChild(rankCell);
+        row.appendChild(addressCell);
+        row.appendChild(txCell);
+        
+        // Highlight user's address if connected
+        if (isConnected && userAddress && item.address.toLowerCase() === userAddress.toLowerCase()) {
+          row.style.background = "rgba(162, 89, 255, 0.3)";
+          row.style.fontWeight = "bold";
+        }
+        
+        // Add row to table
+        tbody.appendChild(row);
+      });
+    }
+    
+    window.refreshLeaderboard = function() {
+      const tbody = document.getElementById("leaderboardBody");
+      if (!tbody) return;
+      
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="3" style="text-align: center; padding: 30px;">
+            Loading leaderboard data...
+          </td>
+        </tr>
+      `;
+      
+      setTimeout(() => {
+        populateLeaderboard();
+        highlightUserOnLeaderboard();
+      }, 1000);
+    }
+    
+    function highlightUserOnLeaderboard() {
+      if (!isConnected || !userAddress) return;
+      
+      const rows = document.querySelectorAll("#leaderboardBody tr");
+      rows.forEach(row => {
+        const addressCell = row.querySelector(".wallet-address");
+        if (addressCell && addressCell.textContent.includes(userAddress.substring(0, 4))) {
+          row.style.background = "rgba(162, 89, 255, 0.3)";
+          row.style.fontWeight = "bold";
+        }
+      });
+    }
+  </script>
+</body>
+</html>
   </script>
 </body>
 </html>
