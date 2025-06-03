@@ -429,11 +429,8 @@
       <div class="xp-box">✨ XP: <span id="xpCounter" class="xp-value">0</span></div>
       <div class="connect-box">
         <div id="walletSelector" class="wallet-selector">
-          <button id="connectFarcasterBtn" class="wallet-button">
-            <span class="button-icon">🟣</span> Farcaster Wallet
-          </button>
-          <button id="connectBrowserBtn" class="wallet-button">
-            <span class="button-icon">🦊</span> Browser Wallet
+          <button id="connectWalletBtn" class="wallet-button" style="width: 100%;">
+            <span class="button-icon">🟣</span> Connect Wallet
           </button>
         </div>
         <div id="connectedWallet" style="display: none;">
@@ -747,8 +744,8 @@
         await ensureCorrectNetwork();
         
         // Recreate provider and signer to avoid network mismatch
-        if (walletType === 'farcaster' && farcasterWalletProvider) {
-          provider = new ethers.providers.Web3Provider(farcasterWalletProvider);
+        if (walletType === 'farcaster' && farcasterEthProvider) {
+          provider = new ethers.providers.Web3Provider(farcasterEthProvider);
           signer = provider.getSigner();
         } else if (walletType === 'browser' && window.ethereum) {
           provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -800,7 +797,7 @@
       const MONAD_TESTNET_CHAIN_ID = '0x279F'; // 10143 in hex
       
       try {
-        let currentProvider = walletType === 'farcaster' ? farcasterWalletProvider : window.ethereum;
+        let currentProvider = walletType === 'farcaster' ? farcasterEthProvider : window.ethereum;
         
         if (!currentProvider) {
           throw new Error('No wallet provider available');
