@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/png" href="https://monad-dog.vercel.app/icon.png">
+  <link rel="manifest" href="/farcaster.json">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Farcaster Mini App Meta -->
+  <meta name="fc:frame" content='{
+  "version": "next",
+  "imageUrl": "https://monad-dog.vercel.app/icon.png",
+  "button": {
+    "title": "Launch App",
+    "action": {
+      "type": "launch_frame",
+      "url": "https://monad-dog.vercel.app",
+      "splashImageUrl": "https://monad-dog.vercel.app/icon.png",
+      "splashBackgroundColor": "#2d014d"
+    }
+  }
+}' />
+
+  <title>Monad Test App</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+  <style>
+    html {
+      box-sizing: border-box;
+      font-size: 16px;
+    }
+
+    *, *:before, *:after {
+      box-sizing: inherit;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #1e003e 0%, #330066 100%);
+      color: #ffffff;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 20px;
+      background: rgba(44, 0, 105, 0.7);
+      backdrop-filter: blur(10px);
+      border-radius: 12px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+    
+    .tabs {
+      display: flex;
+      justify-content: center;
+      background: rgba(44, 0, 105, 0.6);
+      border-radius: 12px;
+      padding: 5px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+    
+    .tab {
+      padding: 14px 28px;
+      cursor: pointer;
+      font-weight: bold;
+      border-radius: 8px;
+      margin: 0 5px;
+      transition: all 0.3s ease;
+      text-align: center;
+      min-width: 120px;
+    }
+    
+    .tab:hover {
+      background: rgba(162, 89, 255, 0.3);
+    }
+    
+    .tab.active {
+      background: #a259ff;
+      box-shadow: 0 4px 10px rgba(162, 89, 255, 0.5);
+    }
+    
+    .tab-content {
+      display: none;
+      padding: 30px;
+      text-align: center;
+      background: rgba(44, 0, 105, 0.5);
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(5px);
+      margin-top: 10px;
+      animation: fadeIn 0.5s ease;
+    }
+    
+    .leaderboard-section {
+      background: rgba(44, 0, 105, 0.4);
+      border-radius: 16px;
+      padding: 30px;
+      margin-top: 30px;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(5px);
+      animation: fadeIn 0.5s ease;
+    }
+    
+    .leaderboard-title {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      text-align: center;
+      color: #fff;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+    
+    .leaderboard-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 0 auto;
+    }
+    
+    .leaderboard-table th {
+      background: rgba(162, 89, 255, 0.3);
+      color: #fff;
+      padding: 12px;
+      font-weight: 600;
+      text-align: left;
+    }
+    
+    .leaderboard-table td {
+      padding: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .leaderboard-table tr:last-child td {
+      border-bottom: none;
+    }
+    
+    .leaderboard-table tr {
+      transition: all 0.3s ease;
+    }
+    
+    .leaderboard-table tr:hover {
+      background: rgba(162, 89, 255, 0.15);
+    }
+    
+    .rank {
+      font-weight: bold;
+      text-align: center;
+      width: 60px;
+    }
+    
+    .tx-count {
+      font-weight: bold;
+      text-align: center;
+      width: 120px;
+    }
+    
+    .wallet-address {
+      font-family: monospace;
+      letter-spacing: 1px;
+    }
+    
+    .badge {
+      background: linear-gradient(135deg, #FFD700, #FFA500);
+      color: #000;
+      padding: 4px 8px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: bold;
+      display: inline-block;
+      margin-left: 10px;
+      text-shadow: none;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .tab-content.active {
+      display: block;
+    }
+    
+    button {
+      font-size: 18px;
+      font-weight: 600;
+      padding: 12px 30px;
+      margin-top: 20px;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #a259ff 0%, #8338ec 100%);
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(162, 89, 255, 0.5);
+    }
+    
+    button:hover {
+      background: linear-gradient(135deg, #b57aff 0%, #9355f5 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(162, 89, 255, 0.6);
+    }
+    
+    button:active {
+      transform: translateY(1px);
+      box-shadow: 0 2px 8px rgba(162, 89, 255, 0.4);
+    }
+    
+    button:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    .button-icon {
+      margin-right: 8px;
+    }
+    
+    .info {
+      margin-top: 20px;
+      font-size: 18px;
+      color: #eee;
+      background: rgba(0, 0, 0, 0.2);
+      padding: 15px;
+      border-radius: 10px;
+      transition: all 0.3s ease;
+    }
+    
+    .xp-box {
+      background: linear-gradient(135deg, #a259ff, #8338ec);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 14px;
+      font-size: 18px;
+      font-weight: bold;
+      box-shadow: 0 0 20px rgba(162, 89, 255, 0.5);
+      display: flex;
+      align-items: center;
+      min-width: 140px;
+      justify-content: center;
+    }
+    
+    .xp-value {
+      margin-left: 8px;
+      background: rgba(255, 255, 255, 0.2);
+      padding: 3px 8px;
+      border-radius: 8px;
+    }
+    
+    .connect-box {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    
+    .wallet-selector {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    
+    .wallet-button {
+      padding: 8px 16px;
+      font-size: 14px;
+      margin: 0;
+      min-width: 120px;
+    }
+    
+    .wallet-info {
+      font-size: 12px;
+      opacity: 0.8;
+      margin-top: 5px;
+    }
+    
+    h1 {
+      font-size: 32px;
+      margin-bottom: 30px;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+      color: #fff;
+    }
+    
+    #coin {
+      font-size: 80px;
+      margin: 30px auto;
+      transition: transform 0.5s ease;
+      display: inline-block;
+      text-shadow: 0 0 30px rgba(255, 215, 0, 0.7);
+    }
+    
+    #dogImage {
+      max-width: 300px;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+      transition: all 0.3s ease;
+      margin-bottom: 20px;
+      border: 4px solid rgba(162, 89, 255, 0.5);
+    }
+    
+    #dogImage:hover {
+      transform: scale(1.02);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);
+    }
+    
+    .gm-gn-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 20px;
+    }
+    
+    .transaction-status {
+      margin-top: 15px;
+      padding: 10px 15px;
+      border-radius: 8px;
+      font-size: 16px;
+      transition: all 0.3s ease;
+      display: none;
+    }
+    
+    .transaction-status.visible {
+      display: block;
+      animation: pulse 1.5s infinite;
+    }
+    
+    @keyframes pulse {
+      0% { opacity: 0.7; }
+      50% { opacity: 1; }
+      100% { opacity: 0.7; }
+    }
+    
+    .status-pending {
+      background: rgba(255, 166, 0, 0.2);
+      border: 1px solid rgba(255, 166, 0, 0.5);
+    }
+    
+    .status-success {
+      background: rgba(0, 255, 0, 0.1);
+      border: 1px solid rgba(0, 255, 0, 0.3);
+    }
+    
+    .status-error {
+      background: rgba(255, 0, 0, 0.1);
+      border: 1px solid rgba(255, 0, 0, 0.3);
+    }
+    
+    @media screen and (max-width: 768px) {
+      .header {
+        flex-direction: column;
+        gap: 15px;
+        padding: 15px;
+      }
+      
+      .tabs {
+        flex-wrap: wrap;
+      }
+      
+      .tab {
+        min-width: 100px;
+        padding: 12px 20px;
+        margin-bottom: 5px;
+      }
+      
+      #coin {
+        font-size: 60px;
+      }
+      
+      .gm-gn-buttons {
+        flex-direction: column;
+        gap: 10px;
+      }
+      
+      button {
+        width: 100%;
+        padding: 15px;
+      }
+      
+      .wallet-selector {
+        flex-direction: column;
+        width: 100%;
+      }
+      
+      .wallet-button {
+        width: 100%;
+      }
+    }
+    
+    @media screen and (max-width: 480px) {
+      .container {
+        padding: 10px;
+      }
+      
+      .tab-content {
+        padding: 20px 15px;
+      }
+      
+      .xp-box {
+        font-size: 16px;
+        padding: 8px 15px;
+      }
+      
+      h1 {
+        font-size: 24px;
+        margin-bottom: 20px;
+      }
+      
+      #coin {
+        font-size: 50px;
+      }
+      
+      #dogImage {
+        max-width: 250px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="xp-box">✨ XP: <span id="xpCounter" class="xp-value">0</span></div>
+      <div class="connect-box">
+        <div id="walletSelector" class="wallet-selector">
+          <button id="connectFarcasterBtn" class="wallet-button">
+            <span class="button-icon">🟣</span> Farcaster Wallet
+          </button>
+          <button id="connectBrowserBtn" class="wallet-button">
+            <span class="button-icon">🦊</span> Browser Wallet
+          </button>
+        </div>
+        <div id="connectedWallet" style="display: none;">
+          <div id="walletInfo" class="wallet-info"></div>
+          <button id="disconnectBtn" class="wallet-button">
+            <span class="button-icon">🔌</span> Disconnect
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <div class="tab active" onclick="showTab(event, 'pet-tab')">🐶 Pet The Dog</div>
+      <div class="tab" onclick="showTab(event, 'gmgn-tab')">🌅 GM / GN</div>
+      <div class="tab" onclick="showTab(event, 'flip-tab')">🪙 Flip Coin</div>
+      <div class="tab" onclick="showTab(event, 'leaderboard-tab')">🏆 Leaderboard</div>
+    </div>
+
+    <div id="pet-tab" class="tab-content active">
+      <h1>🐶 Pet The Adorable Dog</h1>
+      <img id="dogImage" src="https://placedog.net/400/300?id=7" alt="Cute dog"><br>
+      <button onclick="petDog()"><span class="button-icon">👋</span> Pet Dog</button>
+      <div id="petStatus" class="transaction-status status-pending">Transaction in progress...</div>
+    </div>
+
+    <div id="gmgn-tab" class="tab-content">
+      <h1>🌅 Good Morning / Good Night</h1>
+      <p>Greet the Monad community with GM in the morning or GN in the evening!</p>
+      <div class="gm-gn-buttons">
+        <button onclick="sayGM()"><span class="button-icon">☀️</span> Say GM</button>
+        <button onclick="sayGN()"><span class="button-icon">🌙</span> Say GN</button>
+      </div>
+      <div id="greetStatus" class="transaction-status status-pending">Transaction in progress...</div>
+    </div>
+
+    <div id="flip-tab" class="tab-content">
+      <h1>🪙 Flip the Monad Coin</h1>
+      <div id="coin">🪙</div>
+      <button onclick="flipMonad()"><span class="button-icon">🎲</span> Flip Coin</button>
+      <div class="info" id="flipResult">Flip result will appear here</div>
+      <div id="flipStatus" class="transaction-status status-pending">Transaction in progress...</div>
+    </div>
+    
+    <div id="leaderboard-tab" class="tab-content">
+      <h1>🏆 Monad Activity Leaderboard</h1>
+      <p>Top users by number of transactions on Monad Testnet</p>
+      
+      <div class="leaderboard-table-container">
+        <table class="leaderboard-table">
+          <thead>
+            <tr>
+              <th class="rank">#</th>
+              <th class="wallet-address">Wallet</th>
+              <th class="tx-count">Transactions</th>
+            </tr>
+          </thead>
+          <tbody id="leaderboardBody">
+            <!-- Leaderboard data will be populated here -->
+          </tbody>
+        </table>
+      </div>
+      
+      <button onclick="refreshLeaderboard()" style="margin-top: 30px;"><span class="button-icon">🔄</span> Refresh Leaderboard</button>
+    </div>
+  </div>
+
+  <script type="module">
+    import { sdk } from 'https://esm.sh/@farcaster/frame-sdk';
+
+    // Contract addresses and ABIs
+    const FLIP_CONTRACT_ADDRESS = "0xc5b2280d1e2f155f9a2be2af7e78190658874106";
+    const GREET_CONTRACT_ADDRESS = "0xbc8b78f3e2348d4b5e0390fe700ce54b59931da4";
+    const PET_CONTRACT_ADDRESS = "0xc53abe4c593b9440407f8ac1b346f3f999e6d8ed";
+
+    const FLIP_ABI = ["function flip() public"];
+    const GREET_ABI = ["function gm() public", "function gn() public"];
+    const PET_ABI = ["function pet() public"];
+
+    // Global variables
+    let provider, signer, userAddress;
+    let userXP = 0;
+    let isConnected = false;
+    let walletType = null; // 'farcaster' or 'browser'
+    let farcasterContext = null;
+
+    // Initialize Farcaster SDK
+    window.addEventListener('DOMContentLoaded', async () => {
+      try {
+        await sdk.actions.ready();
+        
+        // Check if we're in Farcaster context
+        farcasterContext = await sdk.context;
+        console.log('Farcaster context:', farcasterContext);
+        
+        // If we have Farcaster context and user, auto-connect
+        if (farcasterContext?.user) {
+          console.log('Farcaster user detected:', farcasterContext.user);
+        }
+      } catch (error) {
+        console.log('Not in Farcaster context or error:', error);
+      }
+      
+      setupEventListeners();
+      populateLeaderboard();
+    });
+
+    function setupEventListeners() {
+      document.getElementById("connectFarcasterBtn").onclick = connectFarcasterWallet;
+      document.getElementById("connectBrowserBtn").onclick = connectBrowserWallet;
+      document.getElementById("disconnectBtn").onclick = disconnect;
+    }
+
+    async function connectFarcasterWallet() {
+      try {
+        if (!sdk) {
+          throw new Error('Farcaster SDK not available');
+        }
+
+        // Get Farcaster wallet provider
+        const farcasterProvider = await sdk.wallet.ethProvider({
+          params: {
+            chainId: "eip155:10143" // Monad Testnet
+          }
+        });
+
+        if (!farcasterProvider) {
+          throw new Error('Failed to get Farcaster wallet provider');
+        }
+
+        provider = new ethers.providers.Web3Provider(farcasterProvider);
+        signer = provider.getSigner();
+        userAddress = await signer.getAddress();
+        
+        walletType = 'farcaster';
+        isConnected = true;
+        
+        updateWalletUI();
+        console.log('Connected to Farcaster wallet:', userAddress);
+        
+      } catch (error) {
+        console.error('Farcaster wallet connection error:', error);
+        alert('Failed to connect Farcaster wallet: ' + error.message);
+      }
+    }
+
+    async function connectBrowserWallet() {
+      const MONAD_TESTNET_CHAIN_ID = 10143;
+
+      if (!window.ethereum) {
+        alert("MetaMask or compatible wallet is not installed");
+        return;
+      }
+
+      try {
+        // Request account access
+        provider = new ethers.providers.Web3Provider(window.ethereum);
+        await provider.send("eth_requestAccounts", []);
+        
+        // Check and switch network if needed
+        const network = await provider.getNetwork();
+        
+        if (network.chainId !== MONAD_TESTNET_CHAIN_ID) {
+          try {
+            await window.ethereum.request({
+              method: 'wallet_switchEthereumChain',
+              params: [{ chainId: '0x' + MONAD_TESTNET_CHAIN_ID.toString(16) }],
+            });
+            provider = new ethers.providers.Web3Provider(window.ethereum);
+          } catch (switchError) {
+            // Try to add the network
+            try {
+              await window.ethereum.request({
+                method: 'wallet_addEthereumChain',
+                params: [{
+                  chainId: '0x' + MONAD_TESTNET_CHAIN_ID.toString(16),
+                  chainName: 'Monad Testnet',
+                  nativeCurrency: {
+                    name: 'Monad',
+                    symbol: 'MONAD',
+                    decimals: 18
+                  },
+                  rpcUrls: ['https://rpc.monad.xyz/monad-testnet'],
+                  blockExplorerUrls: ['https://explorer.monad.xyz/']
+                }]
+              });
+              provider = new ethers.providers.Web3Provider(window.ethereum);
+            } catch (addError) {
+              alert('Please manually switch to Monad Testnet in your wallet.');
+              return;
+            }
+          }
+        }
+        
+        signer = provider.getSigner();
+        userAddress = await signer.getAddress();
+        
+        walletType = 'browser';
+        isConnected = true;
+        
+        updateWalletUI();
+        console.log('Connected to browser wallet:', userAddress);
+        
+      } catch (error) {
+        console.error('Browser wallet connection error:', error);
+        alert("Wallet connection failed: " + error.message);
+      }
+    }
+
+    function disconnect() {
+      provider = null;
+      signer = null;
+      userAddress = null;
+      isConnected = false;
+      walletType = null;
+      updateWalletUI();
+    }
+
+    function updateWalletUI() {
+      const walletSelector = document.getElementById("walletSelector");
+      const connectedWallet = document.getElementById("connectedWallet");
+      const walletInfo = document.getElementById("walletInfo");
+
+      if (isConnected) {
+        walletSelector.style.display = "none";
+        connectedWallet.style.display = "block";
+        
+        const walletIcon = walletType === 'farcaster' ? '🟣' : '🦊';
+        const walletName = walletType === 'farcaster' ? 'Farcaster' : 'Browser';
+        
+        walletInfo.innerHTML = `
+          ${walletIcon} ${walletName} Wallet<br>
+          <span style="font-family: monospace;">${userAddress.slice(0, 6)}...${userAddress.slice(-4)}</span>
+        `;
+        
+        highlightUserOnLeaderboard();
+      } else {
+        walletSelector.style.display = "flex";
+        connectedWallet.style.display = "none";
+      }
+    }
+
+    function addXP(amount) {
+      userXP += amount;
+      document.getElementById("xpCounter").innerText = userXP;
+    }
+
+    window.showTab = function(event, id) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      event.target.classList.add('active');
+      document.getElementById(id).classList.add('active');
+    }
+
+    async function executeTransaction(contractAddress, abi, methodName, statusElementId, successMessage, xpReward) {
+      if (!isConnected) {
+        alert("Connect wallet first");
+        return;
+      }
+      
+      const statusEl = document.getElementById(statusElementId);
+      
+      statusEl.textContent = "Transaction pending...";
+      statusEl.className = "transaction-status status-pending visible";
+      
+      try {
+        const contract = new ethers.Contract(contractAddress, abi, signer);
+        const tx = await contract[methodName]({ gasLimit: 1000000 });
+        
+        console.log("Transaction hash:", tx.hash);
+        statusEl.textContent = `Processing: ${tx.hash.slice(0,10)}...${tx.hash.slice(-6)}`;
+        
+        await tx.wait();
+        
+        statusEl.textContent = successMessage;
+        statusEl.className = "transaction-status status-success visible";
+        setTimeout(() => {
+          statusEl.className = "transaction-status";
+        }, 3000);
+        
+        addXP(xpReward);
+      } catch (e) {
+        console.error("Transaction error:", e);
+        statusEl.textContent = `Error: ${e.message ? e.message.slice(0, 50) : "Unknown error"}`;
+        statusEl.className = "transaction-status status-error visible";
+        setTimeout(() => {
+          statusEl.className = "transaction-status";
+        }, 5000);
+      }
+    }
+
+    window.flipMonad = async function() {
+      const coin = document.getElementById("coin");
+      
+      let spin = 0;
+      document.getElementById("flipResult").innerText = "Flipping...";
+      
+      const spinning = setInterval(() => {
+        spin += 36;
+        coin.style.transform = `rotateY(${spin}deg)`;
+      }, 100);
+      
+      try {
+        await executeTransaction(FLIP_CONTRACT_ADDRESS, FLIP_ABI, "flip", "flipStatus", "Transaction successful!", 3);
+        
+        clearInterval(spinning);
+        const result = Math.random() < 0.5 ? "Heads" : "Tails";
+        coin.style.transform = `rotateY(${result === "Heads" ? 0 : 180}deg)`;
+        document.getElementById("flipResult").innerText = `✅ Flip result: ${result}`;
+      } catch (e) {
+        clearInterval(spinning);
+        document.getElementById("flipResult").innerText = `❌ Flip failed`;
+      }
+    }
+
+    window.petDog = async function() {
+      const dogImage = document.getElementById('dogImage');
+      dogImage.src = `https://placedog.net/400/300?id=${Math.floor(Math.random() * 50) + 1}`;
+      
+      await executeTransaction(PET_CONTRACT_ADDRESS, PET_ABI, "pet", "petStatus", "Dog successfully petted! 🐶", 10);
+    }
+
+    window.sayGM = async function() {
+      const buttonSpan = document.querySelector('button[onclick="sayGM()"] .button-icon');
+      const button = document.querySelector('button[onclick="sayGM()"]');
+      
+      button.disabled = true;
+      buttonSpan.textContent = "⏳";
+      
+      try {
+        await executeTransaction(GREET_CONTRACT_ADDRESS, GREET_ABI, "gm", "greetStatus", "GM successfully sent to the community!", 5);
+        buttonSpan.textContent = "✅";
+      } catch (e) {
+        buttonSpan.textContent = "❌";
+      } finally {
+        setTimeout(() => {
+          buttonSpan.textContent = "☀️";
+          button.disabled = false;
+        }, 3000);
+      }
+    }
+
+    window.sayGN = async function() {
+      const buttonSpan = document.querySelector('button[onclick="sayGN()"] .button-icon');
+      const button = document.querySelector('button[onclick="sayGN()"]');
+      
+      button.disabled = true;
+      buttonSpan.textContent = "⏳";
+      
+      try {
+        await executeTransaction(GREET_CONTRACT_ADDRESS, GREET_ABI, "gn", "greetStatus", "GN successfully sent to the community!", 5);
+        buttonSpan.textContent = "✅";
+      } catch (e) {
+        buttonSpan.textContent = "❌";
+      } finally {
+        setTimeout(() => {
+          buttonSpan.textContent = "🌙";
+          button.disabled = false;
+        }, 3000);
+      }
+    }
+
+    // Leaderboard functionality
+    const leaderboardData = [
+      { rank: 1, address: "0x742e791fe67e08c5fc9e1978efa8b8d881e426da", txCount: 278, badge: "Early Adopter" },
+      { rank: 2, address: "0x934a2b0b5f709a0d59845beddc3e698b9ad9621c", txCount: 203 },
+      { rank: 3, address: "0x1fa369d46516e4e0150b48b5b0f4880d3f8f257a", txCount: 186, badge: "VIP" },
+      { rank: 4, address: "0x6b78e84a68bf1df348542d8fd2b9bd1a7ce2b954", txCount: 149 },
+      { rank: 5, address: "0x8392f8fe8fe2535d5764f693a146b01acfd29824", txCount: 134 },
+      { rank: 6, address: "0xc54abf65c24a48e94f43609f5d4e65416853f3ac", txCount: 112 },
+      { rank: 7, address: "0x3a1d9e24bd7aea22a99177a3c28e3fe71f4e6b1e", txCount: 98, badge: "Builder" },
+      { rank: 8, address: "0x925f1b78d5ccf2e4b652dc9c4c748195f3d9bf4e", txCount: 87 },
+      { rank: 9, address: "0x2d3856a85a7a6eb8d7932f48d3fd738a83f6bc12", txCount: 76 },
+      { rank: 10, address: "0xf432b9d3fe8cfd8d8fcf347841a27edaef6b37d1", txCount: 63 }
+    ];
+    
+    function maskAddress(address) {
+      if (!address) return "";
+      return address.substring(0, 6) + "..." + address.substring(address.length - 4);
+    }
+    
+    function populateLeaderboard() {
+      const tbody = document.getElementById("leaderboardBody");
+      tbody.innerHTML = "";
+      
+      leaderboardData.forEach(item => {
+        const row = document.createElement("tr");
+        
+        // Rank cell
+        const rankCell = document.createElement("td");
+        rankCell.className = "rank";
+        rankCell.textContent = "#" + item.rank;
+        
+        // Address cell
+        const addressCell = document.createElement("td");
+        addressCell.className = "wallet-address";
+        addressCell.textContent = maskAddress(item.address);
+        
+        // Add badge if exists
+        if (item.badge) {
+          const badge = document.createElement("span");
+          badge.className = "badge";
+          badge.textContent = item.badge;
+          addressCell.appendChild(badge);
+        }
+        
+        // TX count cell
+        const txCell = document.createElement("td");
+        txCell.className = "tx-count";
+        txCell.textContent = item.txCount;
+        
+        // Append all cells to row
+        row.appendChild(rankCell);
+        row.appendChild(addressCell);
+        row.appendChild(txCell);
+        
+        // Highlight user's address if connected
+        if (isConnected && userAddress && item.address.toLowerCase() === userAddress.toLowerCase()) {
+          row.style.background = "rgba(162, 89, 255, 0.3)";
+          row.style.fontWeight = "bold";
+        }
+        
+        // Add row to table
+        tbody.appendChild(row);
+      });
+    }
+    
+    window.refreshLeaderboard = function() {
+      document.getElementById("leaderboardBody").innerHTML = `
+        <tr>
+          <td colspan="3" style="text-align: center; padding: 30px;">
+            Loading leaderboard data...
+          </td>
+        </tr>
+      `;
+      
+      setTimeout(() => {
+        populateLeaderboard();
+        highlightUserOnLeaderboard();
+      }, 1000);
+    }
+    
+    function highlightUserOnLeaderboard() {
+      if (!isConnected || !userAddress) return;
+      
+      const rows = document.querySelectorAll("#leaderboardBody tr");
+      rows.forEach(row => {
+        const addressCell = row.querySelector(".wallet-address");
+        if (addressCell && addressCell.textContent.includes(userAddress.substring(0, 4))) {
+          row.style.background = "rgba(162, 89, 255, 0.3)";
+          row.style.fontWeight = "bold";
+        }
+      });
+    }
+
+    // Make functions available globally
+    window.connectFarcasterWallet = connectFarcasterWallet;
+    window.connectBrowserWallet = connectBrowserWallet;
+    window.disconnect = disconnect;
+  </script>
+</body>
+</html>
