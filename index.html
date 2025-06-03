@@ -616,40 +616,12 @@
         userAddress = accounts[0];
         
         // Check if we need to switch to Monad Testnet
-        const chainId = await farcasterWalletProvider.request({
-          method: 'eth_chainId'
-        });
-
-        const MONAD_TESTNET_CHAIN_ID = '0x279F'; // 10143 in hex
-
-        if (chainId !== MONAD_TESTNET_CHAIN_ID) {
-          try {
-            await farcasterWalletProvider.request({
-              method: 'wallet_switchEthereumChain',
-              params: [{ chainId: MONAD_TESTNET_CHAIN_ID }],
-            });
-          } catch (switchError) {
-            // Try to add the network
-            try {
-              await farcasterWalletProvider.request({
-                method: 'wallet_addEthereumChain',
-                params: [{
-                  chainId: MONAD_TESTNET_CHAIN_ID,
-                  chainName: 'Monad Testnet',
-                  nativeCurrency: {
-                    name: 'Monad',
-                    symbol: 'MONAD',
-                    decimals: 18
-                  },
-                  rpcUrls: ['https://rpc.monad.xyz/monad-testnet'],
-                  blockExplorerUrls: ['https://explorer.monad.xyz/']
-                }]
-              });
-            } catch (addError) {
-              console.error('Failed to add network:', addError);
-            }
-          }
-        }
+        await ensureCorrectNetwork();
+        
+        // Recreate provider after network operations to avoid stale connections
+        provider = new ethers.providers.Web3Provider(farcasterWalletProvider);
+        signer = provider.getSigner();
+        userAddress = await signer.getAddress();
         
         walletType = 'farcaster';
         isConnected = true;
@@ -682,41 +654,11 @@
         provider = new ethers.providers.Web3Provider(window.ethereum);
         await provider.send("eth_requestAccounts", []);
         
-        // Check and switch network if needed
-        const network = await provider.getNetwork();
+        // Use the centralized network checking function
+        await ensureCorrectNetwork();
         
-        if (network.chainId !== MONAD_TESTNET_CHAIN_ID) {
-          try {
-            await window.ethereum.request({
-              method: 'wallet_switchEthereumChain',
-              params: [{ chainId: '0x' + MONAD_TESTNET_CHAIN_ID.toString(16) }],
-            });
-            provider = new ethers.providers.Web3Provider(window.ethereum);
-          } catch (switchError) {
-            // Try to add the network
-            try {
-              await window.ethereum.request({
-                method: 'wallet_addEthereumChain',
-                params: [{
-                  chainId: '0x' + MONAD_TESTNET_CHAIN_ID.toString(16),
-                  chainName: 'Monad Testnet',
-                  nativeCurrency: {
-                    name: 'Monad',
-                    symbol: 'MONAD',
-                    decimals: 18
-                  },
-                  rpcUrls: ['https://rpc.monad.xyz/monad-testnet'],
-                  blockExplorerUrls: ['https://explorer.monad.xyz/']
-                }]
-              });
-              provider = new ethers.providers.Web3Provider(window.ethereum);
-            } catch (addError) {
-              showError('Please manually switch to Monad Testnet in your wallet.');
-              return;
-            }
-          }
-        }
-        
+        // Recreate provider after network operations
+        provider = new ethers.providers.Web3Provider(window.ethereum);
         signer = provider.getSigner();
         userAddress = await signer.getAddress();
         
@@ -801,6 +743,18 @@
       statusEl.className = "transaction-status status-pending visible";
       
       try {
+        // Ensure we're on the correct network before transaction
+        await ensureCorrectNetwork();
+        
+        // Recreate provider and signer to avoid network mismatch
+        if (walletType === 'farcaster' && farcasterWalletProvider) {
+          provider = new ethers.providers.Web3Provider(farcasterWalletProvider);
+          signer = provider.getSigner();
+        } else if (walletType === 'browser' && window.ethereum) {
+          provider = new ethers.providers.Web3Provider(window.ethereum);
+          signer = provider.getSigner();
+        }
+        
         const contract = new ethers.Contract(contractAddress, abi, signer);
         const tx = await contract[methodName]({ gasLimit: 1000000 });
         
@@ -818,11 +772,81 @@
         addXP(xpReward);
       } catch (e) {
         console.error("Transaction error:", e);
-        statusEl.textContent = `Error: ${e.message ? e.message.slice(0, 50) : "Unknown error"}`;
-        statusEl.className = "transaction-status status-error visible";
+        
+        // Handle network error specifically
+        if (e.code === 'NETWORK_ERROR' || e.message.includes('underlying network changed')) {
+          statusEl.textContent = "Network error - switching to Monad Testnet...";
+          
+          try {
+            await ensureCorrectNetwork();
+            statusEl.textContent = "Please try the transaction again";
+            statusEl.className = "transaction-status status-error visible";
+          } catch (networkError) {
+            statusEl.textContent = "Failed to switch to Monad Testnet";
+            statusEl.className = "transaction-status status-error visible";
+          }
+        } else {
+          statusEl.textContent = `Error: ${e.message ? e.message.slice(0, 50) : "Unknown error"}`;
+          statusEl.className = "transaction-status status-error visible";
+        }
+        
         setTimeout(() => {
           statusEl.className = "transaction-status";
         }, 5000);
+      }
+    }
+
+    async function ensureCorrectNetwork() {
+      const MONAD_TESTNET_CHAIN_ID = '0x279F'; // 10143 in hex
+      
+      try {
+        let currentProvider = walletType === 'farcaster' ? farcasterWalletProvider : window.ethereum;
+        
+        if (!currentProvider) {
+          throw new Error('No wallet provider available');
+        }
+
+        const chainId = await currentProvider.request({
+          method: 'eth_chainId'
+        });
+
+        console.log('Current chainId:', chainId, 'Target:', MONAD_TESTNET_CHAIN_ID);
+
+        if (chainId !== MONAD_TESTNET_CHAIN_ID) {
+          console.log('Switching to Monad Testnet...');
+          
+          try {
+            await currentProvider.request({
+              method: 'wallet_switchEthereumChain',
+              params: [{ chainId: MONAD_TESTNET_CHAIN_ID }],
+            });
+            console.log('Successfully switched to Monad Testnet');
+          } catch (switchError) {
+            console.log('Switch failed, trying to add network...');
+            
+            await currentProvider.request({
+              method: 'wallet_addEthereumChain',
+              params: [{
+                chainId: MONAD_TESTNET_CHAIN_ID,
+                chainName: 'Monad Testnet',
+                nativeCurrency: {
+                  name: 'Monad',
+                  symbol: 'MONAD',
+                  decimals: 18
+                },
+                rpcUrls: ['https://rpc.monad.xyz/monad-testnet'],
+                blockExplorerUrls: ['https://explorer.monad.xyz/']
+              }]
+            });
+            console.log('Successfully added and switched to Monad Testnet');
+          }
+          
+          // Give some time for network switch to complete
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+      } catch (error) {
+        console.error('Network switch error:', error);
+        throw error;
       }
     }
 
