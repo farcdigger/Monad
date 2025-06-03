@@ -103,23 +103,8 @@
       animation: fadeIn 0.5s ease;
     }
     
-    .leaderboard-section {
-      background: rgba(44, 0, 105, 0.4);
-      border-radius: 16px;
-      padding: 30px;
-      margin-top: 30px;
-      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-      backdrop-filter: blur(5px);
-      animation: fadeIn 0.5s ease;
-    }
-    
-    .leaderboard-title {
-      font-size: 28px;
-      font-weight: 700;
-      margin-bottom: 20px;
-      text-align: center;
-      color: #fff;
-      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    .tab-content.active {
+      display: block;
     }
     
     .leaderboard-table {
@@ -139,14 +124,6 @@
     .leaderboard-table td {
       padding: 12px;
       border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    
-    .leaderboard-table tr:last-child td {
-      border-bottom: none;
-    }
-    
-    .leaderboard-table tr {
-      transition: all 0.3s ease;
     }
     
     .leaderboard-table tr:hover {
@@ -187,10 +164,6 @@
       to { opacity: 1; transform: translateY(0); }
     }
     
-    .tab-content.active {
-      display: block;
-    }
-    
     button {
       font-size: 18px;
       font-weight: 600;
@@ -203,17 +176,13 @@
       cursor: pointer;
       transition: all 0.3s ease;
       box-shadow: 0 4px 12px rgba(162, 89, 255, 0.5);
+      width: 100%;
     }
     
     button:hover {
       background: linear-gradient(135deg, #b57aff 0%, #9355f5 100%);
       transform: translateY(-2px);
       box-shadow: 0 6px 15px rgba(162, 89, 255, 0.6);
-    }
-    
-    button:active {
-      transform: translateY(1px);
-      box-shadow: 0 2px 8px rgba(162, 89, 255, 0.4);
     }
     
     button:disabled {
@@ -233,7 +202,6 @@
       background: rgba(0, 0, 0, 0.2);
       padding: 15px;
       border-radius: 10px;
-      transition: all 0.3s ease;
     }
     
     .xp-box {
@@ -255,25 +223,6 @@
       background: rgba(255, 255, 255, 0.2);
       padding: 3px 8px;
       border-radius: 8px;
-    }
-    
-    .connect-box {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-    
-    .wallet-selector {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-    
-    .wallet-button {
-      padding: 8px 16px;
-      font-size: 14px;
-      margin: 0;
-      min-width: 120px;
     }
     
     .wallet-info {
@@ -306,11 +255,6 @@
       border: 4px solid rgba(162, 89, 255, 0.5);
     }
     
-    #dogImage:hover {
-      transform: scale(1.02);
-      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);
-    }
-    
     .gm-gn-buttons {
       display: flex;
       justify-content: center;
@@ -323,19 +267,11 @@
       padding: 10px 15px;
       border-radius: 8px;
       font-size: 16px;
-      transition: all 0.3s ease;
       display: none;
     }
     
     .transaction-status.visible {
       display: block;
-      animation: pulse 1.5s infinite;
-    }
-    
-    @keyframes pulse {
-      0% { opacity: 0.7; }
-      50% { opacity: 1; }
-      100% { opacity: 0.7; }
     }
     
     .status-pending {
@@ -352,69 +288,27 @@
       background: rgba(255, 0, 0, 0.1);
       border: 1px solid rgba(255, 0, 0, 0.3);
     }
+
+    .connect-section {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .wallet-status {
+      background: rgba(44, 0, 105, 0.5);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
     
     @media screen and (max-width: 768px) {
-      .header {
-        flex-direction: column;
-        gap: 15px;
-        padding: 15px;
-      }
-      
-      .tabs {
-        flex-wrap: wrap;
-      }
-      
-      .tab {
-        min-width: 100px;
-        padding: 12px 20px;
-        margin-bottom: 5px;
-      }
-      
-      #coin {
-        font-size: 60px;
-      }
-      
       .gm-gn-buttons {
         flex-direction: column;
         gap: 10px;
       }
       
-      button {
-        width: 100%;
-        padding: 15px;
-      }
-      
-      .wallet-selector {
-        flex-direction: column;
-        width: 100%;
-      }
-      
-      .wallet-button {
-        width: 100%;
-      }
-    }
-    
-    @media screen and (max-width: 480px) {
-      .container {
-        padding: 10px;
-      }
-      
-      .tab-content {
-        padding: 20px 15px;
-      }
-      
-      .xp-box {
-        font-size: 16px;
-        padding: 8px 15px;
-      }
-      
-      h1 {
-        font-size: 24px;
-        margin-bottom: 20px;
-      }
-      
       #coin {
-        font-size: 50px;
+        font-size: 60px;
       }
       
       #dogImage {
@@ -427,17 +321,16 @@
   <div class="container">
     <div class="header">
       <div class="xp-box">✨ XP: <span id="xpCounter" class="xp-value">0</span></div>
-      <div class="connect-box">
-        <div id="walletSelector" class="wallet-selector">
-          <button id="connectWalletBtn" class="wallet-button" style="width: 100%;">
-            <span class="button-icon">🟣</span> Connect Wallet
-          </button>
+      <div class="connect-section">
+        <div id="connectSection">
+          <button id="connectBtn">🟣 Connect Farcaster Wallet</button>
         </div>
-        <div id="connectedWallet" style="display: none;">
-          <div id="walletInfo" class="wallet-info"></div>
-          <button id="disconnectBtn" class="wallet-button">
-            <span class="button-icon">🔌</span> Disconnect
-          </button>
+        <div id="connectedSection" style="display: none;">
+          <div class="wallet-status">
+            <div>🟣 Connected</div>
+            <div id="walletAddress" class="wallet-info"></div>
+            <button id="disconnectBtn">Disconnect</button>
+          </div>
         </div>
       </div>
     </div>
@@ -452,631 +345,334 @@
     <div id="pet-tab" class="tab-content active">
       <h1>🐶 Pet The Adorable Dog</h1>
       <img id="dogImage" src="https://placedog.net/400/300?id=7" alt="Cute dog"><br>
-      <button onclick="petDog()"><span class="button-icon">👋</span> Pet Dog</button>
-      <div id="petStatus" class="transaction-status status-pending">Transaction in progress...</div>
+      <button onclick="petDog()">👋 Pet Dog</button>
+      <div id="petStatus" class="transaction-status">Transaction in progress...</div>
     </div>
 
     <div id="gmgn-tab" class="tab-content">
       <h1>🌅 Good Morning / Good Night</h1>
       <p>Greet the Monad community with GM in the morning or GN in the evening!</p>
       <div class="gm-gn-buttons">
-        <button onclick="sayGM()"><span class="button-icon">☀️</span> Say GM</button>
-        <button onclick="sayGN()"><span class="button-icon">🌙</span> Say GN</button>
+        <button onclick="sayGM()">☀️ Say GM</button>
+        <button onclick="sayGN()">🌙 Say GN</button>
       </div>
-      <div id="greetStatus" class="transaction-status status-pending">Transaction in progress...</div>
+      <div id="greetStatus" class="transaction-status">Transaction in progress...</div>
     </div>
 
     <div id="flip-tab" class="tab-content">
       <h1>🪙 Flip the Monad Coin</h1>
       <div id="coin">🪙</div>
-      <button onclick="flipMonad()"><span class="button-icon">🎲</span> Flip Coin</button>
+      <button onclick="flipMonad()">🎲 Flip Coin</button>
       <div class="info" id="flipResult">Flip result will appear here</div>
-      <div id="flipStatus" class="transaction-status status-pending">Transaction in progress...</div>
+      <div id="flipStatus" class="transaction-status">Transaction in progress...</div>
     </div>
     
     <div id="leaderboard-tab" class="tab-content">
       <h1>🏆 Monad Activity Leaderboard</h1>
       <p>Top users by number of transactions on Monad Testnet</p>
       
-      <div class="leaderboard-table-container">
-        <table class="leaderboard-table">
-          <thead>
-            <tr>
-              <th class="rank">#</th>
-              <th class="wallet-address">Wallet</th>
-              <th class="tx-count">Transactions</th>
-            </tr>
-          </thead>
-          <tbody id="leaderboardBody">
-            <!-- Leaderboard data will be populated here -->
-          </tbody>
-        </table>
-      </div>
+      <table class="leaderboard-table">
+        <thead>
+          <tr>
+            <th class="rank">#</th>
+            <th class="wallet-address">Wallet</th>
+            <th class="tx-count">Transactions</th>
+          </tr>
+        </thead>
+        <tbody id="leaderboardBody">
+          <!-- Will be populated by JavaScript -->
+        </tbody>
+      </table>
       
-      <button onclick="refreshLeaderboard()" style="margin-top: 30px;"><span class="button-icon">🔄</span> Refresh Leaderboard</button>
+      <button onclick="refreshLeaderboard()" style="margin-top: 30px;">🔄 Refresh Leaderboard</button>
     </div>
   </div>
 
   <script type="module">
     import { sdk } from 'https://esm.sh/@farcaster/frame-sdk';
 
-    // Contract addresses and ABIs
-    const FLIP_CONTRACT_ADDRESS = "0xc5b2280d1e2f155f9a2be2af7e78190658874106";
-    const GREET_CONTRACT_ADDRESS = "0xbc8b78f3e2348d4b5e0390fe700ce54b59931da4";
-    const PET_CONTRACT_ADDRESS = "0xc53abe4c593b9440407f8ac1b346f3f999e6d8ed";
+    // Global state
+    window.appState = {
+      provider: null,
+      signer: null,
+      userAddress: null,
+      isConnected: false,
+      userXP: 0
+    };
 
-    const FLIP_ABI = ["function flip() public"];
-    const GREET_ABI = ["function gm() public", "function gn() public"];
-    const PET_ABI = ["function pet() public"];
+    // Contract addresses
+    window.contracts = {
+      FLIP: "0xc5b2280d1e2f155f9a2be2af7e78190658874106",
+      GREET: "0xbc8b78f3e2348d4b5e0390fe700ce54b59931da4", 
+      PET: "0xc53abe4c593b9440407f8ac1b346f3f999e6d8ed"
+    };
 
-    // Global variables
-    let provider, signer, userAddress;
-    let userXP = 0;
-    let isConnected = false;
-    let walletType = null; // 'farcaster' or 'browser'
-    let farcasterContext = null;
-    let farcasterWalletProvider = null;
+    // Contract ABIs
+    window.abis = {
+      FLIP: ["function flip() public"],
+      GREET: ["function gm() public", "function gn() public"],
+      PET: ["function pet() public"]
+    };
 
-    // Initialize Farcaster SDK
-    window.addEventListener('DOMContentLoaded', async () => {
-      let isInFarcaster = false;
-      
+    // Initialize app
+    async function initApp() {
       try {
+        console.log('Initializing app...');
         await sdk.actions.ready();
+        console.log('SDK ready');
         
-        // Check if we're in Farcaster context
-        farcasterContext = await sdk.context;
-        console.log('Farcaster context:', farcasterContext);
+        const context = await sdk.context;
+        console.log('Context:', context);
         
-        // If we have Farcaster context, we're in Farcaster app
-        if (farcasterContext) {
-          isInFarcaster = true;
-          console.log('Running in Farcaster app');
-          
-          // Get the wallet provider immediately
-          try {
-            farcasterWalletProvider = await sdk.wallet.ethProvider;
-            console.log('Farcaster wallet provider available:', !!farcasterWalletProvider);
-          } catch (e) {
-            console.log('Farcaster wallet provider not available:', e);
-          }
+        setupEventListeners();
+        populateLeaderboard();
+        
+        // Auto-connect if in Farcaster
+        if (context && sdk.wallet?.ethProvider) {
+          console.log('Auto-connecting...');
+          setTimeout(connectWallet, 1000);
         }
+        
       } catch (error) {
-        console.log('Not in Farcaster context or error:', error);
-        isInFarcaster = false;
+        console.error('Init error:', error);
       }
-      
-      setupEventListeners(isInFarcaster);
-      populateLeaderboard();
-    });
-
-    function setupEventListeners(isInFarcaster = false) {
-      const farcasterBtn = document.getElementById("connectFarcasterBtn");
-      const browserBtn = document.getElementById("connectBrowserBtn");
-      
-      if (isInFarcaster) {
-        // In Farcaster app - show only Farcaster wallet option
-        farcasterBtn.style.display = "block";
-        browserBtn.style.display = "none";
-        farcasterBtn.style.width = "100%";
-        farcasterBtn.innerHTML = '<span class="button-icon">🟣</span> Connect Wallet';
-        
-        // Auto-connect if wallet provider is available
-        if (farcasterWalletProvider) {
-          setTimeout(() => {
-            connectFarcasterWallet();
-          }, 1000);
-        }
-      } else {
-        // In regular browser - show both options
-        farcasterBtn.style.display = "block";
-        browserBtn.style.display = "block";
-        farcasterBtn.style.width = "";
-        farcasterBtn.innerHTML = '<span class="button-icon">🟣</span> Farcaster Wallet';
-      }
-      
-      farcasterBtn.onclick = connectFarcasterWallet;
-      browserBtn.onclick = connectBrowserWallet;
-      document.getElementById("disconnectBtn").onclick = disconnect;
     }
 
-    async function connectFarcasterWallet() {
+    function setupEventListeners() {
+      const connectBtn = document.getElementById('connectBtn');
+      const disconnectBtn = document.getElementById('disconnectBtn');
+      
+      if (connectBtn) {
+        connectBtn.onclick = connectWallet;
+      }
+      if (disconnectBtn) {
+        disconnectBtn.onclick = disconnect;
+      }
+    }
+
+    async function connectWallet() {
       try {
-        if (!sdk) {
-          throw new Error('Farcaster SDK not available');
-        }
-
-        // Get the EIP-1193 provider from Farcaster SDK
-        if (!farcasterWalletProvider) {
-          farcasterWalletProvider = await sdk.wallet.ethProvider;
-        }
-
-        if (!farcasterWalletProvider) {
-          throw new Error('Farcaster wallet provider not available');
-        }
-
-        console.log('Using Farcaster wallet provider');
-
-        // Create ethers provider from Farcaster's EIP-1193 provider
-        provider = new ethers.providers.Web3Provider(farcasterWalletProvider);
+        console.log('Connecting wallet...');
         
-        // Request account access
-        const accounts = await farcasterWalletProvider.request({
+        if (!sdk?.wallet?.ethProvider) {
+          throw new Error('Farcaster wallet not available');
+        }
+
+        const provider = sdk.wallet.ethProvider;
+        console.log('Got provider');
+
+        // Request accounts
+        const accounts = await provider.request({
           method: 'eth_requestAccounts'
         });
-
-        if (!accounts || accounts.length === 0) {
-          throw new Error('No accounts available');
+        
+        if (!accounts?.length) {
+          throw new Error('No accounts found');
         }
 
-        signer = provider.getSigner();
-        userAddress = accounts[0];
+        console.log('Accounts:', accounts);
+
+        // Setup ethers
+        window.appState.provider = new ethers.providers.Web3Provider(provider);
+        window.appState.signer = window.appState.provider.getSigner();
+        window.appState.userAddress = accounts[0];
         
-        // Check if we need to switch to Monad Testnet
-        await ensureCorrectNetwork();
+        // Switch to Monad Testnet
+        await switchToMonad(provider);
         
-        // Recreate provider after network operations to avoid stale connections
-        provider = new ethers.providers.Web3Provider(farcasterWalletProvider);
-        signer = provider.getSigner();
-        userAddress = await signer.getAddress();
+        window.appState.isConnected = true;
+        updateUI();
         
-        walletType = 'farcaster';
-        isConnected = true;
-        
-        updateWalletUI();
-        console.log('Connected to Farcaster wallet:', userAddress);
+        console.log('Connected!', accounts[0]);
         
       } catch (error) {
-        console.error('Farcaster wallet connection error:', error);
-        
-        // Show user-friendly error message
-        const errorMsg = error.message.includes('not available') 
-          ? 'Farcaster wallet is not available. Please make sure you have a connected wallet in Farcaster.'
-          : error.message;
-          
-        showError(`Farcaster wallet error: ${errorMsg}`);
+        console.error('Connection error:', error);
+        showError(error.message);
+      }
+    }
+
+    async function switchToMonad(provider) {
+      const chainId = '0x279F'; // 10143 in hex
+      
+      try {
+        await provider.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId }]
+        });
+      } catch (error) {
+        // Add network if it doesn't exist
+        await provider.request({
+          method: 'wallet_addEthereumChain',
+          params: [{
+            chainId,
+            chainName: 'Monad Testnet',
+            nativeCurrency: {
+              name: 'Monad',
+              symbol: 'MONAD',
+              decimals: 18
+            },
+            rpcUrls: ['https://rpc.monad.xyz/monad-testnet'],
+            blockExplorerUrls: ['https://explorer.monad.xyz/']
+          }]
+        });
       }
     }
 
     function disconnect() {
-      provider = null;
-      signer = null;
-      userAddress = null;
-      isConnected = false;
-      farcasterEthProvider = null;
-      updateWalletUI();
+      window.appState = {
+        provider: null,
+        signer: null,
+        userAddress: null,
+        isConnected: false,
+        userXP: window.appState.userXP
+      };
+      updateUI();
     }
 
-    function updateWalletUI() {
-      try {
-        const walletSelector = document.getElementById("walletSelector");
-        const connectedWallet = document.getElementById("connectedWallet");
-        const walletInfo = document.getElementById("walletInfo");
-
-        if (!walletSelector || !connectedWallet || !walletInfo) {
-          console.error('Wallet UI elements not found');
-          return;
-        }
-
-        if (isConnected && userAddress) {
-          walletSelector.style.display = "none";
-          connectedWallet.style.display = "block";
-          
-          walletInfo.innerHTML = `
-            🟣 Farcaster Wallet<br>
-            <span style="font-family: monospace;">${userAddress.slice(0, 6)}...${userAddress.slice(-4)}</span>
-          `;
-          
-          highlightUserOnLeaderboard();
-        } else {
-          walletSelector.style.display = "flex";
-          connectedWallet.style.display = "none";
-        }
-      } catch (error) {
-        console.error('Error updating wallet UI:', error);
+    function updateUI() {
+      const connectSection = document.getElementById('connectSection');
+      const connectedSection = document.getElementById('connectedSection');
+      const walletAddress = document.getElementById('walletAddress');
+      
+      if (window.appState.isConnected) {
+        connectSection.style.display = 'none';
+        connectedSection.style.display = 'block';
+        walletAddress.textContent = window.appState.userAddress.slice(0,6) + '...' + window.appState.userAddress.slice(-4);
+      } else {
+        connectSection.style.display = 'block';
+        connectedSection.style.display = 'none';
       }
     }
 
     function showError(message) {
-      const statusEl = document.createElement('div');
-      statusEl.textContent = message;
-      statusEl.style.cssText = 'background: rgba(255,0,0,0.1); border: 1px solid rgba(255,0,0,0.3); padding: 10px; border-radius: 8px; margin: 10px 0; font-size: 14px; position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1000; max-width: 300px; text-align: center;';
-      
-      document.body.appendChild(statusEl);
-      
-      setTimeout(() => {
-        statusEl.remove();
-      }, 5000);
+      const el = document.createElement('div');
+      el.textContent = message;
+      el.style.cssText = 'position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: rgba(255,0,0,0.1); border: 1px solid red; padding: 10px; border-radius: 8px; z-index: 1000;';
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 5000);
     }
 
     function addXP(amount) {
-      userXP += amount;
-      document.getElementById("xpCounter").innerText = userXP;
+      window.appState.userXP += amount;
+      document.getElementById('xpCounter').textContent = window.appState.userXP;
     }
 
-    window.showTab = function(event, id) {
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-      event.target.classList.add('active');
-      document.getElementById(id).classList.add('active');
-    }
-
-    async function executeTransaction(contractAddress, abi, methodName, statusElementId, successMessage, xpReward) {
-      if (!isConnected) {
-        showError("Connect wallet first");
+    // Transaction helper
+    async function doTransaction(contractAddress, abi, method, statusId, successMsg, xp) {
+      if (!window.appState.isConnected) {
+        showError('Connect wallet first');
         return;
       }
       
-      const statusEl = document.getElementById(statusElementId);
-      
-      statusEl.textContent = "Transaction pending...";
-      statusEl.className = "transaction-status status-pending visible";
+      const statusEl = document.getElementById(statusId);
+      statusEl.textContent = 'Processing...';
+      statusEl.className = 'transaction-status status-pending visible';
       
       try {
-        // Ensure we're on the correct network before transaction
-        await ensureCorrectNetwork();
+        const contract = new ethers.Contract(contractAddress, abi, window.appState.signer);
+        const tx = await contract[method]({ gasLimit: 1000000 });
         
-        // Recreate provider and signer to avoid network mismatch
-        provider = new ethers.providers.Web3Provider(farcasterEthProvider);
-        signer = provider.getSigner();
-        
-        const contract = new ethers.Contract(contractAddress, abi, signer);
-        const tx = await contract[methodName]({ gasLimit: 1000000 });
-        
-        console.log("Transaction hash:", tx.hash);
-        statusEl.textContent = `Processing: ${tx.hash.slice(0,10)}...${tx.hash.slice(-6)}`;
-        
+        statusEl.textContent = `Waiting for confirmation...`;
         await tx.wait();
         
-        statusEl.textContent = successMessage;
-        statusEl.className = "transaction-status status-success visible";
+        statusEl.textContent = successMsg;
+        statusEl.className = 'transaction-status status-success visible';
+        addXP(xp);
+        
         setTimeout(() => {
-          statusEl.className = "transaction-status";
+          statusEl.className = 'transaction-status';
         }, 3000);
         
-        addXP(xpReward);
-      } catch (e) {
-        console.error("Transaction error:", e);
-        
-        // Handle network error specifically
-        if (e.code === 'NETWORK_ERROR' || e.message.includes('underlying network changed')) {
-          statusEl.textContent = "Network error - switching to Monad Testnet...";
-          
-          try {
-            await ensureCorrectNetwork();
-            statusEl.textContent = "Please try the transaction again";
-            statusEl.className = "transaction-status status-error visible";
-          } catch (networkError) {
-            statusEl.textContent = "Failed to switch to Monad Testnet";
-            statusEl.className = "transaction-status status-error visible";
-          }
-        } else {
-          statusEl.textContent = `Error: ${e.message ? e.message.slice(0, 50) : "Unknown error"}`;
-          statusEl.className = "transaction-status status-error visible";
-        }
+      } catch (error) {
+        console.error('Transaction error:', error);
+        statusEl.textContent = `Error: ${error.message.slice(0, 50)}`;
+        statusEl.className = 'transaction-status status-error visible';
         
         setTimeout(() => {
-          statusEl.className = "transaction-status";
+          statusEl.className = 'transaction-status';
         }, 5000);
       }
     }
 
-    async function ensureCorrectNetwork() {
-      const MONAD_TESTNET_CHAIN_ID = '0x279F'; // 10143 in hex
-      
-      try {
-        if (!farcasterEthProvider) {
-          throw new Error('No wallet provider available');
-        }
+    // Game functions
+    window.petDog = async function() {
+      document.getElementById('dogImage').src = `https://placedog.net/400/300?id=${Math.floor(Math.random() * 50) + 1}`;
+      await doTransaction(window.contracts.PET, window.abis.PET, 'pet', 'petStatus', 'Dog petted! 🐶', 10);
+    };
 
-        const chainId = await farcasterEthProvider.request({
-          method: 'eth_chainId'
-        });
+    window.sayGM = async function() {
+      await doTransaction(window.contracts.GREET, window.abis.GREET, 'gm', 'greetStatus', 'GM sent! ☀️', 5);
+    };
 
-        console.log('Current chainId:', chainId, 'Target:', MONAD_TESTNET_CHAIN_ID);
-
-        if (chainId !== MONAD_TESTNET_CHAIN_ID) {
-          console.log('Switching to Monad Testnet...');
-          
-          try {
-            await farcasterEthProvider.request({
-              method: 'wallet_switchEthereumChain',
-              params: [{ chainId: MONAD_TESTNET_CHAIN_ID }],
-            });
-            console.log('Successfully switched to Monad Testnet');
-          } catch (switchError) {
-            console.log('Switch failed, trying to add network...');
-            
-            await farcasterEthProvider.request({
-              method: 'wallet_addEthereumChain',
-              params: [{
-                chainId: MONAD_TESTNET_CHAIN_ID,
-                chainName: 'Monad Testnet',
-                nativeCurrency: {
-                  name: 'Monad',
-                  symbol: 'MONAD',
-                  decimals: 18
-                },
-                rpcUrls: ['https://rpc.monad.xyz/monad-testnet'],
-                blockExplorerUrls: ['https://explorer.monad.xyz/']
-              }]
-            });
-            console.log('Successfully added and switched to Monad Testnet');
-          }
-          
-          // Give some time for network switch to complete
-          await new Promise(resolve => setTimeout(resolve, 1000));
-        }
-      } catch (error) {
-        console.error('Network switch error:', error);
-        throw error;
-      }
-    }
+    window.sayGN = async function() {
+      await doTransaction(window.contracts.GREET, window.abis.GREET, 'gn', 'greetStatus', 'GN sent! 🌙', 5);
+    };
 
     window.flipMonad = async function() {
-      const coin = document.getElementById("coin");
+      const coin = document.getElementById('coin');
+      document.getElementById('flipResult').textContent = 'Flipping...';
       
       let spin = 0;
-      document.getElementById("flipResult").innerText = "Flipping...";
-      
-      const spinning = setInterval(() => {
+      const interval = setInterval(() => {
         spin += 36;
         coin.style.transform = `rotateY(${spin}deg)`;
       }, 100);
       
       try {
-        await executeTransaction(FLIP_CONTRACT_ADDRESS, FLIP_ABI, "flip", "flipStatus", "Transaction successful!", 3);
+        await doTransaction(window.contracts.FLIP, window.abis.FLIP, 'flip', 'flipStatus', 'Coin flipped!', 3);
         
-        clearInterval(spinning);
-        const result = Math.random() < 0.5 ? "Heads" : "Tails";
-        coin.style.transform = `rotateY(${result === "Heads" ? 0 : 180}deg)`;
-        document.getElementById("flipResult").innerText = `✅ Flip result: ${result}`;
-      } catch (e) {
-        clearInterval(spinning);
-        document.getElementById("flipResult").innerText = `❌ Flip failed`;
+        clearInterval(interval);
+        const result = Math.random() < 0.5 ? 'Heads' : 'Tails';
+        coin.style.transform = `rotateY(${result === 'Heads' ? 0 : 180}deg)`;
+        document.getElementById('flipResult').textContent = `Result: ${result}`;
+        
+      } catch (error) {
+        clearInterval(interval);
+        document.getElementById('flipResult').textContent = 'Flip failed';
       }
-    }
+    };
 
-    window.petDog = async function() {
-      const dogImage = document.getElementById('dogImage');
-      dogImage.src = `https://placedog.net/400/300?id=${Math.floor(Math.random() * 50) + 1}`;
-      
-      await executeTransaction(PET_CONTRACT_ADDRESS, PET_ABI, "pet", "petStatus", "Dog successfully petted! 🐶", 10);
-    }
+    // Tab function
+    window.showTab = function(event, tabId) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      event.target.classList.add('active');
+      document.getElementById(tabId).classList.add('active');
+    };
 
-    window.sayGM = async function() {
-      const buttonSpan = document.querySelector('button[onclick="sayGM()"] .button-icon');
-      const button = document.querySelector('button[onclick="sayGM()"]');
-      
-      button.disabled = true;
-      buttonSpan.textContent = "⏳";
-      
-      try {
-        await executeTransaction(GREET_CONTRACT_ADDRESS, GREET_ABI, "gm", "greetStatus", "GM successfully sent to the community!", 5);
-        buttonSpan.textContent = "✅";
-      } catch (e) {
-        buttonSpan.textContent = "❌";
-      } finally {
-        setTimeout(() => {
-          buttonSpan.textContent = "☀️";
-          button.disabled = false;
-        }, 3000);
-      }
-    }
-
-    window.sayGN = async function() {
-      const buttonSpan = document.querySelector('button[onclick="sayGN()"] .button-icon');
-      const button = document.querySelector('button[onclick="sayGN()"]');
-      
-      button.disabled = true;
-      buttonSpan.textContent = "⏳";
-      
-      try {
-        await executeTransaction(GREET_CONTRACT_ADDRESS, GREET_ABI, "gn", "greetStatus", "GN successfully sent to the community!", 5);
-        buttonSpan.textContent = "✅";
-      } catch (e) {
-        buttonSpan.textContent = "❌";
-      } finally {
-        setTimeout(() => {
-          buttonSpan.textContent = "🌙";
-          button.disabled = false;
-        }, 3000);
-      }
-    }
-
-    // Leaderboard functionality
-    const leaderboardData = [
-      { rank: 1, address: "0x742e791fe67e08c5fc9e1978efa8b8d881e426da", txCount: 278, badge: "Early Adopter" },
-      { rank: 2, address: "0x934a2b0b5f709a0d59845beddc3e698b9ad9621c", txCount: 203 },
-      { rank: 3, address: "0x1fa369d46516e4e0150b48b5b0f4880d3f8f257a", txCount: 186, badge: "VIP" },
-      { rank: 4, address: "0x6b78e84a68bf1df348542d8fd2b9bd1a7ce2b954", txCount: 149 },
-      { rank: 5, address: "0x8392f8fe8fe2535d5764f693a146b01acfd29824", txCount: 134 },
-      { rank: 6, address: "0xc54abf65c24a48e94f43609f5d4e65416853f3ac", txCount: 112 },
-      { rank: 7, address: "0x3a1d9e24bd7aea22a99177a3c28e3fe71f4e6b1e", txCount: 98, badge: "Builder" },
-      { rank: 8, address: "0x925f1b78d5ccf2e4b652dc9c4c748195f3d9bf4e", txCount: 87 },
-      { rank: 9, address: "0x2d3856a85a7a6eb8d7932f48d3fd738a83f6bc12", txCount: 76 },
-      { rank: 10, address: "0xf432b9d3fe8cfd8d8fcf347841a27edaef6b37d1", txCount: 63 }
-    ];
-    
-    function maskAddress(address) {
-      if (!address) return "";
-      return address.substring(0, 6) + "..." + address.substring(address.length - 4);
-    }
-    
+    // Leaderboard
     function populateLeaderboard() {
-      const tbody = document.getElementById("leaderboardBody");
-      tbody.innerHTML = "";
+      const data = [
+        { rank: 1, address: "0x742e791fe67e08c5fc9e1978efa8b8d881e426da", txCount: 278, badge: "Early Adopter" },
+        { rank: 2, address: "0x934a2b0b5f709a0d59845beddc3e698b9ad9621c", txCount: 203 },
+        { rank: 3, address: "0x1fa369d46516e4e0150b48b5b0f4880d3f8f257a", txCount: 186, badge: "VIP" },
+        { rank: 4, address: "0x6b78e84a68bf1df348542d8fd2b9bd1a7ce2b954", txCount: 149 },
+        { rank: 5, address: "0x8392f8fe8fe2535d5764f693a146b01acfd29824", txCount: 134 }
+      ];
       
-      leaderboardData.forEach(item => {
-        const row = document.createElement("tr");
-        
-        // Rank cell
-        const rankCell = document.createElement("td");
-        rankCell.className = "rank";
-        rankCell.textContent = "#" + item.rank;
-        
-        // Address cell
-        const addressCell = document.createElement("td");
-        addressCell.className = "wallet-address";
-        addressCell.textContent = maskAddress(item.address);
-        
-        // Add badge if exists
-        if (item.badge) {
-          const badge = document.createElement("span");
-          badge.className = "badge";
-          badge.textContent = item.badge;
-          addressCell.appendChild(badge);
-        }
-        
-        // TX count cell
-        const txCell = document.createElement("td");
-        txCell.className = "tx-count";
-        txCell.textContent = item.txCount;
-        
-        // Append all cells to row
-        row.appendChild(rankCell);
-        row.appendChild(addressCell);
-        row.appendChild(txCell);
-        
-        // Highlight user's address if connected
-        if (isConnected && userAddress && item.address.toLowerCase() === userAddress.toLowerCase()) {
-          row.style.background = "rgba(162, 89, 255, 0.3)";
-          row.style.fontWeight = "bold";
-        }
-        
-        // Add row to table
-        tbody.appendChild(row);
-      });
-    }
-    
-    window.refreshLeaderboard = function() {
-      document.getElementById("leaderboardBody").innerHTML = `
-        <tr>
-          <td colspan="3" style="text-align: center; padding: 30px;">
-            Loading leaderboard data...
-          </td>
-        </tr>
-      `;
-      
-      setTimeout(() => {
-        populateLeaderboard();
-        highlightUserOnLeaderboard();
-      }, 1000);
-    }
-    
-    function highlightUserOnLeaderboard() {
-      if (!isConnected || !userAddress) return;
-      
-      const rows = document.querySelectorAll("#leaderboardBody tr");
-      rows.forEach(row => {
-        const addressCell = row.querySelector(".wallet-address");
-        if (addressCell && addressCell.textContent.includes(userAddress.substring(0, 4))) {
-          row.style.background = "rgba(162, 89, 255, 0.3)";
-          row.style.fontWeight = "bold";
-        }
-      });
-    }
-
-    // Leaderboard functionality
-    const leaderboardData = [
-      { rank: 1, address: "0x742e791fe67e08c5fc9e1978efa8b8d881e426da", txCount: 278, badge: "Early Adopter" },
-      { rank: 2, address: "0x934a2b0b5f709a0d59845beddc3e698b9ad9621c", txCount: 203 },
-      { rank: 3, address: "0x1fa369d46516e4e0150b48b5b0f4880d3f8f257a", txCount: 186, badge: "VIP" },
-      { rank: 4, address: "0x6b78e84a68bf1df348542d8fd2b9bd1a7ce2b954", txCount: 149 },
-      { rank: 5, address: "0x8392f8fe8fe2535d5764f693a146b01acfd29824", txCount: 134 },
-      { rank: 6, address: "0xc54abf65c24a48e94f43609f5d4e65416853f3ac", txCount: 112 },
-      { rank: 7, address: "0x3a1d9e24bd7aea22a99177a3c28e3fe71f4e6b1e", txCount: 98, badge: "Builder" },
-      { rank: 8, address: "0x925f1b78d5ccf2e4b652dc9c4c748195f3d9bf4e", txCount: 87 },
-      { rank: 9, address: "0x2d3856a85a7a6eb8d7932f48d3fd738a83f6bc12", txCount: 76 },
-      { rank: 10, address: "0xf432b9d3fe8cfd8d8fcf347841a27edaef6b37d1", txCount: 63 }
-    ];
-    
-    function maskAddress(address) {
-      if (!address) return "";
-      return address.substring(0, 6) + "..." + address.substring(address.length - 4);
-    }
-    
-    function populateLeaderboard() {
-      const tbody = document.getElementById("leaderboardBody");
+      const tbody = document.getElementById('leaderboardBody');
       if (!tbody) return;
       
-      tbody.innerHTML = "";
-      
-      leaderboardData.forEach(item => {
-        const row = document.createElement("tr");
-        
-        // Rank cell
-        const rankCell = document.createElement("td");
-        rankCell.className = "rank";
-        rankCell.textContent = "#" + item.rank;
-        
-        // Address cell
-        const addressCell = document.createElement("td");
-        addressCell.className = "wallet-address";
-        addressCell.textContent = maskAddress(item.address);
-        
-        // Add badge if exists
-        if (item.badge) {
-          const badge = document.createElement("span");
-          badge.className = "badge";
-          badge.textContent = item.badge;
-          addressCell.appendChild(badge);
-        }
-        
-        // TX count cell
-        const txCell = document.createElement("td");
-        txCell.className = "tx-count";
-        txCell.textContent = item.txCount;
-        
-        // Append all cells to row
-        row.appendChild(rankCell);
-        row.appendChild(addressCell);
-        row.appendChild(txCell);
-        
-        // Highlight user's address if connected
-        if (isConnected && userAddress && item.address.toLowerCase() === userAddress.toLowerCase()) {
-          row.style.background = "rgba(162, 89, 255, 0.3)";
-          row.style.fontWeight = "bold";
-        }
-        
-        // Add row to table
-        tbody.appendChild(row);
-      });
-    }
-    
-    window.refreshLeaderboard = function() {
-      const tbody = document.getElementById("leaderboardBody");
-      if (!tbody) return;
-      
-      tbody.innerHTML = `
+      tbody.innerHTML = data.map(item => `
         <tr>
-          <td colspan="3" style="text-align: center; padding: 30px;">
-            Loading leaderboard data...
+          <td class="rank">#${item.rank}</td>
+          <td class="wallet-address">
+            ${item.address.slice(0,6)}...${item.address.slice(-4)}
+            ${item.badge ? `<span class="badge">${item.badge}</span>` : ''}
           </td>
+          <td class="tx-count">${item.txCount}</td>
         </tr>
-      `;
-      
-      setTimeout(() => {
-        populateLeaderboard();
-        highlightUserOnLeaderboard();
-      }, 1000);
+      `).join('');
     }
-    
-    function highlightUserOnLeaderboard() {
-      if (!isConnected || !userAddress) return;
-      
-      const rows = document.querySelectorAll("#leaderboardBody tr");
-      rows.forEach(row => {
-        const addressCell = row.querySelector(".wallet-address");
-        if (addressCell && addressCell.textContent.includes(userAddress.substring(0, 4))) {
-          row.style.background = "rgba(162, 89, 255, 0.3)";
-          row.style.fontWeight = "bold";
-        }
-      });
+
+    window.refreshLeaderboard = populateLeaderboard;
+
+    // Start the app
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initApp);
+    } else {
+      initApp();
     }
-  </script>
-</body>
-</html>
   </script>
 </body>
 </html>
