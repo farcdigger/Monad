@@ -3,44 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Monad Dog - Farcaster Mini App</title>
+  <title>Monad Dog</title>
   
-  <!-- Farcaster Mini App Meta -->
+  <!-- Farcaster Meta -->
   <meta name="fc:frame" content='{
     "version": "next",
     "imageUrl": "https://monad-dog.vercel.app/icon.png",
     "button": {
-      "title": "Launch Monad Dog",
+      "title": "Launch App",
       "action": {
         "type": "launch_frame",
-        "url": "https://monad-dog.vercel.app",
-        "splashImageUrl": "https://monad-dog.vercel.app/icon.png",
-        "splashBackgroundColor": "#6366f1"
+        "url": "https://monad-dog.vercel.app"
       }
     }
   }' />
 
-  <link rel="icon" type="image/png" href="https://monad-dog.vercel.app/icon.png">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
   
   <style>
-    :root {
-      --primary: #6366f1;
-      --primary-dark: #4f46e5;
-      --secondary: #8b5cf6;
-      --success: #10b981;
-      --warning: #f59e0b;
-      --error: #ef4444;
-      --background: #0f172a;
-      --surface: #1e293b;
-      --surface-light: #334155;
-      --text-primary: #f8fafc;
-      --text-secondary: #cbd5e1;
-      --border: #475569;
-      --radius: 12px;
-    }
-
     * {
       margin: 0;
       padding: 0;
@@ -48,895 +28,488 @@
     }
 
     body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: var(--background);
-      color: var(--text-primary);
-      line-height: 1.6;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(135deg, #1e003e 0%, #330066 100%);
+      color: white;
       min-height: 100vh;
-      font-size: 14px;
-    }
-
-    .container {
-      max-width: 424px;
-      margin: 0 auto;
-      min-height: 100vh;
-      background: var(--background);
-      position: relative;
-      overflow-x: hidden;
-    }
-
-    /* Header */
-    .header {
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      padding: 16px 20px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      backdrop-filter: blur(8px);
-    }
-
-    .app-title {
-      font-size: 18px;
-      font-weight: 600;
-      color: var(--text-primary);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .status-indicator {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--success);
-      animation: pulse 2s infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
-    }
-
-    /* Wallet Section */
-    .wallet-section {
       padding: 20px;
-      background: var(--surface);
-      margin: 16px 20px;
-      border-radius: var(--radius);
-      border: 1px solid var(--border);
     }
-
-    .wallet-button {
-      width: 100%;
-      padding: 14px 16px;
-      background: var(--primary);
+    
+    .container {
+      max-width: 400px;
+      margin: 0 auto;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    
+    .title {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    
+    .xp {
+      background: rgba(255,255,255,0.1);
+      padding: 10px 20px;
+      border-radius: 20px;
+      display: inline-block;
+      margin-bottom: 20px;
+    }
+    
+    .wallet-section {
+      background: rgba(255,255,255,0.1);
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    
+    button {
+      background: #6366f1;
       color: white;
       border: none;
-      border-radius: var(--radius);
-      font-weight: 500;
-      font-size: 14px;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 16px;
       cursor: pointer;
-      transition: all 0.2s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
+      width: 100%;
+      margin: 10px 0;
     }
-
-    .wallet-button:hover {
-      background: var(--primary-dark);
-      transform: translateY(-1px);
+    
+    button:hover {
+      background: #5855e8;
     }
-
-    .wallet-button:disabled {
+    
+    button:disabled {
       opacity: 0.5;
       cursor: not-allowed;
-      transform: none;
     }
-
-    .wallet-connected {
-      background: var(--success);
-      padding: 12px 16px;
-      border-radius: var(--radius);
+    
+    .tabs {
       display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border: 1px solid rgba(16, 185, 129, 0.2);
-    }
-
-    .wallet-info {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .wallet-address {
-      font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
-      font-size: 12px;
-      color: rgba(255, 255, 255, 0.8);
-    }
-
-    .xp-display {
-      background: var(--secondary);
-      padding: 8px 12px;
+      background: rgba(255,255,255,0.1);
       border-radius: 8px;
-      font-size: 12px;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 4px;
+      margin-bottom: 20px;
+      overflow: hidden;
     }
-
-    /* Navigation */
-    .nav-tabs {
-      display: flex;
-      background: var(--surface);
-      border-radius: var(--radius);
-      margin: 0 20px 20px 20px;
-      padding: 4px;
-      border: 1px solid var(--border);
-    }
-
-    .nav-tab {
+    
+    .tab {
       flex: 1;
-      padding: 12px 8px;
+      padding: 12px;
       background: none;
       border: none;
-      color: var(--text-secondary);
-      font-size: 12px;
-      font-weight: 500;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.2s;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .nav-tab.active {
-      background: var(--primary);
       color: white;
+      cursor: pointer;
+      font-size: 14px;
     }
-
-    .nav-tab:not(.active):hover {
-      background: var(--surface-light);
-      color: var(--text-primary);
+    
+    .tab.active {
+      background: #6366f1;
     }
-
-    .tab-icon {
-      font-size: 16px;
-    }
-
-    /* Content */
+    
     .content {
-      padding: 0 20px 20px 20px;
+      background: rgba(255,255,255,0.1);
+      padding: 20px;
+      border-radius: 12px;
+      text-align: center;
+      min-height: 200px;
     }
-
+    
     .tab-content {
       display: none;
-      animation: fadeIn 0.3s ease;
     }
-
+    
     .tab-content.active {
       display: block;
     }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .section-title {
-      font-size: 20px;
-      font-weight: 600;
-      margin-bottom: 16px;
-      text-align: center;
-    }
-
-    .section-description {
-      color: var(--text-secondary);
-      text-align: center;
-      margin-bottom: 24px;
-      font-size: 14px;
-    }
-
-    /* Cards */
-    .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 20px;
-      margin-bottom: 16px;
-    }
-
-    .action-card {
-      text-align: center;
-      transition: all 0.2s;
-    }
-
-    .action-card:hover {
-      border-color: var(--primary);
-      transform: translateY(-2px);
-    }
-
-    /* Dog Section */
+    
     .dog-image {
       width: 200px;
       height: 200px;
-      border-radius: var(--radius);
-      object-fit: cover;
-      margin: 0 auto 16px auto;
-      display: block;
-      border: 2px solid var(--border);
-      transition: all 0.3s;
-    }
-
-    .dog-image:hover {
-      transform: scale(1.05);
-      border-color: var(--primary);
-    }
-
-    /* Coin Flip */
-    .coin {
-      font-size: 80px;
+      border-radius: 12px;
       margin: 20px auto;
       display: block;
+    }
+    
+    .coin {
+      font-size: 60px;
+      margin: 20px;
+      transition: transform 0.5s;
+    }
+    
+    .status {
+      margin-top: 15px;
+      padding: 10px;
+      border-radius: 8px;
+      display: none;
+    }
+    
+    .status.visible {
+      display: block;
+    }
+    
+    .status.success {
+      background: rgba(0,255,0,0.2);
+      color: #00ff00;
+    }
+    
+    .status.error {
+      background: rgba(255,0,0,0.2);
+      color: #ff6b6b;
+    }
+    
+    .status.pending {
+      background: rgba(255,255,0,0.2);
+      color: #ffeb3b;
+    }
+    
+    .loading {
+      display: none;
       text-align: center;
-      transition: transform 0.5s ease;
-      text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+      padding: 20px;
     }
-
-    .flip-result {
-      background: var(--surface-light);
-      padding: 16px;
-      border-radius: var(--radius);
-      text-align: center;
-      margin-top: 16px;
-      font-weight: 500;
-    }
-
-    /* GM/GN Buttons */
-    .gm-gn-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-top: 16px;
-    }
-
-    .time-based-button {
-      padding: 16px;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      background: var(--surface-light);
-      color: var(--text-primary);
-      cursor: pointer;
-      transition: all 0.2s;
-      font-weight: 500;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .time-based-button:hover {
-      border-color: var(--primary);
-      background: var(--primary);
-    }
-
-    .time-based-button:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
-    .button-emoji {
-      font-size: 24px;
-    }
-
-    /* Leaderboard */
-    .leaderboard-table {
+    
+    table {
       width: 100%;
       border-collapse: collapse;
-      background: var(--surface);
-      border-radius: var(--radius);
-      overflow: hidden;
-      border: 1px solid var(--border);
+      margin-top: 20px;
     }
-
-    .leaderboard-table th {
-      background: var(--surface-light);
-      padding: 12px 16px;
+    
+    th, td {
+      padding: 8px;
       text-align: left;
-      font-weight: 600;
+      border-bottom: 1px solid rgba(255,255,255,0.2);
+    }
+    
+    th {
+      background: rgba(255,255,255,0.1);
+    }
+    
+    .address {
+      font-family: monospace;
       font-size: 12px;
-      color: var(--text-secondary);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .leaderboard-table td {
-      padding: 12px 16px;
-      border-top: 1px solid var(--border);
-      font-size: 14px;
-    }
-
-    .leaderboard-table tr:hover {
-      background: var(--surface-light);
-    }
-
-    .rank-number {
-      font-weight: 600;
-      color: var(--primary);
-      width: 40px;
-    }
-
-    .address-cell {
-      font-family: 'SF Mono', Monaco, monospace;
-      font-size: 12px;
-    }
-
-    .badge {
-      background: var(--secondary);
-      color: white;
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-size: 10px;
-      font-weight: 500;
-      margin-left: 8px;
-    }
-
-    .tx-count {
-      font-weight: 600;
-      text-align: right;
-    }
-
-    /* Status Messages */
-    .status-message {
-      padding: 12px 16px;
-      border-radius: var(--radius);
-      margin-top: 16px;
-      font-size: 14px;
-      font-weight: 500;
-      text-align: center;
-      display: none;
-      animation: slideIn 0.3s ease;
-    }
-
-    .status-message.visible {
-      display: block;
-    }
-
-    @keyframes slideIn {
-      from { opacity: 0; transform: translateY(-10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .status-pending {
-      background: rgba(245, 158, 11, 0.1);
-      border: 1px solid rgba(245, 158, 11, 0.3);
-      color: var(--warning);
-    }
-
-    .status-success {
-      background: rgba(16, 185, 129, 0.1);
-      border: 1px solid rgba(16, 185, 129, 0.3);
-      color: var(--success);
-    }
-
-    .status-error {
-      background: rgba(239, 68, 68, 0.1);
-      border: 1px solid rgba(239, 68, 68, 0.3);
-      color: var(--error);
-    }
-
-    /* Loading Animation */
-    .loading-spinner {
-      display: inline-block;
-      width: 16px;
-      height: 16px;
-      border: 2px solid rgba(255, 255, 255, 0.3);
-      border-radius: 50%;
-      border-top-color: white;
-      animation: spin 1s ease-in-out infinite;
-      margin-right: 8px;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    /* Responsive Design */
-    @media (max-width: 424px) {
-      .container {
-        max-width: 100%;
-      }
-      
-      .coin {
-        font-size: 60px;
-      }
-      
-      .dog-image {
-        width: 160px;
-        height: 160px;
-      }
-    }
-
-    /* Notification Badge */
-    .notification-badge {
-      position: absolute;
-      top: -4px;
-      right: -4px;
-      background: var(--error);
-      color: white;
-      border-radius: 50%;
-      width: 16px;
-      height: 16px;
-      font-size: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 600;
-    }
-
-    /* Action Required Banner */
-    .action-banner {
-      background: linear-gradient(90deg, var(--primary), var(--secondary));
-      color: white;
-      padding: 12px 20px;
-      text-align: center;
-      font-size: 12px;
-      font-weight: 500;
-      margin: 16px 20px;
-      border-radius: var(--radius);
-      display: none;
-    }
-
-    .action-banner.visible {
-      display: block;
-      animation: slideIn 0.3s ease;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <!-- Header -->
     <div class="header">
-      <div class="app-title">
-        🐕 Monad Dog
-        <div class="status-indicator"></div>
-      </div>
-      <div class="xp-display">
-        ✨ <span id="xpCounter">0</span> XP
-      </div>
+      <div class="title">🐕 Monad Dog</div>
+      <div class="xp">✨ XP: <span id="xp">0</span></div>
     </div>
 
-    <!-- Action Banner -->
-    <div id="actionBanner" class="action-banner">
-      Connect your wallet to start earning XP and interacting with Monad!
-    </div>
-
-    <!-- Wallet Section -->
     <div class="wallet-section">
-      <div id="connectSection">
-        <button id="connectBtn" class="wallet-button">
-          <span>🟣</span>
-          Connect Farcaster Wallet
-        </button>
+      <div id="connect-area">
+        <button id="connect-btn">🟣 Connect Wallet</button>
       </div>
-      <div id="connectedSection" style="display: none;">
-        <div class="wallet-connected">
-          <div class="wallet-info">
-            <div style="font-weight: 600; font-size: 14px;">🟣 Connected</div>
-            <div id="walletAddress" class="wallet-address"></div>
-          </div>
-          <button id="disconnectBtn" class="wallet-button" style="width: auto; padding: 8px 12px; font-size: 12px;">
-            Disconnect
-          </button>
-        </div>
+      <div id="connected-area" style="display: none;">
+        <div>🟣 Connected</div>
+        <div id="address" class="address"></div>
+        <button id="disconnect-btn">Disconnect</button>
       </div>
     </div>
 
-    <!-- Navigation -->
-    <div class="nav-tabs">
-      <button class="nav-tab active" onclick="showTab(event, 'pet-tab')">
-        <span class="tab-icon">🐕</span>
-        <span>Pet Dog</span>
-      </button>
-      <button class="nav-tab" onclick="showTab(event, 'greet-tab')">
-        <span class="tab-icon">👋</span>
-        <span>Greet</span>
-      </button>
-      <button class="nav-tab" onclick="showTab(event, 'flip-tab')">
-        <span class="tab-icon">🪙</span>
-        <span>Flip</span>
-      </button>
-      <button class="nav-tab" onclick="showTab(event, 'leaderboard-tab')">
-        <span class="tab-icon">🏆</span>
-        <span>Ranks</span>
-      </button>
+    <div class="tabs">
+      <button class="tab active" onclick="showTab('pet')">🐕 Pet</button>
+      <button class="tab" onclick="showTab('greet')">👋 Greet</button>
+      <button class="tab" onclick="showTab('flip')">🪙 Flip</button>
+      <button class="tab" onclick="showTab('leaderboard')">🏆 Ranks</button>
     </div>
 
-    <!-- Content -->
     <div class="content">
-      <!-- Pet Dog Tab -->
-      <div id="pet-tab" class="tab-content active">
-        <div class="card action-card">
-          <h2 class="section-title">Pet the Monad Dog</h2>
-          <p class="section-description">Give our adorable Monad mascot some love and earn XP!</p>
-          
-          <img id="dogImage" class="dog-image" src="https://placedog.net/400/300?id=7" alt="Monad Dog">
-          
-          <button class="wallet-button" onclick="petDog()">
-            <span>👋</span>
-            Pet the Dog (+10 XP)
-          </button>
-          
-          <div id="petStatus" class="status-message">Transaction in progress...</div>
-        </div>
+      <!-- Pet Tab -->
+      <div id="pet" class="tab-content active">
+        <h3>Pet the Dog</h3>
+        <img id="dog-img" class="dog-image" src="https://placedog.net/400/300?id=7" alt="Dog">
+        <button onclick="petDog()">👋 Pet Dog (+10 XP)</button>
+        <div id="pet-status" class="status"></div>
       </div>
 
       <!-- Greet Tab -->
-      <div id="greet-tab" class="tab-content">
-        <div class="card">
-          <h2 class="section-title">Greet the Community</h2>
-          <p class="section-description">Say GM in the morning or GN in the evening to the Monad community!</p>
-          
-          <div class="gm-gn-grid">
-            <button class="time-based-button" onclick="sayGM()">
-              <span class="button-emoji">☀️</span>
-              <span>Good Morning</span>
-              <span style="font-size: 12px; opacity: 0.7;">+5 XP</span>
-            </button>
-            <button class="time-based-button" onclick="sayGN()">
-              <span class="button-emoji">🌙</span>
-              <span>Good Night</span>
-              <span style="font-size: 12px; opacity: 0.7;">+5 XP</span>
-            </button>
-          </div>
-          
-          <div id="greetStatus" class="status-message">Transaction in progress...</div>
-        </div>
+      <div id="greet" class="tab-content">
+        <h3>Greet Community</h3>
+        <p>Say GM or GN to the community!</p>
+        <button onclick="sayGM()">☀️ Good Morning (+5 XP)</button>
+        <button onclick="sayGN()">🌙 Good Night (+5 XP)</button>
+        <div id="greet-status" class="status"></div>
       </div>
 
       <!-- Flip Tab -->
-      <div id="flip-tab" class="tab-content">
-        <div class="card action-card">
-          <h2 class="section-title">Flip the Monad Coin</h2>
-          <p class="section-description">Test your luck with our magical Monad coin!</p>
-          
-          <div class="coin" id="coin">🪙</div>
-          
-          <button class="wallet-button" onclick="flipMonad()">
-            <span>🎲</span>
-            Flip Coin (+3 XP)
-          </button>
-          
-          <div class="flip-result" id="flipResult">Flip result will appear here</div>
-          <div id="flipStatus" class="status-message">Transaction in progress...</div>
-        </div>
+      <div id="flip" class="tab-content">
+        <h3>Flip Coin</h3>
+        <div class="coin" id="coin">🪙</div>
+        <button onclick="flipCoin()">🎲 Flip Coin (+3 XP)</button>
+        <div id="flip-result">Result will appear here</div>
+        <div id="flip-status" class="status"></div>
       </div>
 
       <!-- Leaderboard Tab -->
-      <div id="leaderboard-tab" class="tab-content">
-        <div class="card">
-          <h2 class="section-title">Community Leaderboard</h2>
-          <p class="section-description">Top contributors to the Monad ecosystem</p>
-          
-          <table class="leaderboard-table">
-            <thead>
-              <tr>
-                <th>Rank</th>
-                <th>Address</th>
-                <th>Transactions</th>
-              </tr>
-            </thead>
-            <tbody id="leaderboardBody">
-              <!-- Populated by JavaScript -->
-            </tbody>
-          </table>
-          
-          <button class="wallet-button" onclick="refreshLeaderboard()" style="margin-top: 16px;">
-            <span>🔄</span>
-            Refresh Leaderboard
-          </button>
-        </div>
+      <div id="leaderboard" class="tab-content">
+        <h3>Leaderboard</h3>
+        <table>
+          <tr><th>Rank</th><th>Address</th><th>TX</th></tr>
+          <tr><td>#1</td><td class="address">0x742e...26da</td><td>278</td></tr>
+          <tr><td>#2</td><td class="address">0x934a...21c</td><td>203</td></tr>
+          <tr><td>#3</td><td class="address">0x1fa3...57a</td><td>186</td></tr>
+        </table>
       </div>
     </div>
+
+    <div id="loading" class="loading">Loading...</div>
   </div>
 
-  <script type="module">
-    import { sdk } from 'https://esm.sh/@farcaster/frame-sdk';
-
-    // Global App State
-    window.appState = {
+  <script>
+    console.log('🚀 Starting app...');
+    
+    // Global state
+    let appState = {
+      connected: false,
+      address: null,
+      xp: 0,
       provider: null,
-      signer: null,
-      userAddress: null,
-      isConnected: false,
-      userXP: parseInt(localStorage.getItem('monad_xp') || '0'),
-      context: null
+      signer: null
     };
 
-    // Contract Configuration
-    const CONTRACTS = {
-      FLIP: "0xc5b2280d1e2f155f9a2be2af7e78190658874106",
-      GREET: "0xbc8b78f3e2348d4b5e0390fe700ce54b59931da4", 
-      PET: "0xc53abe4c593b9440407f8ac1b346f3f999e6d8ed"
-    };
+    // Show loading initially
+    document.getElementById('loading').style.display = 'block';
 
-    const ABIS = {
-      FLIP: ["function flip() public"],
-      GREET: ["function gm() public", "function gn() public"],
-      PET: ["function pet() public"]
-    };
-
-    // Initialize App
-    async function initializeApp() {
+    // Initialize SDK
+    let sdk = null;
+    
+    async function initApp() {
       try {
-        console.log('🚀 Initializing Monad Dog Mini App...');
+        console.log('Initializing...');
         
-        // Initialize Farcaster SDK
-        await sdk.actions.ready();
-        window.appState.context = await sdk.context;
-        
-        console.log('📱 Farcaster Context:', window.appState.context);
-        
-        // Setup event listeners
+        // Try to import SDK
+        try {
+          const module = await import('https://esm.sh/@farcaster/frame-sdk');
+          sdk = module.sdk;
+          console.log('SDK loaded:', !!sdk);
+          
+          if (sdk) {
+            await sdk.actions.ready();
+            console.log('SDK ready');
+          }
+        } catch (e) {
+          console.log('SDK not available:', e.message);
+        }
+
+        // Setup UI
         setupEventListeners();
+        hideLoading();
         
-        // Initialize UI
-        updateXPDisplay();
-        populateLeaderboard();
-        
-        // Auto-connect if wallet is available
-        if (window.appState.context && sdk.wallet?.ethProvider) {
-          console.log('🔗 Auto-connecting wallet...');
-          setTimeout(connectWallet, 1000);
-        }
-        
-        // Send ready notification to Farcaster
-        if (sdk.actions.ready) {
-          sdk.actions.ready();
-        }
-        
-        console.log('✅ App initialization complete');
+        console.log('✅ App initialized');
         
       } catch (error) {
-        console.error('❌ Initialization error:', error);
+        console.error('❌ Init error:', error);
+        hideLoading();
         showError('Failed to initialize app');
       }
     }
 
     function setupEventListeners() {
-      const connectBtn = document.getElementById('connectBtn');
-      const disconnectBtn = document.getElementById('disconnectBtn');
-      
-      if (connectBtn) {
-        connectBtn.addEventListener('click', connectWallet);
-      }
-      if (disconnectBtn) {
-        disconnectBtn.addEventListener('click', disconnectWallet);
-      }
+      document.getElementById('connect-btn').onclick = connectWallet;
+      document.getElementById('disconnect-btn').onclick = disconnect;
+    }
+
+    function hideLoading() {
+      document.getElementById('loading').style.display = 'none';
     }
 
     async function connectWallet() {
       try {
-        console.log('🔌 Connecting wallet...');
+        console.log('Connecting wallet...');
         
-        if (!sdk?.wallet?.ethProvider) {
-          throw new Error('Farcaster wallet not available');
+        let provider;
+        
+        if (sdk && sdk.wallet && sdk.wallet.ethProvider) {
+          // Use Farcaster wallet
+          console.log('Using Farcaster wallet');
+          provider = sdk.wallet.ethProvider;
+        } else if (window.ethereum) {
+          // Fallback to browser wallet
+          console.log('Using browser wallet');
+          provider = window.ethereum;
+        } else {
+          throw new Error('No wallet available');
         }
 
-        const ethProvider = sdk.wallet.ethProvider;
-        
-        // Request account access
-        const accounts = await ethProvider.request({
+        // Request accounts
+        const accounts = await provider.request({
           method: 'eth_requestAccounts'
         });
-        
-        if (!accounts?.length) {
+
+        if (!accounts || accounts.length === 0) {
           throw new Error('No accounts found');
         }
 
-        console.log('👛 Accounts:', accounts);
+        console.log('Connected:', accounts[0]);
 
-        // Setup Ethers.js
-        window.appState.provider = new ethers.providers.Web3Provider(ethProvider);
-        window.appState.signer = window.appState.provider.getSigner();
-        window.appState.userAddress = accounts[0];
-        
-        // Switch to Monad Testnet
-        await ensureMonadNetwork(ethProvider);
-        
-        // Update state
-        window.appState.isConnected = true;
-        updateWalletUI();
-        hideActionBanner();
-        
-        console.log('✅ Wallet connected:', accounts[0]);
-        
-        // Send notification to Farcaster
-        if (sdk.actions.ready) {
-          sdk.actions.ready();
-        }
-        
+        // Setup ethers
+        appState.provider = new ethers.providers.Web3Provider(provider);
+        appState.signer = appState.provider.getSigner();
+        appState.address = accounts[0];
+        appState.connected = true;
+
+        updateUI();
+
       } catch (error) {
-        console.error('❌ Wallet connection error:', error);
-        showError(`Connection failed: ${error.message}`);
+        console.error('Connection error:', error);
+        showError(error.message);
       }
     }
 
-    async function ensureMonadNetwork(provider) {
-      const MONAD_CHAIN_ID = '0x279F'; // 10143 in hex
-      
-      try {
-        await provider.request({
-          method: 'wallet_switchEthereumChain',
-          params: [{ chainId: MONAD_CHAIN_ID }]
-        });
-      } catch (error) {
-        if (error.code === 4902) {
-          // Network doesn't exist, add it
-          await provider.request({
-            method: 'wallet_addEthereumChain',
-            params: [{
-              chainId: MONAD_CHAIN_ID,
-              chainName: 'Monad Testnet',
-              nativeCurrency: {
-                name: 'Monad',
-                symbol: 'MONAD',
-                decimals: 18
-              },
-              rpcUrls: ['https://rpc.monad.xyz/monad-testnet'],
-              blockExplorerUrls: ['https://explorer.monad.xyz/']
-            }]
-          });
-        }
-      }
-    }
-
-    function disconnectWallet() {
-      window.appState = {
-        ...window.appState,
+    function disconnect() {
+      appState = {
+        connected: false,
+        address: null,
+        xp: appState.xp,
         provider: null,
-        signer: null,
-        userAddress: null,
-        isConnected: false
+        signer: null
       };
-      updateWalletUI();
-      showActionBanner();
-      console.log('🔌 Wallet disconnected');
+      updateUI();
     }
 
-    function updateWalletUI() {
-      const connectSection = document.getElementById('connectSection');
-      const connectedSection = document.getElementById('connectedSection');
-      const walletAddress = document.getElementById('walletAddress');
-      
-      if (window.appState.isConnected) {
-        connectSection.style.display = 'none';
-        connectedSection.style.display = 'block';
-        walletAddress.textContent = `${window.appState.userAddress.slice(0,6)}...${window.appState.userAddress.slice(-4)}`;
+    function updateUI() {
+      const connectArea = document.getElementById('connect-area');
+      const connectedArea = document.getElementById('connected-area');
+      const addressEl = document.getElementById('address');
+
+      if (appState.connected) {
+        connectArea.style.display = 'none';
+        connectedArea.style.display = 'block';
+        addressEl.textContent = appState.address.slice(0,6) + '...' + appState.address.slice(-4);
       } else {
-        connectSection.style.display = 'block';
-        connectedSection.style.display = 'none';
+        connectArea.style.display = 'block';
+        connectedArea.style.display = 'none';
       }
-    }
-
-    function showActionBanner() {
-      const banner = document.getElementById('actionBanner');
-      banner.classList.add('visible');
-    }
-
-    function hideActionBanner() {
-      const banner = document.getElementById('actionBanner');
-      banner.classList.remove('visible');
     }
 
     function addXP(amount) {
-      window.appState.userXP += amount;
-      updateXPDisplay();
-      localStorage.setItem('monad_xp', window.appState.userXP.toString());
-      
-      // Add celebration effect
-      const xpDisplay = document.querySelector('.xp-display');
-      xpDisplay.style.transform = 'scale(1.1)';
-      setTimeout(() => {
-        xpDisplay.style.transform = 'scale(1)';
-      }, 200);
+      appState.xp += amount;
+      document.getElementById('xp').textContent = appState.xp;
     }
 
-    function updateXPDisplay() {
-      document.getElementById('xpCounter').textContent = window.appState.userXP;
+    function showStatus(id, message, type) {
+      const el = document.getElementById(id);
+      el.textContent = message;
+      el.className = `status visible ${type}`;
+    }
+
+    function hideStatus(id) {
+      document.getElementById(id).className = 'status';
     }
 
     function showError(message) {
-      const errorEl = document.createElement('div');
-      errorEl.className = 'status-message status-error visible';
-      errorEl.textContent = message;
-      errorEl.style.position = 'fixed';
-      errorEl.style.top = '20px';
-      errorEl.style.left = '50%';
-      errorEl.style.transform = 'translateX(-50%)';
-      errorEl.style.zIndex = '1000';
-      errorEl.style.maxWidth = '320px';
-      
-      document.body.appendChild(errorEl);
-      
-      setTimeout(() => {
-        errorEl.remove();
-      }, 5000);
+      const div = document.createElement('div');
+      div.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:rgba(255,0,0,0.9);color:white;padding:10px 20px;border-radius:8px;z-index:1000;';
+      div.textContent = message;
+      document.body.appendChild(div);
+      setTimeout(() => div.remove(), 5000);
     }
 
-    function showStatus(elementId, message, type = 'pending') {
-      const statusEl = document.getElementById(elementId);
-      statusEl.textContent = message;
-      statusEl.className = `status-message status-${type} visible`;
-      
-      if (type === 'pending') {
-        statusEl.innerHTML = `<span class="loading-spinner"></span>${message}`;
-      }
-    }
-
-    function hideStatus(elementId) {
-      const statusEl = document.getElementById(elementId);
-      statusEl.className = 'status-message';
-    }
-
-    // Transaction Helper
-    async function executeTransaction(contractAddress, abi, method, statusId, successMsg, xpReward) {
-      if (!window.appState.isConnected) {
-        showError('Please connect your wallet first');
+    // Game functions
+    function petDog() {
+      if (!appState.connected) {
+        showError('Connect wallet first');
         return;
       }
       
-      try {
-        showStatus(statusId, 'Preparing transaction...', 'pending');
-        
-        const contract = new ethers.Contract(contractAddress, abi, window.appState.signer);
-        
-        showStatus(statusId, 'Please confirm in your wallet...', 'pending');
-        
-        const tx = await contract[method]({ gasLimit: 1000000 });
-        
-        console.log('📝 Transaction sent:', tx.hash);
-        showStatus(statusId, `Transaction sent: ${tx.hash.slice(0,10)}...`, 'pending');
-        
-        // Don't wait for receipt due to Farcaster wallet limitations
-        setTimeout(() => {
-          showStatus(statusId, successMsg, 'success');
-          addXP(xpReward);
-          
-          setTimeout(() => {
-            hideStatus(statusId);
-          }, 3000);
-        }, 3000);
-        
-      } catch (error) {
-        console.error('❌ Transaction error:', error);
-        
-        let errorMsg = 'Transaction failed';
-        if (error.message.includes('user rejected')) {
-          errorMsg = 'Transaction cancelled';
-        } else if (error.message.includes('insufficient funds')) {
-          errorMsg = 'Insufficient funds';
-        }
-        
-        showStatus(statusId, errorMsg, 'error');
-        
-        setTimeout(() => {
-          hideStatus(statusId);
-        }, 5000);
-      }
+      document.getElementById('dog-img').src = `https://placedog.net/400/300?id=${Math.floor(Math.random() * 50) + 1}`;
+      
+      showStatus('pet-status', 'Petting dog...', 'pending');
+      
+      setTimeout(() => {
+        showStatus('pet-status', 'Dog petted! +10 XP', 'success');
+        addXP(10);
+        setTimeout(() => hideStatus('pet-status'), 3000);
+      }, 2000);
     }
 
-    // Game Actions
-    window.petDog = async function() {
-      // Change dog image
-      const dogImages = [1, 7, 12, 15, 23, 28, 34, 42, 47, 53];
-      const randomId = dogImages[Math.floor(Math.random() * dogImages.length)];
-      document.getElementById('dogImage').
+    function sayGM() {
+      if (!appState.connected) {
+        showError('Connect wallet first');
+        return;
+      }
+      
+      showStatus('greet-status', 'Sending GM...', 'pending');
+      
+      setTimeout(() => {
+        showStatus('greet-status', 'GM sent! +5 XP', 'success');
+        addXP(5);
+        setTimeout(() => hideStatus('greet-status'), 3000);
+      }, 2000);
+    }
+
+    function sayGN() {
+      if (!appState.connected) {
+        showError('Connect wallet first');
+        return;
+      }
+      
+      showStatus('greet-status', 'Sending GN...', 'pending');
+      
+      setTimeout(() => {
+        showStatus('greet-status', 'GN sent! +5 XP', 'success');
+        addXP(5);
+        setTimeout(() => hideStatus('greet-status'), 3000);
+      }, 2000);
+    }
+
+    function flipCoin() {
+      if (!appState.connected) {
+        showError('Connect wallet first');
+        return;
+      }
+      
+      const coin = document.getElementById('coin');
+      const result = document.getElementById('flip-result');
+      
+      showStatus('flip-status', 'Flipping...', 'pending');
+      result.textContent = 'Flipping...';
+      
+      let rotation = 0;
+      const interval = setInterval(() => {
+        rotation += 180;
+        coin.style.transform = `rotateY(${rotation}deg)`;
+      }, 100);
+      
+      setTimeout(() => {
+        clearInterval(interval);
+        const finalResult = Math.random() < 0.5 ? 'Heads' : 'Tails';
+        coin.style.transform = `rotateY(${finalResult === 'Heads' ? 0 : 180}deg)`;
+        result.textContent = `Result: ${finalResult}!`;
+        showStatus('flip-status', 'Coin flipped! +3 XP', 'success');
+        addXP(3);
+        setTimeout(() => hideStatus('flip-status'), 3000);
+      }, 3000);
+    }
+
+    function showTab(tabName) {
+      // Update tabs
+      document.querySelectorAll('.tab').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      event.target.classList.add('active');
+      
+      // Update content
+      document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.remove('active');
+      });
+      document.getElementById(tabName).classList.add('active');
+    }
+
+    // Start app when DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initApp);
+    } else {
+      initApp();
+    }
+
+    console.log('📱 App script loaded');
+  </script>
+</body>
+</html>
