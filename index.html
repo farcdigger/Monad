@@ -638,36 +638,33 @@
       }
     }
 
-    async function connectBrowserWallet() {
-      const MONAD_TESTNET_CHAIN_ID = 10143;
+    function disconnect() {
+      provider = null;
+      signer = null;
+      userAddress = null;
+      isConnected = false;
+      farcasterEthProvider = null;
+      updateWalletUI();
+    }
 
-      if (!window.ethereum) {
-        showError("MetaMask or compatible wallet is not installed");
-        return;
-      }
+    function updateWalletUI() {
+      const walletSelector = document.getElementById("walletSelector");
+      const connectedWallet = document.getElementById("connectedWallet");
+      const walletInfo = document.getElementById("walletInfo");
 
-      try {
-        // Request account access
-        provider = new ethers.providers.Web3Provider(window.ethereum);
-        await provider.send("eth_requestAccounts", []);
+      if (isConnected) {
+        walletSelector.style.display = "none";
+        connectedWallet.style.display = "block";
         
-        // Use the centralized network checking function
-        await ensureCorrectNetwork();
+        walletInfo.innerHTML = `
+          🟣 Farcaster Wallet<br>
+          <span style="font-family: monospace;">${userAddress.slice(0, 6)}...${userAddress.slice(-4)}</span>
+        `;
         
-        // Recreate provider after network operations
-        provider = new ethers.providers.Web3Provider(window.ethereum);
-        signer = provider.getSigner();
-        userAddress = await signer.getAddress();
-        
-        walletType = 'browser';
-        isConnected = true;
-        
-        updateWalletUI();
-        console.log('Connected to browser wallet:', userAddress);
-        
-      } catch (error) {
-        console.error('Browser wallet connection error:', error);
-        showError("Wallet connection failed: " + error.message);
+        highlightUserOnLeaderboard();
+      } else {
+        walletSelector.style.display = "flex";
+        connectedWallet.style.display = "none";
       }
     }
 
@@ -681,39 +678,6 @@
       setTimeout(() => {
         statusEl.remove();
       }, 5000);
-    }
-
-    function disconnect() {
-      provider = null;
-      signer = null;
-      userAddress = null;
-      isConnected = false;
-      walletType = null;
-      updateWalletUI();
-    }
-
-    function updateWalletUI() {
-      const walletSelector = document.getElementById("walletSelector");
-      const connectedWallet = document.getElementById("connectedWallet");
-      const walletInfo = document.getElementById("walletInfo");
-
-      if (isConnected) {
-        walletSelector.style.display = "none";
-        connectedWallet.style.display = "block";
-        
-        const walletIcon = walletType === 'farcaster' ? '🟣' : '🦊';
-        const walletName = walletType === 'farcaster' ? 'Farcaster' : 'Browser';
-        
-        walletInfo.innerHTML = `
-          ${walletIcon} ${walletName} Wallet<br>
-          <span style="font-family: monospace;">${userAddress.slice(0, 6)}...${userAddress.slice(-4)}</span>
-        `;
-        
-        highlightUserOnLeaderboard();
-      } else {
-        walletSelector.style.display = "flex";
-        connectedWallet.style.display = "none";
-      }
     }
 
     function addXP(amount) {
@@ -744,13 +708,8 @@
         await ensureCorrectNetwork();
         
         // Recreate provider and signer to avoid network mismatch
-        if (walletType === 'farcaster' && farcasterEthProvider) {
-          provider = new ethers.providers.Web3Provider(farcasterEthProvider);
-          signer = provider.getSigner();
-        } else if (walletType === 'browser' && window.ethereum) {
-          provider = new ethers.providers.Web3Provider(window.ethereum);
-          signer = provider.getSigner();
-        }
+        provider = new ethers.providers.Web3Provider(farcasterEthProvider);
+        signer = provider.getSigner();
         
         const contract = new ethers.Contract(contractAddress, abi, signer);
         const tx = await contract[methodName]({ gasLimit: 1000000 });
@@ -797,13 +756,11 @@
       const MONAD_TESTNET_CHAIN_ID = '0x279F'; // 10143 in hex
       
       try {
-        let currentProvider = walletType === 'farcaster' ? farcasterEthProvider : window.ethereum;
-        
-        if (!currentProvider) {
+        if (!farcasterEthProvider) {
           throw new Error('No wallet provider available');
         }
 
-        const chainId = await currentProvider.request({
+        const chainId = await farcasterEthProvider.request({
           method: 'eth_chainId'
         });
 
@@ -813,7 +770,7 @@
           console.log('Switching to Monad Testnet...');
           
           try {
-            await currentProvider.request({
+            await farcasterEthProvider.request({
               method: 'wallet_switchEthereumChain',
               params: [{ chainId: MONAD_TESTNET_CHAIN_ID }],
             });
@@ -821,7 +778,7 @@
           } catch (switchError) {
             console.log('Switch failed, trying to add network...');
             
-            await currentProvider.request({
+            await farcasterEthProvider.request({
               method: 'wallet_addEthereumChain',
               params: [{
                 chainId: MONAD_TESTNET_CHAIN_ID,
@@ -1012,8 +969,7 @@
     }
 
     // Make functions available globally
-    window.connectFarcasterWallet = connectFarcasterWallet;
-    window.connectBrowserWallet = connectBrowserWallet;
+    window.connectWallet = connectWallet;
     window.disconnect = disconnect;
   </script>
 </body>
