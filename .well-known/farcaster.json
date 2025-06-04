@@ -2,8 +2,8 @@
   "frame": {
     "version": "1",
     "name": "Monad App",
-    "iconUrl": "https://monad-snowy.vercel.app/icon.png",
+    "iconUrl": "https://monad-snowy.vercel.app/.well-known/icon.png",
     "homeUrl": "https://monad-snowy.vercel.app/",
-    "splashImageUrl": "https://monad-snowy.vercel.app/icon.png",
+    "splashImageUrl": "https://monad-snowy.vercel.app/.well-known/icon.png",
     "splashBackgroundColor": "#2d014d"
   },
