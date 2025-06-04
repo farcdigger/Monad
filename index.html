@@ -264,17 +264,20 @@
   <script>
     console.log('🚀 Starting app...');
     
-    // Global state
+    // Global state with persistent XP
     let appState = {
       connected: false,
       address: null,
-      xp: 0,
+      xp: parseInt(localStorage.getItem('monad_dog_xp') || '0'),
       provider: null,
       signer: null
     };
 
     // Show loading initially
     document.getElementById('loading').style.display = 'block';
+
+    // Initialize XP display
+    document.getElementById('xp').textContent = appState.xp;
 
     // Initialize SDK
     let sdk = null;
@@ -299,15 +302,16 @@
 
         // Setup UI
         setupEventListeners();
-        setupGameFunctions(); // ← Bu satır eksikti!
+        setupGameFunctions();
         hideLoading();
         
-        console.log('✅ App initialized');
+        console.log('✅ App initialized successfully');
         
       } catch (error) {
         console.error('❌ Init error:', error);
         hideLoading();
-        showError('Failed to initialize app');
+        // Remove the error message - just log it
+        console.log('App will continue without some features');
       }
     }
 
@@ -367,11 +371,12 @@
       appState = {
         connected: false,
         address: null,
-        xp: appState.xp,
+        xp: appState.xp, // Keep XP when disconnecting
         provider: null,
         signer: null
       };
       updateUI();
+      console.log('🔌 Wallet disconnected (XP preserved)');
     }
 
     function updateUI() {
@@ -392,7 +397,37 @@
     function addXP(amount) {
       appState.xp += amount;
       document.getElementById('xp').textContent = appState.xp;
+      
+      // Save XP to localStorage for persistence
+      localStorage.setItem('monad_dog_xp', appState.xp.toString());
+      
+      // Add celebration effect
+      const xpElement = document.getElementById('xp');
+      xpElement.style.transform = 'scale(1.2)';
+      xpElement.style.color = '#00ff00';
+      
+      setTimeout(() => {
+        xpElement.style.transform = 'scale(1)';
+        xpElement.style.color = 'white';
+      }, 500);
+      
+      console.log(`✨ XP added: +${amount}, Total: ${appState.xp}`);
     }
+
+    // Add function to reset XP (for testing)
+    window.resetXP = function() {
+      appState.xp = 0;
+      localStorage.removeItem('monad_dog_xp');
+      document.getElementById('xp').textContent = '0';
+      console.log('🔄 XP reset to 0');
+    };
+
+    // Add function to check current XP
+    window.checkXP = function() {
+      console.log('💎 Current XP:', appState.xp);
+      console.log('💾 Stored XP:', localStorage.getItem('monad_dog_xp'));
+      return appState.xp;
+    };
 
     function showStatus(id, message, type) {
       const el = document.getElementById(id);
