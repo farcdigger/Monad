@@ -177,9 +177,109 @@
     }
     
     .loading {
-      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, #1e003e 0%, #330066 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      color: white;
+    }
+
+    .loading-spinner {
+      width: 60px;
+      height: 60px;
+      border: 4px solid rgba(255,255,255,0.2);
+      border-radius: 50%;
+      border-top-color: #6366f1;
+      animation: spin 1s linear infinite;
+      margin-bottom: 20px;
+    }
+
+    .loading-text {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .loading-subtitle {
+      font-size: 14px;
+      opacity: 0.7;
       text-align: center;
-      padding: 20px;
+      max-width: 280px;
+      line-height: 1.4;
+    }
+
+    .loading-progress {
+      width: 200px;
+      height: 4px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 2px;
+      margin-top: 20px;
+      overflow: hidden;
+    }
+
+    .loading-progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #6366f1, #8b5cf6);
+      border-radius: 2px;
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+
+    /* Skeleton Loading States */
+    .skeleton {
+      background: linear-gradient(90deg, rgba(255,255,255,0.1) 25%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0.1) 75%);
+      background-size: 200% 100%;
+      animation: skeleton-loading 1.5s infinite;
+    }
+
+    @keyframes skeleton-loading {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    .skeleton-text {
+      height: 16px;
+      border-radius: 4px;
+      margin: 8px 0;
+    }
+
+    .skeleton-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+    }
+
+    .skeleton-button {
+      height: 44px;
+      border-radius: 8px;
+      margin: 10px 0;
+    }
+
+    /* Hide content initially to prevent layout shift */
+    .app-content {
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+
+    .app-content.loaded {
+      opacity: 1;
     }
     
     table {
@@ -306,7 +406,7 @@
   </style>
 </head>
 <body>
-  <div class="container">
+  <div class="container app-content">
     <div class="header">
       <div class="title">🐕 Monad Dog</div>
       <div class="xp">✨ XP: <span id="xp">0</span></div>
@@ -426,17 +526,159 @@
   <script>
     console.log('🚀 Starting app...');
     
-    // Global state 
-    let appState = {
-      connected: false,
-      address: null,
-      xp: 0,
-      provider: null,
-      signer: null
-    };
+    // Enhanced Loading Management
+    let loadingProgress = 0;
+    let isAppReady = false;
 
-    // Show loading initially
-    document.getElementById('loading').style.display = 'block';
+    function updateLoadingProgress(progress, message) {
+      const progressBar = document.getElementById('loadingProgressBar');
+      const subtitle = document.querySelector('.loading-subtitle');
+      
+      if (progressBar) {
+        progressBar.style.width = `${progress}%`;
+      }
+      
+      if (subtitle && message) {
+        subtitle.innerHTML = message;
+      }
+      
+      loadingProgress = progress;
+      console.log(`📊 Loading progress: ${progress}% - ${message}`);
+    }
+
+    function showLoadingState() {
+      document.getElementById('loading').style.display = 'flex';
+      document.querySelector('.app-content').classList.remove('loaded');
+      updateLoadingProgress(0, 'Starting Monad Dog...<br>🚀 Initializing blockchain connection');
+    }
+
+    function hideLoadingState() {
+      // Don't hide immediately - show completion
+      updateLoadingProgress(100, 'Ready to play! 🎉<br>Welcome to Monad Dog!');
+      
+      setTimeout(() => {
+        document.getElementById('loading').style.display = 'none';
+        document.querySelector('.app-content').classList.add('loaded');
+        isAppReady = true;
+        
+        // Call Farcaster ready action
+        if (sdk && sdk.actions && sdk.actions.ready) {
+          sdk.actions.ready({
+            disableNativeGestures: false // Allow native gestures for better UX
+          }).then(() => {
+            console.log('✅ Farcaster SDK ready called successfully');
+          }).catch(error => {
+            console.log('⚠️ Farcaster SDK ready failed:', error);
+          });
+        }
+        
+        console.log('🎉 App fully loaded and ready');
+      }, 500);
+    }
+
+    // Simulate progressive loading with actual initialization steps
+    async function initializeAppWithProgress() {
+      try {
+        showLoadingState();
+        
+        // Step 1: Initialize SDK
+        updateLoadingProgress(20, 'Loading Farcaster SDK...<br>🔗 Connecting to Frame environment');
+        
+        try {
+          const module = await import('https://esm.sh/@farcaster/frame-sdk');
+          sdk = module.sdk;
+          console.log('SDK loaded:', !!sdk);
+          
+          if (sdk) {
+            updateLoadingProgress(40, 'Farcaster SDK loaded! ✅<br>📱 Setting up Mini App environment');
+            await sdk.actions.ready();
+            console.log('SDK ready');
+          }
+        } catch (e) {
+          console.log('SDK not available:', e.message);
+          updateLoadingProgress(40, 'Running in standalone mode<br>🌐 Browser environment detected');
+        }
+
+        // Step 2: Setup game functions
+        updateLoadingProgress(60, 'Setting up game functions...<br>🎮 Preparing blockchain interactions');
+        await new Promise(resolve => setTimeout(resolve, 300)); // Small delay for UX
+        
+        setupEventListeners();
+        setupGameFunctions();
+        
+        // Step 3: Load leaderboard
+        updateLoadingProgress(80, 'Loading leaderboard data...<br>🏆 Fetching player rankings');
+        await populateLeaderboard();
+        
+        // Step 4: Finalize
+        updateLoadingProgress(95, 'Almost ready...<br>✨ Final preparations');
+        await new Promise(resolve => setTimeout(resolve, 200));
+        
+        hideLoadingState();
+        console.log('✅ App initialized successfully with progress tracking');
+        
+      } catch (error) {
+        console.error('❌ Init error:', error);
+        updateLoadingProgress(100, 'Error occurred, but app will continue<br>⚠️ Some features may be limited');
+        
+        setTimeout(() => {
+          hideLoadingState();
+        }, 1000);
+      }
+    }
+
+    // Enhanced error handling for better loading experience
+    function handleLoadingError(error, step) {
+      console.error(`❌ Loading error at step "${step}":`, error);
+      
+      const errorMessages = {
+        sdk: 'SDK loading failed<br>🌐 Continuing in browser mode',
+        functions: 'Function setup error<br>⚠️ Some features may be limited',
+        leaderboard: 'Leaderboard loading failed<br>📊 Will retry automatically',
+        general: 'Loading error occurred<br>🔄 Attempting to continue'
+      };
+      
+      const message = errorMessages[step] || errorMessages.general;
+      updateLoadingProgress(loadingProgress, message);
+      
+      // Continue loading after brief delay
+      setTimeout(() => {
+        if (loadingProgress < 100) {
+          hideLoadingState();
+        }
+      }, 1500);
+    }
+
+    // Skeleton loading for leaderboard while data loads
+    function showLeaderboardSkeleton() {
+      const tbody = document.getElementById('leaderboardBody');
+      if (!tbody) return;
+      
+      const skeletonRows = Array.from({length: 5}, (_, i) => `
+        <tr>
+          <td class="rank-number skeleton skeleton-text" style="width: 30px;"></td>
+          <td class="address-cell">
+            <div class="skeleton skeleton-text" style="width: 120px;"></div>
+            <div class="skeleton skeleton-text" style="width: 80px; margin-top: 4px;"></div>
+          </td>
+          <td class="tx-count skeleton skeleton-text" style="width: 40px;"></td>
+        </tr>
+      `).join('');
+      
+      tbody.innerHTML = skeletonRows;
+    }
+
+    // Preload critical resources
+    function preloadResources() {
+      // Preload dog images for faster switching
+      const dogImages = [1, 7, 12, 15, 23, 28, 34, 42, 47, 53];
+      dogImages.forEach(id => {
+        const img = new Image();
+        img.src = `https://placedog.net/400/300?id=${id}`;
+      });
+      
+      console.log('🖼️ Preloaded dog images for better performance');
+    }
 
     // Contract addresses and ABIs
     const CONTRACTS = {
@@ -565,43 +807,21 @@
       return 'unknown';
     }
 
+    // Global state 
+    let appState = {
+      connected: false,
+      address: null,
+      xp: 0,
+      provider: null,
+      signer: null
+    };
+
     // Initialize SDK
     let sdk = null;
     
     async function initApp() {
-      try {
-        console.log('Initializing...');
-        
-        // Try to import SDK
-        try {
-          const module = await import('https://esm.sh/@farcaster/frame-sdk');
-          sdk = module.sdk;
-          console.log('SDK loaded:', !!sdk);
-          
-          if (sdk) {
-            await sdk.actions.ready();
-            console.log('SDK ready');
-          }
-        } catch (e) {
-          console.log('SDK not available:', e.message);
-        }
-
-        // Setup UI
-        setupEventListeners();
-        setupGameFunctions();
-        
-        // Load leaderboard data
-        await populateLeaderboard();
-        
-        hideLoading();
-        
-        console.log('✅ App initialized successfully');
-        
-      } catch (error) {
-        console.error('❌ Init error:', error);
-        hideLoading();
-        console.log('App will continue without some features');
-      }
+      // Use the enhanced initialization with progress
+      await initializeAppWithProgress();
     }
 
     function setupEventListeners() {
@@ -730,7 +950,8 @@
     }
 
     function hideLoading() {
-      document.getElementById('loading').style.display = 'none';
+      // Legacy function - now uses enhanced loading state
+      hideLoadingState();
     }
 
     async function connectWallet() {
