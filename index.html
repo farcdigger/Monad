@@ -264,31 +264,20 @@
   <script>
     console.log('🚀 Starting app...');
     
-    // Wallet-specific XP management
-    function getWalletXP(address) {
-      if (!address) return 0;
-      const key = `wallet_xp_${address.toLowerCase()}`;
-      return parseInt(localStorage.getItem(key) || '0');
-    }
+    // Global state with persistent XP
+    let appState = {
+      connected: false,
+      address: null,
+      xp: parseInt(localStorage.getItem('monad_dog_xp') || '0'),
+      provider: null,
+      signer: null
+    };
 
-    function saveWalletXP(address, xp) {
-      if (!address) return;
-      const key = `wallet_xp_${address.toLowerCase()}`;
-      localStorage.setItem(key, xp.toString());
-      console.log(`💾 XP saved for ${address}: ${xp}`);
-    }
+    // Show loading initially
+    document.getElementById('loading').style.display = 'block';
 
-    function updateXPDisplay() {
-      if (appState.connected && appState.address) {
-        const walletXP = getWalletXP(appState.address);
-        document.getElementById('xp').textContent = walletXP;
-        appState.xp = walletXP;
-        console.log(`📊 XP loaded for ${appState.address}: ${walletXP}`);
-      } else {
-        document.getElementById('xp').textContent = '0';
-        appState.xp = 0;
-      }
-    }
+    // Initialize XP display
+    document.getElementById('xp').textContent = appState.xp;
 
     // Initialize SDK
     let sdk = null;
@@ -366,8 +355,7 @@
           throw new Error('No accounts found');
         }
 
-        console.log('✅ Connected:', accounts[0]);
-        console.log('🎯 App State:', appState);
+        console.log('Connected:', accounts[0]);
 
         // Setup ethers
         appState.provider = new ethers.providers.Web3Provider(provider);
@@ -387,14 +375,12 @@
       appState = {
         connected: false,
         address: null,
-        xp: 0, // Reset XP on disconnect
+        xp: appState.xp, // Keep XP when disconnecting
         provider: null,
         signer: null
       };
-      updateWalletUI();
-      updateXPDisplay(); // Reset XP display to 0
-      showActionBanner();
-      console.log('🔌 Wallet disconnected, XP reset to 0');
+      updateUI();
+      console.log('🔌 Wallet disconnected (XP preserved)');
     }
 
     function updateUI() {
@@ -413,19 +399,11 @@
     }
 
     function addXP(amount) {
-      if (!appState.connected || !appState.address) {
-        console.log('❌ Cannot add XP: wallet not connected');
-        return;
-      }
-      
-      // Add XP to current wallet
       appState.xp += amount;
-      
-      // Save to localStorage for this specific wallet
-      saveWalletXP(appState.address, appState.xp);
-      
-      // Update display
       document.getElementById('xp').textContent = appState.xp;
+      
+      // Save XP to localStorage for persistence
+      localStorage.setItem('monad_dog_xp', appState.xp.toString());
       
       // Add celebration effect
       const xpElement = document.getElementById('xp');
@@ -437,48 +415,22 @@
         xpElement.style.color = 'white';
       }, 500);
       
-      console.log(`✨ XP added to ${appState.address}: +${amount}, Total: ${appState.xp}`);
+      console.log(`✨ XP added: +${amount}, Total: ${appState.xp}`);
     }
 
-    // Update reset and check functions for wallet-specific XP
+    // Add function to reset XP (for testing)
     window.resetXP = function() {
-      if (!appState.connected || !appState.address) {
-        console.log('❌ No wallet connected to reset XP');
-        return;
-      }
-      
       appState.xp = 0;
-      saveWalletXP(appState.address, 0);
+      localStorage.removeItem('monad_dog_xp');
       document.getElementById('xp').textContent = '0';
-      console.log(`🔄 XP reset to 0 for wallet ${appState.address}`);
+      console.log('🔄 XP reset to 0');
     };
 
+    // Add function to check current XP
     window.checkXP = function() {
-      if (!appState.connected || !appState.address) {
-        console.log('❌ No wallet connected');
-        return 0;
-      }
-      
-      console.log(`💎 Current XP for ${appState.address}:`, appState.xp);
-      console.log(`💾 Stored XP:`, getWalletXP(appState.address));
+      console.log('💎 Current XP:', appState.xp);
+      console.log('💾 Stored XP:', localStorage.getItem('monad_dog_xp'));
       return appState.xp;
-    };
-
-    // Function to check all wallets' XP (for debugging)
-    window.getAllWalletsXP = function() {
-      const allWallets = {};
-      
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && key.startsWith('wallet_xp_')) {
-          const address = key.replace('wallet_xp_', '');
-          const xp = parseInt(localStorage.getItem(key));
-          allWallets[address] = xp;
-        }
-      }
-      
-      console.log('🎯 All wallets XP:', allWallets);
-      return allWallets;
     };
 
     function showStatus(id, message, type) {
