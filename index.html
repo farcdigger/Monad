@@ -366,7 +366,8 @@
           throw new Error('No accounts found');
         }
 
-        console.log('Connected:', accounts[0]);
+        console.log('✅ Connected:', accounts[0]);
+        console.log('🎯 App State:', appState);
 
         // Setup ethers
         appState.provider = new ethers.providers.Web3Provider(provider);
