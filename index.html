@@ -303,6 +303,10 @@
         // Setup UI
         setupEventListeners();
         setupGameFunctions();
+        
+        // Load real leaderboard data
+        await populateLeaderboard();
+        
         hideLoading();
         
         console.log('✅ App initialized successfully');
