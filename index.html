@@ -412,6 +412,46 @@
       setTimeout(() => div.remove(), 5000);
     }
 
+    // Global functions - define immediately
+    console.log('🎯 Defining global functions...');
+    
+    window.petDog = function() {
+      console.log('🐕 Pet Dog clicked!');
+      alert('Pet Dog function works!');
+    };
+
+    window.sayGM = function() {
+      console.log('☀️ Say GM clicked!');
+      alert('Say GM function works!');
+    };
+
+    window.sayGN = function() {
+      console.log('🌙 Say GN clicked!');
+      alert('Say GN function works!');
+    };
+
+    window.flipCoin = function() {
+      console.log('🪙 Flip Coin clicked!');
+      alert('Flip Coin function works!');
+    };
+
+    window.showTab = function(tabName) {
+      console.log('📑 Show tab:', tabName);
+      // Update tabs
+      document.querySelectorAll('.tab').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      event.target.classList.add('active');
+      
+      // Update content
+      document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.remove('active');
+      });
+      document.getElementById(tabName).classList.add('active');
+    };
+
+    console.log('✅ Global functions defined');
+
     // Contract addresses and ABIs
     const CONTRACTS = {
       PET: "0xc53abe4c593b9440407f8ac1b346f3f999e6d8ed",
