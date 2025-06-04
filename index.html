@@ -5,18 +5,28 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Monad Dog</title>
   
-  <!-- Farcaster Meta -->
+  <!-- Farcaster Meta with Dynamic Content -->
   <meta name="fc:frame" content='{
     "version": "next",
-    "imageUrl": "https://monad-dog.vercel.app/icon.png",
+    "imageUrl": "https://monad-dog.vercel.app/share.png",
     "button": {
-      "title": "Launch App",
+      "title": "🐕 Play Monad Dog",
       "action": {
         "type": "launch_frame",
-        "url": "https://monad-dog.vercel.app"
+        "url": "https://monad-dog.vercel.app",
+        "name": "Monad Dog",
+        "splashImageUrl": "https://monad-dog.vercel.app/icon.png",
+        "splashBackgroundColor": "#1e003e"
       }
     }
   }' />
+
+  <!-- Open Graph for better sharing -->
+  <meta property="og:title" content="Monad Dog - Pet, Greet, Flip on Monad Testnet" />
+  <meta property="og:description" content="Interactive Farcaster Mini App on Monad Testnet. Pet the dog, say GM/GN, flip coins and earn XP!" />
+  <meta property="og:image" content="https://monad-dog.vercel.app/share.png" />
+  <meta property="og:url" content="https://monad-dog.vercel.app" />
+  <meta name="twitter:card" content="summary_large_image" />
 
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
   
@@ -214,9 +224,84 @@
       font-size: 12px;
     }
 
-    .tx-count {
+    .share-button {
+      background: linear-gradient(45deg, #6366f1, #8b5cf6);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-size: 14px;
       font-weight: 600;
-      text-align: right;
+      cursor: pointer;
+      margin: 10px 5px;
+      width: auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .share-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(99, 102, 241, 0.4);
+    }
+
+    .share-section {
+      text-align: center;
+      margin-top: 20px;
+      padding: 15px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .achievement-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.8);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .achievement-content {
+      background: linear-gradient(135deg, #1e003e 0%, #330066 100%);
+      padding: 30px;
+      border-radius: 20px;
+      text-align: center;
+      max-width: 350px;
+      border: 2px solid #6366f1;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+    }
+
+    .achievement-icon {
+      font-size: 60px;
+      margin-bottom: 15px;
+      animation: bounce 0.6s ease;
+    }
+
+    @keyframes bounce {
+      0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+      40% { transform: translateY(-10px); }
+      60% { transform: translateY(-5px); }
+    }
+
+    .close-modal {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      background: none;
+      border: none;
+      color: white;
+      font-size: 24px;
+      cursor: pointer;
+      width: auto;
+      padding: 5px;
     }
   </style>
 </head>
@@ -252,6 +337,12 @@
         <img id="dog-img" class="dog-image" src="https://placedog.net/400/300?id=7" alt="Dog">
         <button onclick="petDog()">👋 Pet Dog (+10 XP)</button>
         <div id="pet-status" class="status"></div>
+        
+        <div class="share-section">
+          <button class="share-button" onclick="sharePetAchievement()">
+            🐕 Share Pet Achievement
+          </button>
+        </div>
       </div>
 
       <!-- Greet Tab -->
@@ -261,6 +352,12 @@
         <button onclick="sayGM()">☀️ Good Morning (+5 XP)</button>
         <button onclick="sayGN()">🌙 Good Night (+5 XP)</button>
         <div id="greet-status" class="status"></div>
+        
+        <div class="share-section">
+          <button class="share-button" onclick="shareGreetAchievement()">
+            👋 Share Community Spirit
+          </button>
+        </div>
       </div>
 
       <!-- Flip Tab -->
@@ -270,6 +367,12 @@
         <button onclick="flipCoin()">🎲 Flip Coin (+3 XP)</button>
         <div id="flip-result">Result will appear here</div>
         <div id="flip-status" class="status"></div>
+        
+        <div class="share-section">
+          <button class="share-button" onclick="shareFlipAchievement()">
+            🪙 Share Lucky Moment
+          </button>
+        </div>
       </div>
 
       <!-- Leaderboard Tab -->
@@ -287,10 +390,37 @@
         <button onclick="refreshLeaderboard()" style="margin-top: 16px; width: auto; padding: 8px 16px; font-size: 12px;">
           🔄 Refresh
         </button>
+        
+        <div class="share-section">
+          <button class="share-button" onclick="shareLeaderboardPosition()">
+            🏆 Share My Ranking
+          </button>
+          <button class="share-button" onclick="shareAppWithFriends()">
+            🚀 Invite Friends
+          </button>
+        </div>
       </div>
     </div>
 
     <div id="loading" class="loading">Loading...</div>
+
+    <!-- Achievement Modal -->
+    <div id="achievementModal" class="achievement-modal">
+      <div class="achievement-content">
+        <button class="close-modal" onclick="closeAchievementModal()">×</button>
+        <div id="achievementIcon" class="achievement-icon">🎉</div>
+        <h3 id="achievementTitle">Achievement Unlocked!</h3>
+        <p id="achievementDescription">You did something awesome!</p>
+        <div style="margin-top: 20px;">
+          <button class="share-button" onclick="shareCurrentAchievement()">
+            📢 Share on Farcaster
+          </button>
+          <button class="share-button" onclick="closeAchievementModal()" style="background: rgba(255,255,255,0.2);">
+            ✨ Continue Playing
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -759,6 +889,9 @@
             const contractType = getContractType(contractAddress, methodName);
             const interactionData = saveContractInteraction(appState.address, contractType);
             console.log(`🎯 Contract interaction tracked: ${contractType}`);
+            
+            // Check for achievements
+            checkAndShowAchievements(contractType, interactionData);
           }
           
           setTimeout(() => hideStatus(statusId), 3000);
@@ -925,7 +1058,268 @@
       console.log('✅ Leaderboard refreshed with latest contract interactions');
     };
 
-    // Debug functions for wallet-specific XP
+    // Farcaster Sharing Functions
+    function generateShareableContent(type, data = {}) {
+      const baseUrl = window.location.origin;
+      const userStats = appState.connected ? getContractInteractions(appState.address) : null;
+      
+      const shareTemplates = {
+        pet: {
+          text: `Just petted the Monad Dog! 🐕✨\n\nTotal pets: ${userStats?.pet || 0}\nXP earned: ${appState.xp}\n\nJoin me on Monad Testnet!`,
+          url: `${baseUrl}?ref=pet&xp=${appState.xp}`,
+          image: "🐕"
+        },
+        greet: {
+          text: `GM Monad community! ☀️👋\n\nTotal greetings: ${(userStats?.gm || 0) + (userStats?.gn || 0)}\nCommunity XP: ${appState.xp}\n\nSpread the love on Monad!`,
+          url: `${baseUrl}?ref=greet&xp=${appState.xp}`,
+          image: "👋"
+        },
+        flip: {
+          text: `Just flipped a coin on Monad! 🪙\n\nResult: ${data.result || 'Lucky'}\nTotal flips: ${userStats?.flip || 0}\nXP: ${appState.xp}`,
+          url: `${baseUrl}?ref=flip&result=${data.result}&xp=${appState.xp}`,
+          image: "🪙"
+        },
+        leaderboard: {
+          text: `Check out my Monad Dog stats! 🏆\n\nRank: ${data.rank || '?'}\nTotal interactions: ${userStats?.total || 0}\nXP: ${appState.xp}\n\nCan you beat me?`,
+          url: `${baseUrl}?ref=leaderboard&rank=${data.rank}&xp=${appState.xp}`,
+          image: "🏆"
+        },
+        invite: {
+          text: `Playing Monad Dog - the cutest way to explore Monad Testnet! 🐕⛓️\n\n✨ Pet dogs, flip coins, say GM/GN\n🎯 Earn XP and climb leaderboards\n🚀 Real blockchain interactions\n\nJoin me!`,
+          url: `${baseUrl}?ref=invite&inviter=${appState.address?.slice(0,6)}`,
+          image: "🚀"
+        }
+      };
+      
+      return shareTemplates[type] || shareTemplates.invite;
+    }
+
+    function shareOnFarcaster(content) {
+      try {
+        if (sdk && sdk.actions && sdk.actions.openUrl) {
+          // Use Farcaster SDK for sharing
+          const shareUrl = `https://warpcast.com/~/compose?text=${encodeURIComponent(content.text)}&embeds[]=${encodeURIComponent(content.url)}`;
+          sdk.actions.openUrl(shareUrl);
+          console.log('🚀 Shared via Farcaster SDK');
+        } else {
+          // Fallback to direct URL
+          const shareUrl = `https://warpcast.com/~/compose?text=${encodeURIComponent(content.text)}&embeds[]=${encodeURIComponent(content.url)}`;
+          window.open(shareUrl, '_blank');
+          console.log('🚀 Shared via direct URL');
+        }
+        
+        // Track sharing event
+        console.log('📊 Share event tracked:', content);
+        
+      } catch (error) {
+        console.error('❌ Share error:', error);
+        showError('Failed to open share dialog');
+      }
+    }
+
+    // Achievement Modal Functions
+    function showAchievementModal(achievement) {
+      const modal = document.getElementById('achievementModal');
+      const icon = document.getElementById('achievementIcon');
+      const title = document.getElementById('achievementTitle');
+      const description = document.getElementById('achievementDescription');
+      
+      icon.textContent = achievement.icon;
+      title.textContent = achievement.title;
+      description.textContent = achievement.description;
+      
+      modal.style.display = 'flex';
+      
+      // Store current achievement for sharing
+      window.currentAchievement = achievement;
+      
+      console.log('🎉 Achievement modal shown:', achievement);
+    }
+
+    function closeAchievementModal() {
+      document.getElementById('achievementModal').style.display = 'none';
+      window.currentAchievement = null;
+    }
+
+    function shareCurrentAchievement() {
+      if (window.currentAchievement) {
+        const content = generateShareableContent(window.currentAchievement.type, window.currentAchievement.data);
+        shareOnFarcaster(content);
+        closeAchievementModal();
+      }
+    }
+
+    // Individual Share Functions
+    window.sharePetAchievement = function() {
+      if (!appState.connected) {
+        showError('Connect wallet to share achievements');
+        return;
+      }
+      
+      const userStats = getContractInteractions(appState.address);
+      const achievement = {
+        icon: '🐕',
+        title: 'Dog Lover Achievement!',
+        description: `You've petted the dog ${userStats.pet} times and earned ${appState.xp} XP!`,
+        type: 'pet',
+        data: { pets: userStats.pet }
+      };
+      
+      showAchievementModal(achievement);
+    };
+
+    window.shareGreetAchievement = function() {
+      if (!appState.connected) {
+        showError('Connect wallet to share achievements');
+        return;
+      }
+      
+      const userStats = getContractInteractions(appState.address);
+      const totalGreets = userStats.gm + userStats.gn;
+      const achievement = {
+        icon: '👋',
+        title: 'Community Spirit!',
+        description: `You've greeted the community ${totalGreets} times! Spreading love on Monad.`,
+        type: 'greet',
+        data: { greets: totalGreets }
+      };
+      
+      showAchievementModal(achievement);
+    };
+
+    window.shareFlipAchievement = function() {
+      if (!appState.connected) {
+        showError('Connect wallet to share achievements');
+        return;
+      }
+      
+      const userStats = getContractInteractions(appState.address);
+      const lastResult = document.getElementById('flip-result').textContent;
+      const achievement = {
+        icon: '🪙',
+        title: 'Lucky Flipper!',
+        description: `${lastResult} You've flipped ${userStats.flip} coins on Monad!`,
+        type: 'flip',
+        data: { flips: userStats.flip, result: lastResult }
+      };
+      
+      showAchievementModal(achievement);
+    };
+
+    window.shareLeaderboardPosition = function() {
+      if (!appState.connected) {
+        showError('Connect wallet to share position');
+        return;
+      }
+      
+      // Find user's position in leaderboard
+      const allUsers = getAllContractInteractions();
+      const userIndex = allUsers.findIndex(user => 
+        user.address.toLowerCase() === appState.address.toLowerCase()
+      );
+      
+      const rank = userIndex >= 0 ? userIndex + 1 : '?';
+      const userStats = getContractInteractions(appState.address);
+      
+      const achievement = {
+        icon: '🏆',
+        title: 'Leaderboard Position!',
+        description: `Rank #${rank} with ${userStats.total} total interactions and ${appState.xp} XP!`,
+        type: 'leaderboard',
+        data: { rank, total: userStats.total }
+      };
+      
+      showAchievementModal(achievement);
+    };
+
+    window.shareAppWithFriends = function() {
+      const achievement = {
+        icon: '🚀',
+        title: 'Invite Friends!',
+        description: 'Share Monad Dog with your friends and build the community together!',
+        type: 'invite',
+        data: {}
+      };
+      
+      showAchievementModal(achievement);
+    };
+
+    // Auto-show achievements after major milestones
+    function checkAndShowAchievements(interactionType, userStats) {
+      const achievements = [];
+      
+      // Pet milestones
+      if (interactionType === 'pet') {
+        if (userStats.pet === 1) {
+          achievements.push({
+            icon: '🐕',
+            title: 'First Pet!',
+            description: 'You petted your first Monad Dog! Welcome to the pack!',
+            type: 'pet'
+          });
+        } else if (userStats.pet === 10) {
+          achievements.push({
+            icon: '🐕',
+            title: 'Dog Whisperer!',
+            description: '10 pets! The dogs love you!',
+            type: 'pet'
+          });
+        } else if (userStats.pet === 50) {
+          achievements.push({
+            icon: '🐕',
+            title: 'Dog Master!',
+            description: '50 pets! You are a true dog lover!',
+            type: 'pet'
+          });
+        }
+      }
+      
+      // Community milestones
+      if (interactionType === 'gm' || interactionType === 'gn') {
+        const totalGreets = userStats.gm + userStats.gn;
+        if (totalGreets === 1) {
+          achievements.push({
+            icon: '👋',
+            title: 'First Greeting!',
+            description: 'Welcome to the Monad community!',
+            type: 'greet'
+          });
+        } else if (totalGreets === 25) {
+          achievements.push({
+            icon: '👋',
+            title: 'Community Champion!',
+            description: '25 greetings! You spread so much positivity!',
+            type: 'greet'
+          });
+        }
+      }
+      
+      // Flip milestones
+      if (interactionType === 'flip') {
+        if (userStats.flip === 1) {
+          achievements.push({
+            icon: '🪙',
+            title: 'First Flip!',
+            description: 'Your first coin flip on Monad! Feeling lucky?',
+            type: 'flip'
+          });
+        } else if (userStats.flip === 20) {
+          achievements.push({
+            icon: '🪙',
+            title: 'High Roller!',
+            description: '20 flips! Lady luck is on your side!',
+            type: 'flip'
+          });
+        }
+      }
+      
+      // Show first achievement if any
+      if (achievements.length > 0) {
+        setTimeout(() => {
+          showAchievementModal(achievements[0]);
+        }, 2000); // Show after transaction success message
+      }
+    }
     window.resetXP = function() {
       if (!appState.connected || !appState.address) {
         console.log('❌ No wallet connected to reset XP');
