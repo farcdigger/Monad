@@ -415,24 +415,103 @@
     // Global functions - define immediately
     console.log('🎯 Defining global functions...');
     
-    window.petDog = function() {
+    window.petDog = async function() {
       console.log('🐕 Pet Dog clicked!');
-      alert('Pet Dog function works!');
+      
+      if (!appState.connected) {
+        console.log('❌ Wallet not connected');
+        showError('Connect wallet first');
+        return;
+      }
+      
+      console.log('✅ Wallet connected, starting pet transaction');
+      
+      // Change dog image
+      document.getElementById('dog-img').src = `https://placedog.net/400/300?id=${Math.floor(Math.random() * 50) + 1}`;
+      
+      // Execute real blockchain transaction
+      await executeTransaction(
+        CONTRACTS.PET,
+        ABIS.PET,
+        'pet',
+        'pet-status',
+        '🐕 Dog petted successfully! +10 XP',
+        10
+      );
     };
 
-    window.sayGM = function() {
+    window.sayGM = async function() {
       console.log('☀️ Say GM clicked!');
-      alert('Say GM function works!');
+      
+      if (!appState.connected) {
+        showError('Connect wallet first');
+        return;
+      }
+      
+      await executeTransaction(
+        CONTRACTS.GREET,
+        ABIS.GREET,
+        'gm',
+        'greet-status',
+        '☀️ Good Morning sent! +5 XP',
+        5
+      );
     };
 
-    window.sayGN = function() {
+    window.sayGN = async function() {
       console.log('🌙 Say GN clicked!');
-      alert('Say GN function works!');
+      
+      if (!appState.connected) {
+        showError('Connect wallet first');
+        return;
+      }
+      
+      await executeTransaction(
+        CONTRACTS.GREET,
+        ABIS.GREET,
+        'gn',
+        'greet-status',
+        '🌙 Good Night sent! +5 XP',
+        5
+      );
     };
 
-    window.flipCoin = function() {
+    window.flipCoin = async function() {
       console.log('🪙 Flip Coin clicked!');
-      alert('Flip Coin function works!');
+      
+      if (!appState.connected) {
+        showError('Connect wallet first');
+        return;
+      }
+      
+      const coin = document.getElementById('coin');
+      const result = document.getElementById('flip-result');
+      
+      // Start visual animation
+      result.textContent = 'Flipping...';
+      let rotation = 0;
+      const interval = setInterval(() => {
+        rotation += 180;
+        coin.style.transform = `rotateY(${rotation}deg)`;
+      }, 100);
+      
+      // Execute real transaction
+      await executeTransaction(
+        CONTRACTS.FLIP,
+        ABIS.FLIP,
+        'flip',
+        'flip-status',
+        '🪙 Coin flipped! +3 XP',
+        3
+      );
+      
+      // Stop animation after transaction starts
+      setTimeout(() => {
+        clearInterval(interval);
+        const finalResult = Math.random() < 0.5 ? 'Heads' : 'Tails';
+        coin.style.transform = `rotateY(${finalResult === 'Heads' ? 0 : 180}deg)`;
+        result.textContent = `Result: ${finalResult}!`;
+      }, 3000);
     };
 
     window.showTab = function(tabName) {
@@ -450,7 +529,7 @@
       document.getElementById(tabName).classList.add('active');
     };
 
-    console.log('✅ Global functions defined');
+    console.log('✅ Global functions defined with real transactions');
 
     // Contract addresses and ABIs
     const CONTRACTS = {
