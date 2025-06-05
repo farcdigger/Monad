@@ -8,13 +8,13 @@
   <!-- Farcaster Meta with Dynamic Content -->
   <meta name="fc:frame" content='{
     "version": "next",
-    "imageUrl": "https://monad-snowy.vercel.app/.well-known/icon.png",
+    "imageUrl": "https://monad-snowy.vercel.app/.well-known/share.png",
     "button": {
       "title": "🐕 Play Monad Dog",
       "action": {
         "type": "launch_frame",
         "url": "https://monad-snowy.vercel.app",
-        "name": "Monad DOG",
+        "name": "Monad Dog",
         "splashImageUrl": "https://monad-snowy.vercel.app/.well-known/icon.png",
         "splashBackgroundColor": "#1e003e"
       }
@@ -24,8 +24,8 @@
   <!-- Open Graph for better sharing -->
   <meta property="og:title" content="Monad Dog - Pet, Greet, Flip on Monad Testnet" />
   <meta property="og:description" content="Interactive Farcaster Mini App on Monad Testnet. Pet the dog, say GM/GN, flip coins and earn XP!" />
-  <meta property="og:image" content="https://monad-snowy.vercel.app/.well-known/icon.png" />
-  <meta property="og:url" content="https://monad-snowy.vercel.app/" />
+  <meta property="og:image" content="https://monad-snowy.vercel.app/.well-known/share.png" />
+  <meta property="og:url" content="https://monad-snowy.vercel.app" />
   <meta name="twitter:card" content="summary_large_image" />
 
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
@@ -1307,7 +1307,7 @@
         },
         invite: {
           text: `Playing Monad Dog - the cutest way to explore Monad Testnet! 🐕⛓️\n\n✨ Pet dogs, flip coins, say GM/GN\n🎯 Earn XP and climb leaderboards\n🚀 Real blockchain interactions\n\nJoin me!`,
-          url: `${baseUrl}?ref=invite&inviter=${appState.address?.slice(0,6)}`,
+          url: `https://monad-snowy.vercel.app?ref=invite&inviter=${appState.address?.slice(0,6)}`,
           image: "🚀"
         }
       };
@@ -1594,10 +1594,14 @@
       document.getElementById(tabName).classList.add('active');
     }
 
-    // Start app when DOM is ready
+    // Start app when DOM is ready with preloading
     if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initApp);
+      document.addEventListener('DOMContentLoaded', () => {
+        preloadResources();
+        initApp();
+      });
     } else {
+      preloadResources();
       initApp();
     }
 
