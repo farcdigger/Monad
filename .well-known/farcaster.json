@@ -9,7 +9,7 @@
     "splashImageUrl": "https://monad-snowy.vercel.app/.well-known/icon.png",
     "splashBackgroundColor": "#1e003e",
     "screenshotUrls": [],
-    "tags": ["monad", "farcaster", "miniapp", "dog", "blockchain", "game"],
+    "tags": ["monad", "farcaster", "miniapp", "dog", "game"],
     "primaryCategory": "games",
     "requiredCapabilities": [
       "actions.signIn",
