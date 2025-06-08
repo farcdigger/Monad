@@ -1,12 +1,9 @@
-{,
+{
   "accountAssociation": {
-    "header": "eyJmaWQiOjI1MTYxOSwidHlwZSI6ImN1c3RvZHkiLCJrZXkiOiIweEMwNjM0OTQ1NjU5QzZCNzc5NkYzQ0Q2RTM1MzU5MTk3YzQ2YWVGNzUifQ",
-    "payload": "eyJkb21haW4iOiJtb25hZC1zbm93eS52ZXJjZWwuYXBwIn0",
-    "signature": "MHhhMjU0MTNmYzQ5NTA1OWJmYWI0ZDkyZDRiM2M1NjI3MzNmNGU0MjBiZTFlNmQ1YjUwNGQwOTEzMzUxY2UwZjQ2N2QxZTAzNWNmZDYxMzdlM2ExZWY2OWRmZDEwNWJlNzI5ZGQ4ZGYzNWVkZjFmNDQwNThiYzNhNzMxYzk2NmU1MTFi"
-  }
-}
-
-
+    "header": "",
+    "payload": "",
+    "signature": ""
+  },
   "frame": {
     "version": "1",
     "name": "Monad Dog",
@@ -25,4 +22,4 @@
       "wallet.getEthereumProvider"
     ]
   }
-
+}
