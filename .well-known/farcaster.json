@@ -17,8 +17,6 @@
       "wallet.getEthereumProvider"
     ]
   }
-},
-
 {
   "accountAssociation": {
     "header": "eyJmaWQiOjI1MTYxOSwidHlwZSI6ImN1c3RvZHkiLCJrZXkiOiIweEMwNjM0OTQ1NjU5QzZCNzc5NkYzQ0Q2RTM1MzU5MTk3YzQ2YWVGNzUifQ",
