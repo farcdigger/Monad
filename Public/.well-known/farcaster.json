@@ -2,7 +2,7 @@
   "name": "Monad Dog",
   "shortName": "MonadDog", 
   "description": "Interactive Farcaster Mini App on Monad Testnet. Pet the dog, say GM/GN, flip coins and earn XP! Build your blockchain adventure with real transactions.",
-  "version": "1.0.0",
+  "version": "1",
   "iconUrl": "https://monad-snowy.vercel.app/.well-known/icon.png",
   "splashImageUrl": "https://monad-snowy.vercel.app/.well-known/icon.png",
   "splashBackgroundColor": "#1e003e",
