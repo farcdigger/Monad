@@ -1,13 +1,4 @@
 {
-  "name": "Monad Dog",
-  "shortName": "MonadDog",
-  "description": "Interactive Farcaster Mini App on Monad Testnet. Pet the dog, say GM/GN, flip coins and earn XP!",
-  "version": "1",
-  "iconUrl": "https://monad-snowy.vercel.app/.well-known/icon.png",
-  "splashImageUrl": "https://monad-snowy.vercel.app/.well-known/icon.png",
-  "splashBackgroundColor": "#1e003e",
-  "homeUrl": "https://monad-snowy.vercel.app",
-  "imageUrl": "https://monad-snowy.vercel.app/.well-known/share.png",
   "frame": {
     "version": "1",
     "name": "Monad Dog",
@@ -18,9 +9,8 @@
     "splashImageUrl": "https://monad-snowy.vercel.app/.well-known/icon.png",
     "splashBackgroundColor": "#1e003e",
     "screenshotUrls": [],
-    "tags": ["monad", "farcaster", "miniapp", "blockchain", "game"],
+    "tags": ["monad", "farcaster", "miniapp", "dog", "blockchain", "game"],
     "primaryCategory": "games",
-    "requiredChains": ["eip155:41144"],
     "requiredCapabilities": [
       "actions.signIn",
       "wallet.getEthereumProvider"
