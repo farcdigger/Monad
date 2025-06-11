@@ -431,13 +431,113 @@
       width: auto;
       padding: 5px;
     }
+
+    /* Token Claim Styles */
+    .token-stats {
+      background: linear-gradient(135deg, #f59e0b, #eab308);
+      padding: 8px 16px;
+      border-radius: 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-left: 10px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .claim-section {
+      background: rgba(255,255,255,0.1);
+      padding: 20px;
+      border-radius: 12px;
+      margin-top: 20px;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .claim-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .claim-info-item {
+      text-align: center;
+    }
+
+    .claim-info-label {
+      font-size: 12px;
+      opacity: 0.7;
+      margin-bottom: 5px;
+    }
+
+    .claim-info-value {
+      font-size: 20px;
+      font-weight: 600;
+      color: #f59e0b;
+    }
+
+    .claim-button {
+      background: linear-gradient(135deg, #f59e0b, #eab308);
+      color: white;
+      font-weight: 600;
+      padding: 14px 28px;
+      border-radius: 12px;
+      width: 100%;
+      margin-top: 10px;
+      transition: all 0.3s ease;
+    }
+
+    .claim-button:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(245, 158, 11, 0.4);
+    }
+
+    .claim-button:disabled {
+      background: rgba(255,255,255,0.1);
+      cursor: not-allowed;
+    }
+
+    .token-balance {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 15px;
+      padding: 10px;
+      background: rgba(245, 158, 11, 0.1);
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    .conversion-rate {
+      text-align: center;
+      font-size: 12px;
+      opacity: 0.7;
+      margin-top: 8px;
+    }
+
+    .claim-history {
+      margin-top: 20px;
+      font-size: 12px;
+      opacity: 0.7;
+    }
+
+    .claim-history-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
   </style>
 </head>
 <body>
   <div class="container app-content">
     <div class="header">
       <div class="title">🐕 Monad Dog</div>
-      <div class="xp">✨ XP: <span id="xp">0</span></div>
+      <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+        <div class="xp">✨ XP: <span id="xp">0</span></div>
+        <div class="token-stats">🪙 $DOG: <span id="dogTokenBalance">0</span></div>
+      </div>
     </div>
 
     <div class="wallet-section">
@@ -455,6 +555,7 @@
       <button class="tab active" onclick="showTab('pet')">🐕 Pet</button>
       <button class="tab" onclick="showTab('greet')">👋 Greet</button>
       <button class="tab" onclick="showTab('flip')">🪙 Flip</button>
+      <button class="tab" onclick="showTab('claim')">💰 Claim</button>
       <button class="tab" onclick="showTab('leaderboard')">🏆 Ranks</button>
     </div>
 
@@ -503,6 +604,49 @@
         </div>
       </div>
 
+      <!-- Claim Tab -->
+      <div id="claim" class="tab-content">
+        <h3>Claim $DOG Tokens</h3>
+        <p style="margin-bottom: 20px;">Convert your earned XP to $DOG tokens!</p>
+        
+        <div class="claim-section">
+          <div class="claim-info">
+            <div class="claim-info-item">
+              <div class="claim-info-label">Available XP</div>
+              <div class="claim-info-value" id="claimableXP">0</div>
+            </div>
+            <div class="claim-info-item">
+              <div class="claim-info-label">→</div>
+              <div style="font-size: 30px;">🔄</div>
+            </div>
+            <div class="claim-info-item">
+              <div class="claim-info-label">$DOG Tokens</div>
+              <div class="claim-info-value" id="claimableDOG">0</div>
+            </div>
+          </div>
+          
+          <button class="claim-button" id="claimButton" onclick="claimTokens()" disabled>
+            💰 Claim $DOG Tokens
+          </button>
+          
+          <div class="conversion-rate">
+            Conversion Rate: 10 XP = 1 $DOG
+          </div>
+          
+          <div id="claim-status" class="status"></div>
+        </div>
+        
+        <div class="token-balance">
+          <span>Your $DOG Balance:</span>
+          <strong id="userDogBalance">0</strong>
+          <span>$DOG</span>
+        </div>
+        
+        <div class="claim-history" id="claimHistory">
+          <!-- Claim history will be populated here -->
+        </div>
+      </div>
+
       <!-- Leaderboard Tab -->
       <div id="leaderboard" class="tab-content">
         <h3>Monad Dog Leaderboard</h3>
@@ -530,7 +674,14 @@
       </div>
     </div>
 
-    <div id="loading" class="loading">Loading...</div>
+    <div id="loading" class="loading">
+      <div class="loading-spinner"></div>
+      <div class="loading-text">Loading Monad Dog...</div>
+      <div class="loading-subtitle">Starting Monad Dog...<br>🚀 Initializing blockchain connection</div>
+      <div class="loading-progress">
+        <div class="loading-progress-bar" id="loadingProgressBar"></div>
+      </div>
+    </div>
 
     <!-- Achievement Modal -->
     <div id="achievementModal" class="achievement-modal">
@@ -712,14 +863,26 @@
     const CONTRACTS = {
       PET: "0xc53abe4c593b9440407f8ac1b346f3f999e6d8ed",
       GREET: "0xbc8b78f3e2348d4b5e0390fe700ce54b59931da4",
-      FLIP: "0xc5b2280d1e2f155f9a2be2af7e78190658874106"
+      FLIP: "0xc5b2280d1e2f155f9a2be2af7e78190658874106",
+      DOG_TOKEN: "0xb61ffa0079e0559245008c3429cda3d7823a34ed" 
     };
 
     const ABIS = {
       PET: ["function pet() public"],
       GREET: ["function gm() public", "function gn() public"],
-      FLIP: ["function flip() public"]
+      FLIP: ["function flip() public"],
+      DOG_TOKEN: [
+        "function claim(uint256 xpAmount) public",
+        "function balanceOf(address account) public view returns (uint256)",
+        "function decimals() public view returns (uint8)",
+        "function symbol() public view returns (string)",
+        "function getClaimableAmount(uint256 xpAmount) public view returns (uint256)",
+        "event TokensClaimed(address indexed user, uint256 xpAmount, uint256 tokenAmount)"
+      ]
     };
+
+    // XP to DOG token conversion rate
+    const XP_TO_DOG_RATE = 10; // 10 XP = 1 DOG token
 
     // Wallet-specific XP management
     function getWalletXP(address) {
@@ -735,17 +898,181 @@
       console.log(`💾 XP saved for ${address}: ${xp}`);
     }
 
+    // Token claim history management
+    function getClaimHistory(address) {
+      if (!address) return [];
+      const key = `claim_history_${address.toLowerCase()}`;
+      const history = localStorage.getItem(key);
+      return history ? JSON.parse(history) : [];
+    }
+
+    function saveClaimHistory(address, claimData) {
+      if (!address) return;
+      const key = `claim_history_${address.toLowerCase()}`;
+      const history = getClaimHistory(address);
+      history.unshift({
+        ...claimData,
+        timestamp: new Date().toISOString()
+      });
+      // Keep only last 10 claims
+      if (history.length > 10) history.pop();
+      localStorage.setItem(key, JSON.stringify(history));
+    }
+
     function updateXPDisplay() {
       if (appState.connected && appState.address) {
         const walletXP = getWalletXP(appState.address);
         document.getElementById('xp').textContent = walletXP;
         appState.xp = walletXP;
         console.log(`📊 XP loaded for ${appState.address}: ${walletXP}`);
+        
+        // Update claim UI
+        updateClaimUI();
       } else {
         document.getElementById('xp').textContent = '0';
         appState.xp = 0;
+        updateClaimUI();
       }
     }
+
+    // Update claim UI based on current XP
+    function updateClaimUI() {
+      const claimableXP = appState.xp || 0;
+      const claimableDOG = Math.floor(claimableXP / XP_TO_DOG_RATE);
+      
+      document.getElementById('claimableXP').textContent = claimableXP;
+      document.getElementById('claimableDOG').textContent = claimableDOG;
+      
+      const claimButton = document.getElementById('claimButton');
+      if (claimableXP >= XP_TO_DOG_RATE && appState.connected) {
+        claimButton.disabled = false;
+        claimButton.textContent = `💰 Claim ${claimableDOG} $DOG Tokens`;
+      } else {
+        claimButton.disabled = true;
+        if (!appState.connected) {
+          claimButton.textContent = '🔒 Connect Wallet First';
+        } else if (claimableXP < XP_TO_DOG_RATE) {
+          claimButton.textContent = `📈 Need ${XP_TO_DOG_RATE - claimableXP} more XP`;
+        }
+      }
+      
+      // Update token balance
+      updateTokenBalance();
+      
+      // Update claim history
+      displayClaimHistory();
+    }
+
+    // Update token balance display
+    async function updateTokenBalance() {
+      if (!appState.connected || !appState.signer) {
+        document.getElementById('dogTokenBalance').textContent = '0';
+        document.getElementById('userDogBalance').textContent = '0';
+        return;
+      }
+      
+      try {
+        // For now, use local storage to track token balance
+        // In production, this would query the actual token contract
+        const key = `dog_token_balance_${appState.address.toLowerCase()}`;
+        const balance = localStorage.getItem(key) || '0';
+        
+        document.getElementById('dogTokenBalance').textContent = balance;
+        document.getElementById('userDogBalance').textContent = balance;
+      } catch (error) {
+        console.error('Error fetching token balance:', error);
+      }
+    }
+
+    // Display claim history
+    function displayClaimHistory() {
+      if (!appState.connected || !appState.address) {
+        document.getElementById('claimHistory').innerHTML = '';
+        return;
+      }
+      
+      const history = getClaimHistory(appState.address);
+      const historyContainer = document.getElementById('claimHistory');
+      
+      if (history.length === 0) {
+        historyContainer.innerHTML = '<div style="text-align: center; opacity: 0.5;">No claim history yet</div>';
+        return;
+      }
+      
+      historyContainer.innerHTML = '<h4 style="margin-bottom: 10px;">Recent Claims</h4>' +
+        history.map(claim => `
+          <div class="claim-history-item">
+            <span>${new Date(claim.timestamp).toLocaleDateString()}</span>
+            <span>${claim.xpAmount} XP → ${claim.tokenAmount} $DOG</span>
+          </div>
+        `).join('');
+    }
+
+    // Claim tokens function
+    window.claimTokens = async function() {
+      if (!appState.connected || !appState.signer) {
+        showError('Please connect your wallet first');
+        return;
+      }
+      
+      const claimableXP = appState.xp;
+      const claimableDOG = Math.floor(claimableXP / XP_TO_DOG_RATE);
+      
+      if (claimableXP < XP_TO_DOG_RATE) {
+        showError(`Need at least ${XP_TO_DOG_RATE} XP to claim tokens`);
+        return;
+      }
+      
+      try {
+        console.log('💰 Starting token claim...');
+        showStatus('claim-status', '🔐 Please confirm transaction in your wallet...', 'pending');
+        
+        // For demo purposes, simulate the claim process
+        // In production, this would interact with the actual token contract
+        setTimeout(() => {
+          // Calculate tokens to claim
+          const xpToClaim = claimableDOG * XP_TO_DOG_RATE;
+          const remainingXP = claimableXP - xpToClaim;
+          
+          // Update XP (subtract claimed amount)
+          appState.xp = remainingXP;
+          saveWalletXP(appState.address, remainingXP);
+          
+          // Update token balance (add claimed tokens)
+          const balanceKey = `dog_token_balance_${appState.address.toLowerCase()}`;
+          const currentBalance = parseInt(localStorage.getItem(balanceKey) || '0');
+          const newBalance = currentBalance + claimableDOG;
+          localStorage.setItem(balanceKey, newBalance.toString());
+          
+          // Save claim history
+          saveClaimHistory(appState.address, {
+            xpAmount: xpToClaim,
+            tokenAmount: claimableDOG,
+            txHash: '0x' + Math.random().toString(16).substr(2, 64)
+          });
+          
+          // Update UI
+          updateXPDisplay();
+          showStatus('claim-status', `✅ Successfully claimed ${claimableDOG} $DOG tokens!`, 'success');
+          
+          // Show achievement
+          showAchievementModal({
+            icon: '💰',
+            title: 'Tokens Claimed!',
+            description: `You've successfully claimed ${claimableDOG} $DOG tokens!`,
+            type: 'claim',
+            data: { amount: claimableDOG }
+          });
+          
+          setTimeout(() => hideStatus('claim-status'), 5000);
+        }, 3000);
+        
+      } catch (error) {
+        console.error('❌ Claim error:', error);
+        showStatus('claim-status', 'Failed to claim tokens', 'error');
+        setTimeout(() => hideStatus('claim-status'), 5000);
+      }
+    };
 
     // Contract interaction tracking
     function getContractInteractions(address) {
@@ -972,6 +1299,11 @@
           content.classList.remove('active');
         });
         document.getElementById(tabName).classList.add('active');
+        
+        // Update claim UI when switching to claim tab
+        if (tabName === 'claim') {
+          updateClaimUI();
+        }
       };
 
       console.log('🎮 Game functions setup complete');
@@ -1067,6 +1399,9 @@
       
       // Update display
       document.getElementById('xp').textContent = appState.xp;
+      
+      // Update claim UI
+      updateClaimUI();
       
       // Add celebration effect
       const xpElement = document.getElementById('xp');
@@ -1311,30 +1646,36 @@
     function generateShareableContent(type, data = {}) {
       const baseUrl = window.location.origin;
       const userStats = appState.connected ? getContractInteractions(appState.address) : null;
+      const tokenBalance = appState.connected ? (localStorage.getItem(`dog_token_balance_${appState.address.toLowerCase()}`) || '0') : '0';
       
       const shareTemplates = {
         pet: {
-          text: `Just petted the Monad Dog! 🐕✨\n\nTotal pets: ${userStats?.pet || 0}\nXP earned: ${appState.xp}\n\nJoin me on Monad Testnet!`,
+          text: `Just petted the Monad Dog! 🐕✨\n\nTotal pets: ${userStats?.pet || 0}\nXP earned: ${appState.xp}\n$DOG Balance: ${tokenBalance}\n\nJoin me on Monad Testnet!`,
           url: `${baseUrl}?ref=pet&xp=${appState.xp}`,
           image: "🐕"
         },
         greet: {
-          text: `GM Monad community! ☀️👋\n\nTotal greetings: ${(userStats?.gm || 0) + (userStats?.gn || 0)}\nCommunity XP: ${appState.xp}\n\nSpread the love on Monad!`,
+          text: `GM Monad community! ☀️👋\n\nTotal greetings: ${(userStats?.gm || 0) + (userStats?.gn || 0)}\nCommunity XP: ${appState.xp}\n$DOG Tokens: ${tokenBalance}\n\nSpread the love on Monad!`,
           url: `${baseUrl}?ref=greet&xp=${appState.xp}`,
           image: "👋"
         },
         flip: {
-          text: `Just flipped a coin on Monad! 🪙\n\nResult: ${data.result || 'Lucky'}\nTotal flips: ${userStats?.flip || 0}\nXP: ${appState.xp}`,
+          text: `Just flipped a coin on Monad! 🪙\n\nResult: ${data.result || 'Lucky'}\nTotal flips: ${userStats?.flip || 0}\nXP: ${appState.xp}\n$DOG: ${tokenBalance}`,
           url: `${baseUrl}?ref=flip&result=${data.result}&xp=${appState.xp}`,
           image: "🪙"
         },
+        claim: {
+          text: `Just claimed ${data.amount || 0} $DOG tokens! 💰\n\nTotal $DOG Balance: ${tokenBalance}\nXP remaining: ${appState.xp}\n\nEarn XP and claim your $DOG tokens too!`,
+          url: `${baseUrl}?ref=claim&tokens=${data.amount}`,
+          image: "💰"
+        },
         leaderboard: {
-          text: `Check out my Monad Dog stats! 🏆\n\nRank: ${data.rank || '?'}\nTotal interactions: ${userStats?.total || 0}\nXP: ${appState.xp}\n\nCan you beat me?`,
+          text: `Check out my Monad Dog stats! 🏆\n\nRank: ${data.rank || '?'}\nTotal interactions: ${userStats?.total || 0}\nXP: ${appState.xp}\n$DOG Tokens: ${tokenBalance}\n\nCan you beat me?`,
           url: `${baseUrl}?ref=leaderboard&rank=${data.rank}&xp=${appState.xp}`,
           image: "🏆"
         },
         invite: {
-          text: `Playing Monad Dog - the cutest way to explore Monad Testnet! 🐕⛓️\n\n✨ Pet dogs, flip coins, say GM/GN\n🎯 Earn XP and climb leaderboards\n🚀 Real blockchain interactions\n\nJoin me!`,
+          text: `Playing Monad Dog - the cutest way to explore Monad Testnet! 🐕⛓️\n\n✨ Pet dogs, flip coins, say GM/GN\n🎯 Earn XP and claim $DOG tokens\n💰 Convert XP to tokens (10:1 rate)\n🚀 Real blockchain interactions\n\nJoin me!`,
           url: `https://monad-snowy.vercel.app?ref=invite&inviter=${appState.address?.slice(0,6)}`,
           image: "🚀"
         }
@@ -1562,6 +1903,18 @@
         }
       }
       
+      // XP milestones
+      const totalXP = appState.xp;
+      if (totalXP >= 100 && !localStorage.getItem(`xp_milestone_100_${appState.address}`)) {
+        achievements.push({
+          icon: '✨',
+          title: 'XP Milestone!',
+          description: '100 XP earned! You can now claim 10 $DOG tokens!',
+          type: 'xp'
+        });
+        localStorage.setItem(`xp_milestone_100_${appState.address}`, 'true');
+      }
+      
       // Show first achievement if any
       if (achievements.length > 0) {
         setTimeout(() => {
@@ -1569,6 +1922,8 @@
         }, 2000); // Show after transaction success message
       }
     }
+
+    // Debug functions
     window.resetXP = function() {
       if (!appState.connected || !appState.address) {
         console.log('❌ No wallet connected to reset XP');
@@ -1578,6 +1933,7 @@
       appState.xp = 0;
       saveWalletXP(appState.address, 0);
       document.getElementById('xp').textContent = '0';
+      updateClaimUI();
       console.log(`🔄 XP reset to 0 for wallet ${appState.address}`);
     };
 
@@ -1608,6 +1964,28 @@
       return allWallets;
     };
 
+    window.checkTokenBalance = function() {
+      if (!appState.connected || !appState.address) {
+        console.log('❌ No wallet connected');
+        return 0;
+      }
+      
+      const balance = localStorage.getItem(`dog_token_balance_${appState.address.toLowerCase()}`) || '0';
+      console.log(`🪙 $DOG Token balance for ${appState.address}:`, balance);
+      return parseInt(balance);
+    };
+
+    window.getClaimHistoryDebug = function() {
+      if (!appState.connected || !appState.address) {
+        console.log('❌ No wallet connected');
+        return [];
+      }
+      
+      const history = getClaimHistory(appState.address);
+      console.log(`📜 Claim history for ${appState.address}:`, history);
+      return history;
+    };
+
     function showTab(tabName) {
       // Update tabs
       document.querySelectorAll('.tab').forEach(tab => {
@@ -1620,6 +1998,11 @@
         content.classList.remove('active');
       });
       document.getElementById(tabName).classList.add('active');
+      
+      // Update claim UI when switching to claim tab
+      if (tabName === 'claim') {
+        updateClaimUI();
+      }
     }
 
     // Start app when DOM is ready with preloading
