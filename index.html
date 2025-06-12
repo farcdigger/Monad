@@ -2091,6 +2091,9 @@
       // Security check - only owner can give bonus
       if (!appState.connected || appState.address.toLowerCase() !== OWNER_ADDRESS.toLowerCase()) {
         console.error('❌ Only owner can give bonuses');
+        console.log('Connected:', appState.connected);
+        console.log('Your address:', appState.address);
+        console.log('Owner address:', OWNER_ADDRESS);
         showError('Only owner can give bonuses');
         return;
       }
@@ -2109,10 +2112,12 @@
       console.log(`✅ Gave ${bonusXP} XP bonus to ${walletAddress}. Total XP: ${newXP}`);
       showSuccessNotification(`Gave ${bonusXP} XP bonus to ${walletAddress}`);
       
-      // If it's the current user, update UI
+      // If it's the current user, update UI immediately
       if (walletAddress.toLowerCase() === appState.address?.toLowerCase()) {
+        appState.xp = newXP;
         updateXP(newXP);
         updateClaimUI();
+        console.log('Updated current user XP to:', newXP);
       }
     };
     
@@ -2182,23 +2187,26 @@
       }
     };
     
-    // Debug function to see all XP data
-    window.debugXP = function() {
-      console.log('=== XP Debug Info ===');
-      console.log('Current wallet:', appState.address);
-      console.log('Is owner:', appState.address?.toLowerCase() === OWNER_ADDRESS.toLowerCase());
+    // Debug function to check claim status
+    window.checkClaimStatus = function() {
+      console.log('=== Claim Status Debug ===');
+      console.log('Connected:', appState.connected);
+      console.log('Address:', appState.address);
+      console.log('Current XP:', appState.xp);
+      console.log('XP to Token Rate:', XP_TO_TOKEN_RATE);
+      console.log('Can claim?', appState.xp >= XP_TO_TOKEN_RATE);
       
-      const users = [];
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && (key.includes('wallet_xp_') || key.includes('monad_dog_xp_'))) {
-          const value = localStorage.getItem(key);
-          users.push({ key, value });
-        }
+      const claimButton = document.getElementById('claimTokensBtn');
+      if (claimButton) {
+        console.log('Claim button found');
+        console.log('Button disabled:', claimButton.disabled);
+        console.log('Button classes:', claimButton.className);
+      } else {
+        console.log('❌ Claim button NOT found!');
       }
       
-      console.log('XP Storage entries:', users.length);
-      console.table(users);
+      // Force update
+      updateClaimUI();
     };
     
     // Owner panel (shows only for owner)
