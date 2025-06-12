@@ -976,7 +976,10 @@
         console.log(`📊 XP loaded for ${appState.address}: ${walletXP}`);
         
         // Update claim UI
-        updateClaimUI();
+        // Ensure claim UI is updated if on claim tab
+        if (activeTab === 'claim') {
+          setTimeout(() => updateClaimUI(), 100);
+        }
       } else {
         document.getElementById('xp').textContent = '0';
         appState.xp = 0;
