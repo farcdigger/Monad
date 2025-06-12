@@ -2081,7 +2081,7 @@
     }
 
     // Configuration
-    const OWNER_ADDRESS = "0x97675F03D65FAB7371fa2BeB3dbF9c6842c8d525"; // TODO: Add your owner wallet address here
+    const OWNER_ADDRESS = "0x97675F03D65FAB7371fa2BeB3dbF9c6842c8d525"; // Your owner wallet address
     
     // Owner-only bonus function
     window.giveBonus = function(walletAddress, bonusXP = 500) {
@@ -2112,7 +2112,7 @@
       }
     };
     
-    // Owner-only: Give bonus to all existing users
+    // Owner-only: Give bonus to all existing users (improved version)
     window.giveBonusToAll = function(bonusXP = 500) {
       // Security check
       if (!appState.connected || appState.address.toLowerCase() !== OWNER_ADDRESS.toLowerCase()) {
@@ -2122,18 +2122,32 @@
       }
       
       let count = 0;
-      const wallets = [];
+      const wallets = new Set(); // Use Set to avoid duplicates
       
       // Find all wallet XP entries
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
-        if (key && key.includes('monad_dog_xp_0x') && !key.includes('_initial_bonus') && !key.includes('_timestamp')) {
-          const wallet = key.replace('monad_dog_xp_', '').replace('_v2', '');
+        
+        // Look for XP keys - both old and new format
+        if (key && (key.includes('wallet_xp_0x') || key.includes('monad_dog_xp_0x'))) {
+          // Extract wallet address
+          let wallet = key;
+          
+          // Remove prefixes
+          wallet = wallet.replace('wallet_xp_', '');
+          wallet = wallet.replace('monad_dog_xp_', '');
+          wallet = wallet.replace('_v2', '');
+          wallet = wallet.replace('_initial_bonus', '');
+          wallet = wallet.replace('_timestamp', '');
+          
+          // Validate address format
           if (wallet.startsWith('0x') && wallet.length === 42) {
-            wallets.push(wallet);
+            wallets.add(wallet.toLowerCase());
           }
         }
       }
+      
+      console.log(`Found ${wallets.size} unique wallets`);
       
       // Give bonus to each wallet
       wallets.forEach(wallet => {
@@ -2148,7 +2162,12 @@
       });
       
       console.log(`✅ Gave ${bonusXP} XP bonus to ${count} users`);
-      showSuccessNotification(`Gave ${bonusXP} XP bonus to ${count} users!`);
+      
+      if (count > 0) {
+        showSuccessNotification(`Gave ${bonusXP} XP bonus to ${count} users!`);
+      } else {
+        showNotification('No users found. Users need to connect and play first.', 'info');
+      }
       
       // Refresh current user if connected
       if (appState.connected && appState.address) {
@@ -2159,9 +2178,38 @@
       }
     };
     
+    // Debug function to see all XP data
+    window.debugXP = function() {
+      console.log('=== XP Debug Info ===');
+      console.log('Current wallet:', appState.address);
+      console.log('Is owner:', appState.address?.toLowerCase() === OWNER_ADDRESS.toLowerCase());
+      
+      const users = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && (key.includes('wallet_xp_') || key.includes('monad_dog_xp_'))) {
+          const value = localStorage.getItem(key);
+          users.push({ key, value });
+        }
+      }
+      
+      console.log('XP Storage entries:', users.length);
+      console.table(users);
+    };
+    
     // Owner panel (shows only for owner)
     function showOwnerPanel() {
+      console.log('Checking owner status...');
+      console.log('Connected address:', appState.address);
+      console.log('Owner address:', OWNER_ADDRESS);
+      console.log('Is owner?', appState.address?.toLowerCase() === OWNER_ADDRESS.toLowerCase());
+      
+      // Remove existing panel
+      const existingPanel = document.getElementById('ownerPanel');
+      if (existingPanel) existingPanel.remove();
+      
       if (appState.address?.toLowerCase() === OWNER_ADDRESS.toLowerCase()) {
+        console.log('✅ Owner detected, showing panel');
         const panel = document.createElement('div');
         panel.id = 'ownerPanel';
         panel.style.cssText = `
@@ -2177,11 +2225,16 @@
         `;
         panel.innerHTML = `
           <div style="color: #f59e0b; font-weight: bold; margin-bottom: 10px;">👑 Owner Panel</div>
-          <button onclick="giveBonusToAll(500)" style="background: #f59e0b; color: black; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 12px;">
-            Give 500 XP to All Users
+          <button onclick="giveBonusToAll(500)" style="background: #f59e0b; color: black; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 12px; margin-right: 5px;">
+            Give 500 XP to All
+          </button>
+          <button onclick="giveBonusToAll(1000)" style="background: #dc2626; color: white; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 12px;">
+            Give 1000 XP to All
           </button>
         `;
         document.body.appendChild(panel);
+      } else {
+        console.log('❌ Not owner, panel hidden');
       }
     }
 
