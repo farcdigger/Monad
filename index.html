@@ -2080,58 +2080,110 @@
       }
     }
 
-    // Snapshot functionality
-    window.takeSnapshot = async function() {
-      if (!appState.connected || appState.address.toLowerCase() !== '0xYOUR_OWNER_ADDRESS'.toLowerCase()) {
-        showError('Only owner can take snapshots');
+    // Configuration
+    const OWNER_ADDRESS = "0x..."; // TODO: Add your owner wallet address here
+    
+    // Owner-only bonus function
+    window.giveBonus = function(walletAddress, bonusXP = 500) {
+      // Security check - only owner can give bonus
+      if (!appState.connected || appState.address.toLowerCase() !== OWNER_ADDRESS.toLowerCase()) {
+        console.error('❌ Only owner can give bonuses');
+        showError('Only owner can give bonuses');
         return;
       }
       
-      const snapshotData = {
-        timestamp: new Date().toISOString(),
-        network: "monad-testnet",
-        chainId: 10143,
-        users: []
-      };
+      if (!walletAddress) {
+        console.log('❌ Please provide a wallet address');
+        return;
+      }
       
-      // Collect all user data
+      const storageKey = getXPStorageKey(walletAddress);
+      const currentXP = parseInt(localStorage.getItem(storageKey) || '0');
+      const newXP = currentXP + bonusXP;
+      
+      localStorage.setItem(storageKey, newXP.toString());
+      console.log(`✅ Gave ${bonusXP} XP bonus to ${walletAddress}. Total XP: ${newXP}`);
+      showSuccessNotification(`Gave ${bonusXP} XP bonus to ${walletAddress}`);
+      
+      // If it's the current user, update UI
+      if (walletAddress.toLowerCase() === appState.address?.toLowerCase()) {
+        updateXP(newXP);
+        updateClaimUI();
+      }
+    };
+    
+    // Owner-only: Give bonus to all existing users
+    window.giveBonusToAll = function(bonusXP = 500) {
+      // Security check
+      if (!appState.connected || appState.address.toLowerCase() !== OWNER_ADDRESS.toLowerCase()) {
+        console.error('❌ Only owner can give bonuses');
+        showError('Only owner can give bonuses');
+        return;
+      }
+      
+      let count = 0;
+      const wallets = [];
+      
+      // Find all wallet XP entries
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
-        if (key && key.startsWith('wallet_xp_')) {
-          const address = key.replace('wallet_xp_', '');
-          const xp = parseInt(localStorage.getItem(key) || '0');
-          
-          if (xp > 0) {
-            const interactions = getContractInteractions(address);
-            snapshotData.users.push({
-              address: address.toLowerCase(),
-              xp: xp,
-              interactions: {
-                pet: interactions.pet || 0,
-                greet: (interactions.gm || 0) + (interactions.gn || 0),
-                flip: interactions.flip || 0,
-                total: interactions.total || 0
-              }
-            });
+        if (key && key.includes('monad_dog_xp_0x') && !key.includes('_initial_bonus') && !key.includes('_timestamp')) {
+          const wallet = key.replace('monad_dog_xp_', '').replace('_v2', '');
+          if (wallet.startsWith('0x') && wallet.length === 42) {
+            wallets.push(wallet);
           }
         }
       }
       
-      // Sort by XP
-      snapshotData.users.sort((a, b) => b.xp - a.xp);
+      // Give bonus to each wallet
+      wallets.forEach(wallet => {
+        const storageKey = getXPStorageKey(wallet);
+        const currentXP = parseInt(localStorage.getItem(storageKey) || '0');
+        const newXP = currentXP + bonusXP;
+        
+        localStorage.setItem(storageKey, newXP.toString());
+        count++;
+        
+        console.log(`${wallet}: ${currentXP} → ${newXP} XP`);
+      });
       
-      // Download snapshot
-      const dataStr = JSON.stringify(snapshotData, null, 2);
-      const dataBlob = new Blob([dataStr], {type: 'application/json'});
-      const url = URL.createObjectURL(dataBlob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `monad-dog-snapshot-${Date.now()}.json`;
-      link.click();
+      console.log(`✅ Gave ${bonusXP} XP bonus to ${count} users`);
+      showSuccessNotification(`Gave ${bonusXP} XP bonus to ${count} users!`);
       
-      console.log(`📸 Snapshot taken: ${snapshotData.users.length} users`);
-      showSuccessNotification(`Snapshot saved: ${snapshotData.users.length} users`);
+      // Refresh current user if connected
+      if (appState.connected && appState.address) {
+        getWalletXP(appState.address).then(xp => {
+          updateXP(xp);
+          updateClaimUI();
+        });
+      }
     };
+    
+    // Owner panel (shows only for owner)
+    function showOwnerPanel() {
+      if (appState.address?.toLowerCase() === OWNER_ADDRESS.toLowerCase()) {
+        const panel = document.createElement('div');
+        panel.id = 'ownerPanel';
+        panel.style.cssText = `
+          position: fixed;
+          bottom: 20px;
+          right: 20px;
+          background: rgba(0,0,0,0.9);
+          border: 2px solid #f59e0b;
+          padding: 15px;
+          border-radius: 12px;
+          font-size: 12px;
+          z-index: 1000;
+        `;
+        panel.innerHTML = `
+          <div style="color: #f59e0b; font-weight: bold; margin-bottom: 10px;">👑 Owner Panel</div>
+          <button onclick="giveBonusToAll(500)" style="background: #f59e0b; color: black; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 12px;">
+            Give 500 XP to All Users
+          </button>
+        `;
+        document.body.appendChild(panel);
+      }
+    }
 
     window.checkXP = function() {
       if (!appState.connected || !appState.address) {
