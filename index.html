@@ -2097,7 +2097,8 @@
         return;
       }
       
-      const storageKey = getXPStorageKey(walletAddress);
+      // Simple storage key for the wallet
+      const storageKey = `monad_dog_xp_${walletAddress.toLowerCase()}_v2`;
       const currentXP = parseInt(localStorage.getItem(storageKey) || '0');
       const newXP = currentXP + bonusXP;
       
@@ -2151,7 +2152,7 @@
       
       // Give bonus to each wallet
       wallets.forEach(wallet => {
-        const storageKey = getXPStorageKey(wallet);
+        const storageKey = `monad_dog_xp_${wallet.toLowerCase()}_v2`;
         const currentXP = parseInt(localStorage.getItem(storageKey) || '0');
         const newXP = currentXP + bonusXP;
         
