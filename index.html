@@ -933,7 +933,7 @@
       PET: "0xc53abe4c593b9440407f8ac1b346f3f999e6d8ed",
       GREET: "0xbc8b78f3e2348d4b5e0390fe700ce54b59931da4",
       FLIP: "0xc5b2280d1e2f155f9a2be2af7e78190658874106",
-      DOG_TOKEN: "0x1f6649d028c4c146c050a9b224115a01c92a02f3" // Final DOG token with 10M supply
+      DOG_TOKEN: "0x1f6649d028c4c146c050a9b224115a01c92a02f3" // Your deployed DOG token contract
     };
 
     const ABIS = {
@@ -945,7 +945,9 @@
         "function balanceOf(address account) public view returns (uint256)",
         "function decimals() public view returns (uint8)",
         "function symbol() public view returns (string)",
-        "function getClaimableAmount(uint256 xpAmount) public view returns (uint256)",
+        "function totalSupply() public view returns (uint256)",
+        "function getClaimedXP(address user) public view returns (uint256)",
+        "function totalMinted() public view returns (uint256)",
         "event TokensClaimed(address indexed user, uint256 xpAmount, uint256 tokenAmount)"
       ]
     };
@@ -1202,23 +1204,28 @@
         console.log('💰 Starting token claim...');
         showStatus('claim-status', '🔐 Please confirm transaction in your wallet...', 'pending');
         
+        // Ensure correct network
+        await ensureMonadNetwork();
+        
         // Call the actual DOG token contract
         const dogTokenContract = new ethers.Contract(
           CONTRACTS.DOG_TOKEN,
-          [
-            "function claim(uint256 xpAmount) public",
-            "function balanceOf(address account) public view returns (uint256)",
-            "function getClaimedXP(address user) public view returns (uint256)"
-          ],
+          ABIS.DOG_TOKEN,
           appState.signer
         );
         
         // Calculate XP to claim (must be multiple of 10)
         const xpToClaim = claimableDOG * XP_TO_DOG_RATE;
         
-        // Execute claim transaction
-        const tx = await dogTokenContract.claim(xpToClaim);
+        console.log(`Claiming ${xpToClaim} XP for ${claimableDOG} DOG tokens`);
+        
+        // Execute claim transaction with proper gas limit
+        const tx = await dogTokenContract.claim(xpToClaim, {
+          gasLimit: 500000 // Set appropriate gas limit
+        });
+        
         showStatus('claim-status', `📡 Transaction sent: ${tx.hash.slice(0,10)}...`, 'pending');
+        console.log('Transaction hash:', tx.hash);
         
         // Wait for confirmation (but don't wait too long for Farcaster wallet)
         setTimeout(async () => {
@@ -1281,6 +1288,10 @@
           errorMsg = 'Transaction cancelled';
         } else if (error.message.includes('insufficient funds')) {
           errorMsg = 'Insufficient gas funds';
+        } else if (error.message.includes('XP already claimed')) {
+          errorMsg = 'This XP has already been claimed';
+        } else if (error.message.includes('Invalid XP amount')) {
+          errorMsg = 'Invalid XP amount. Must be multiple of 10';
         }
         
         showStatus('claim-status', errorMsg, 'error');
@@ -1298,28 +1309,34 @@
           [
             "function getClaimedXP(address user) public view returns (uint256)",
             "function totalMinted() public view returns (uint256)",
-            "function getCirculatingSupply() public view returns (uint256)"
+            "function totalSupply() public view returns (uint256)"
           ],
           appState.provider
         );
         
         // Get user's claimed XP
-        const claimedXP = await dogTokenContract.getClaimedXP(appState.address);
-        const claimedXPNumber = parseInt(claimedXP.toString());
-        const claimedDOG = claimedXPNumber / XP_TO_DOG_RATE;
-        
-        document.getElementById('totalClaimedXP').textContent = `${claimedXPNumber} XP`;
-        document.getElementById('totalDogClaimed').textContent = `${claimedDOG} $DOG`;
+        try {
+          const claimedXP = await dogTokenContract.getClaimedXP(appState.address);
+          const claimedXPNumber = parseInt(claimedXP.toString());
+          const claimedDOG = claimedXPNumber / XP_TO_DOG_RATE;
+          
+          document.getElementById('totalClaimedXP').textContent = `${claimedXPNumber} XP`;
+          document.getElementById('totalDogClaimed').textContent = `${claimedDOG} $DOG`;
+        } catch (e) {
+          console.log('Could not fetch user claimed XP');
+        }
         
         // Get total minted supply for progress bar
         try {
           const totalMinted = await dogTokenContract.totalMinted();
+          const totalSupply = await dogTokenContract.totalSupply();
+          
           const mintedAmount = parseFloat(ethers.utils.formatEther(totalMinted));
-          const maxSupply = 10000000; // 10M
+          const maxSupply = parseFloat(ethers.utils.formatEther(totalSupply));
           
           // Update progress bar
           const percentage = (mintedAmount / maxSupply) * 100;
-          document.getElementById('claimedProgressBar').style.width = percentage + '%';
+          document.getElementById('claimedProgressBar').style.width = Math.min(percentage, 100) + '%';
           
           // Format numbers for display
           const formattedMinted = mintedAmount >= 1000000 ? 
@@ -1327,8 +1344,12 @@
             mintedAmount >= 1000 ? 
             (mintedAmount / 1000).toFixed(1) + 'K' : 
             mintedAmount.toFixed(0);
+          
+          const formattedMax = maxSupply >= 1000000 ? 
+            (maxSupply / 1000000).toFixed(0) + 'M' : 
+            maxSupply.toFixed(0);
             
-          document.getElementById('claimedProgressText').textContent = `${formattedMinted} / 10M`;
+          document.getElementById('claimedProgressText').textContent = `${formattedMinted} / ${formattedMax}`;
           document.getElementById('totalClaimedAmount').textContent = mintedAmount.toLocaleString(undefined, {maximumFractionDigits: 0});
           
         } catch (e) {
@@ -1336,7 +1357,7 @@
         }
         
       } catch (e) {
-        console.log('Could not fetch claimed stats');
+        console.log('Could not fetch claimed stats:', e);
       }
     }
 
@@ -1774,14 +1795,14 @@
       // Add XP to current wallet
       appState.xp += amount;
       
-      // Save to Supabase
-      await saveWalletXP(appState.address, appState.xp);
-      
-      // Update display
+      // Update display immediately
       document.getElementById('xp').textContent = appState.xp;
       
-      // Update claim UI
-      await updateClaimUI();
+      // Save to Supabase in background (non-blocking)
+      saveWalletXP(appState.address, appState.xp);
+      
+      // Update claim UI non-blocking
+      requestAnimationFrame(() => updateClaimUI());
       
       // Add celebration effect
       const xpElement = document.getElementById('xp');
