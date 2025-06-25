@@ -559,7 +559,6 @@
       <button class="tab" onclick="showTab('greet')">👋 Greet</button>
       <button class="tab" onclick="showTab('flip')">🪙 Flip</button>
       <button class="tab" onclick="showTab('claim')">💰 Claim</button>
-      <button class="tab" onclick="showTab('leaderboard')">🏆 Ranks</button>
     </div>
 
     <div class="content">
@@ -698,32 +697,6 @@
           <!-- Claim history will be populated here -->
         </div>
       </div>
-
-      <!-- Leaderboard Tab -->
-      <div id="leaderboard" class="tab-content">
-        <h3>Monad Dog Leaderboard</h3>
-        <p style="font-size: 12px; opacity: 0.7; margin-bottom: 15px;">Top players by contract interactions</p>
-        <table>
-          <thead>
-            <tr><th>Rank</th><th>Address</th><th>Interactions</th></tr>
-          </thead>
-          <tbody id="leaderboardBody">
-            <!-- Populated by JavaScript -->
-          </tbody>
-        </table>
-        <button onclick="refreshLeaderboard()" style="margin-top: 16px; width: auto; padding: 8px 16px; font-size: 12px;">
-          🔄 Refresh
-        </button>
-        
-        <div class="share-section">
-          <button class="share-button" onclick="shareLeaderboardPosition()">
-            🏆 Share My Ranking
-          </button>
-          <button class="share-button" onclick="shareAppWithFriends()">
-            🚀 Invite Friends
-          </button>
-        </div>
-      </div>
     </div>
 
     <div id="loading" class="loading">
@@ -760,8 +733,7 @@
       // Supabase Configuration
       const SUPABASE_URL = 'https://uhqszfoekqrjtybrwqzt.supabase.co';
       const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVocXN6Zm9la3FyanR5YnJ3cXp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4MDMxNTAsImV4cCI6MjA2NjM3OTE1MH0.gGch8B6AlvGrZTDVjfd0xidVnh_Dsua4qRxbaixBqM0';
-
-
+      
       // Initialize Supabase
       let supabaseClient;
       if (window.supabase) {
@@ -1131,9 +1103,9 @@
       await displayClaimHistory();
     }
 
-    // Update token balance display
+    // Update token balance display - Fixed version
     async function updateTokenBalance() {
-      if (!appState.connected || !appState.signer) {
+      if (!appState.connected || !appState.provider) {
         document.getElementById('dogTokenBalance').textContent = '0';
         document.getElementById('userDogBalance').textContent = '0';
         return;
@@ -1148,11 +1120,14 @@
         );
         
         const balance = await dogTokenContract.balanceOf(appState.address);
-        const formattedBalance = ethers.utils.formatEther(balance);
+        // DOG token has 18 decimals
+        const formattedBalance = ethers.utils.formatUnits(balance, 18);
         const displayBalance = parseFloat(formattedBalance).toFixed(2);
         
         document.getElementById('dogTokenBalance').textContent = displayBalance;
         document.getElementById('userDogBalance').textContent = displayBalance;
+        
+        console.log(`💰 DOG Balance updated: ${displayBalance}`);
         
       } catch (error) {
         console.error('Error fetching token balance:', error);
@@ -1300,9 +1275,9 @@
       }
     };
     
-    // Update claimed stats
+    // Update claimed stats - Fixed version
     async function updateClaimedStats() {
-      if (!appState.connected) return;
+      if (!appState.connected || !appState.provider) return;
       
       try {
         const dogTokenContract = new ethers.Contract(
@@ -1325,6 +1300,8 @@
           document.getElementById('totalDogClaimed').textContent = `${claimedDOG} $DOG`;
         } catch (e) {
           console.log('Could not fetch user claimed XP');
+          document.getElementById('totalClaimedXP').textContent = '0 XP';
+          document.getElementById('totalDogClaimed').textContent = '0 $DOG';
         }
         
         // Get total minted supply for progress bar
@@ -1332,11 +1309,12 @@
           const totalMinted = await dogTokenContract.totalMinted();
           const totalSupply = await dogTokenContract.totalSupply();
           
-          const mintedAmount = parseFloat(ethers.utils.formatEther(totalMinted));
-          const maxSupply = parseFloat(ethers.utils.formatEther(totalSupply));
+          // DOG token has 18 decimals
+          const mintedAmount = parseFloat(ethers.utils.formatUnits(totalMinted, 18));
+          const maxSupply = parseFloat(ethers.utils.formatUnits(totalSupply, 18));
           
           // Update progress bar
-          const percentage = (mintedAmount / maxSupply) * 100;
+          const percentage = maxSupply > 0 ? (mintedAmount / maxSupply) * 100 : 0;
           document.getElementById('claimedProgressBar').style.width = Math.min(percentage, 100) + '%';
           
           // Format numbers for display
@@ -1353,8 +1331,14 @@
           document.getElementById('claimedProgressText').textContent = `${formattedMinted} / ${formattedMax}`;
           document.getElementById('totalClaimedAmount').textContent = mintedAmount.toLocaleString(undefined, {maximumFractionDigits: 0});
           
+          console.log(`📊 Total minted: ${mintedAmount}, Max supply: ${maxSupply}`);
+          
         } catch (e) {
-          console.log('Could not fetch total minted');
+          console.log('Could not fetch total minted:', e);
+          // Set default values
+          document.getElementById('claimedProgressBar').style.width = '0%';
+          document.getElementById('claimedProgressText').textContent = '0 / 10M';
+          document.getElementById('totalClaimedAmount').textContent = '0';
         }
         
       } catch (e) {
