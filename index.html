@@ -672,10 +672,6 @@
             </a>
           </div>
         </div>
-        
-        <div class="claim-history" id="claimHistory" style="margin-top: 20px;">
-          <!-- Claim history will be populated here -->
-        </div>
       </div>
     </div>
 
@@ -1112,93 +1108,100 @@
       // Update token balance
       await updateTokenBalance();
       
-      // Update claim history
-      await displayClaimHistory();
+      // Removed claim history display
     }
 
-    // Update token balance display - Fixed version
+    // Update token balance display - Debug version
     async function updateTokenBalance() {
-      if (!appState.connected || !appState.provider) {
+      if (!appState.connected || !appState.provider || !appState.address) {
+        console.log('❌ Not connected, cannot fetch balance');
         document.getElementById('userDogBalance').textContent = '0';
         document.getElementById('walletDogDisplay').textContent = '0';
         return;
       }
       
+      console.log('🔄 Fetching DOG balance for:', appState.address);
+      
       try {
-        // Get real balance from contract
+        // Ensure we're on the right network
+        const network = await appState.provider.getNetwork();
+        console.log('📡 Network:', network);
+        
+        // Create contract instance
         const dogTokenContract = new ethers.Contract(
           CONTRACTS.DOG_TOKEN,
-          ["function balanceOf(address account) public view returns (uint256)"],
+          [
+            "function balanceOf(address) view returns (uint256)",
+            "function decimals() view returns (uint8)",
+            "function symbol() view returns (string)"
+          ],
           appState.provider
         );
         
+        // Check if contract exists
+        const code = await appState.provider.getCode(CONTRACTS.DOG_TOKEN);
+        if (code === '0x') {
+          console.error('❌ No contract at address:', CONTRACTS.DOG_TOKEN);
+          return;
+        }
+        
+        // Get decimals first
+        let decimals = 18; // default
+        try {
+          decimals = await dogTokenContract.decimals();
+          console.log('📊 Token decimals:', decimals);
+        } catch (e) {
+          console.log('⚠️ Could not fetch decimals, using 18');
+        }
+        
+        // Get balance
         const balance = await dogTokenContract.balanceOf(appState.address);
-        // DOG token has 18 decimals
-        const formattedBalance = ethers.utils.formatUnits(balance, 18);
+        console.log('💰 Raw balance:', balance.toString());
+        
+        // Format balance
+        const formattedBalance = ethers.utils.formatUnits(balance, decimals);
+        console.log('💰 Formatted balance:', formattedBalance);
         
         // Parse and format the balance
         const numBalance = parseFloat(formattedBalance);
-        const displayBalance = numBalance >= 1 ? numBalance.toFixed(2) : numBalance.toFixed(6);
+        let displayBalance;
         
-        document.getElementById('userDogBalance').textContent = displayBalance;
-        document.getElementById('walletDogDisplay').textContent = displayBalance;
+        if (numBalance === 0) {
+          displayBalance = '0';
+        } else if (numBalance >= 1) {
+          displayBalance = numBalance.toFixed(2);
+        } else if (numBalance >= 0.01) {
+          displayBalance = numBalance.toFixed(4);
+        } else {
+          displayBalance = numBalance.toFixed(6);
+        }
         
-        console.log(`💰 DOG Balance: ${balance.toString()} wei = ${displayBalance} DOG`);
+        // Update all balance displays
+        const elements = ['userDogBalance', 'walletDogDisplay'];
+        elements.forEach(id => {
+          const el = document.getElementById(id);
+          if (el) {
+            el.textContent = displayBalance;
+            console.log(`✅ Updated ${id}: ${displayBalance}`);
+          }
+        });
+        
+        console.log(`✅ DOG Balance updated: ${displayBalance} DOG`);
         
       } catch (error) {
-        console.error('Error fetching token balance:', error);
-        // Try fallback with different decimal
-        try {
-          const dogTokenContract = new ethers.Contract(
-            CONTRACTS.DOG_TOKEN,
-            [
-              "function balanceOf(address account) public view returns (uint256)",
-              "function decimals() public view returns (uint8)"
-            ],
-            appState.provider
-          );
-          
-          const decimals = await dogTokenContract.decimals();
-          const balance = await dogTokenContract.balanceOf(appState.address);
-          const formattedBalance = ethers.utils.formatUnits(balance, decimals);
-          
-          const numBalance = parseFloat(formattedBalance);
-          const displayBalance = numBalance >= 1 ? numBalance.toFixed(2) : numBalance.toFixed(6);
-          
-          document.getElementById('userDogBalance').textContent = displayBalance;
-          document.getElementById('walletDogDisplay').textContent = displayBalance;
-          
-          console.log(`💰 DOG Balance (${decimals} decimals): ${displayBalance}`);
-        } catch (e) {
-          console.error('Fallback also failed:', e);
-          document.getElementById('userDogBalance').textContent = '0';
-          document.getElementById('walletDogDisplay').textContent = '0';
-        }
+        console.error('❌ Error fetching token balance:', error);
+        console.error('Error details:', error.message);
+        
+        // Set to 0 on error
+        document.getElementById('userDogBalance').textContent = '0';
+        document.getElementById('walletDogDisplay').textContent = '0';
       }
     }
 
-    // Display claim history
+    // Display claim history - Removed
     async function displayClaimHistory() {
-      if (!appState.connected || !appState.address) {
-        document.getElementById('claimHistory').innerHTML = '';
-        return;
-      }
-      
-      const history = await getClaimHistory(appState.address);
-      const historyContainer = document.getElementById('claimHistory');
-      
-      if (history.length === 0) {
-        historyContainer.innerHTML = '<div style="text-align: center; opacity: 0.5;">No claim history yet</div>';
-        return;
-      }
-      
-      historyContainer.innerHTML = '<h4 style="margin-bottom: 10px;">Recent Claims</h4>' +
-        history.map(claim => `
-          <div class="claim-history-item">
-            <span>${new Date(claim.timestamp).toLocaleDateString()}</span>
-            <span>${claim.xp_amount} XP → ${claim.token_amount} $DOG</span>
-          </div>
-        `).join('');
+      // Function removed - no longer needed
+      return;
     }
 
     // Claim tokens function
@@ -1265,7 +1268,6 @@
                   const displayBalance = numBalance >= 1 ? numBalance.toFixed(2) : numBalance.toFixed(6);
                   
                   document.getElementById('userDogBalance').textContent = displayBalance;
-                  document.getElementById('dogTokenBalance').textContent = displayBalance;
                   document.getElementById('walletDogDisplay').textContent = displayBalance;
                   
                   console.log(`✅ Balance updated after claim (attempt ${i + 1}): ${displayBalance} DOG`);
@@ -1736,15 +1738,23 @@
         // Load data asynchronously
         updateXPDisplay().catch(console.error);
         
-        // Update token balance with retry
-        setTimeout(() => {
-          updateTokenBalance().catch(console.error);
-        }, 1000);
+        // Ensure network is correct before fetching balance
+        await ensureMonadNetwork();
         
-        // Try again after 3 seconds if needed
-        setTimeout(() => {
-          updateTokenBalance().catch(console.error);
-        }, 3000);
+        // Update token balance with multiple retries
+        const fetchBalance = async () => {
+          for (let i = 0; i < 3; i++) {
+            try {
+              await updateTokenBalance();
+              break;
+            } catch (e) {
+              console.log(`Balance fetch attempt ${i + 1} failed, retrying...`);
+              await new Promise(resolve => setTimeout(resolve, 2000));
+            }
+          }
+        };
+        
+        fetchBalance();
 
       } catch (error) {
         console.error('Connection error:', error);
@@ -2046,7 +2056,7 @@
     function generateShareableContent(type, data = {}) {
       const baseUrl = window.location.origin;
       const userStats = appState.connected ? getContractInteractions(appState.address) : null;
-      const tokenBalance = document.getElementById('dogTokenBalance')?.textContent || '0';
+      const tokenBalance = document.getElementById('userDogBalance')?.textContent || '0';
       
       const shareTemplates = {
         pet: {
