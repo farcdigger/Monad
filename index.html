@@ -657,36 +657,13 @@
             <p style="font-size: 12px; opacity: 0.7;">Claim your tokens and they'll be minted directly to your wallet</p>
           </div>
           
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 14px;">
-            <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px;">
-              <div style="opacity: 0.7; font-size: 12px;">Total Claimed</div>
-              <div id="totalClaimedXP" style="font-weight: 600; color: #f59e0b;">0 XP</div>
+          <!-- Wallet DOG Balance Display -->
+          <div style="background: linear-gradient(135deg, #f59e0b, #eab308); padding: 20px; border-radius: 12px; text-align: center; margin: 15px 0;">
+            <div style="font-size: 14px; opacity: 0.9; margin-bottom: 5px;">Your Wallet Balance</div>
+            <div style="font-size: 32px; font-weight: 700;">
+              <span id="walletDogDisplay">0</span> $DOG
             </div>
-            <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px;">
-              <div style="opacity: 0.7; font-size: 12px;">Total $DOG</div>
-              <div id="totalDogClaimed" style="font-weight: 600; color: #f59e0b;">0 $DOG</div>
-            </div>
-          </div>
-          
-          <div style="margin-top: 15px; padding: 10px; background: rgba(245, 158, 11, 0.1); border-radius: 8px;">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 12px;">
-              <span style="opacity: 0.7;">Max Supply:</span>
-              <span style="font-weight: 600;">10,000,000 $DOG</span>
-            </div>
-            
-            <!-- Progress Bar -->
-            <div style="margin-bottom: 5px;">
-              <div style="background: rgba(255,255,255,0.1); border-radius: 8px; height: 20px; position: relative; overflow: hidden;">
-                <div id="claimedProgressBar" style="background: linear-gradient(90deg, #f59e0b, #dc2626); height: 100%; width: 0%; transition: width 0.5s ease;"></div>
-                <span id="claimedProgressText" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 11px; font-weight: 600; color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">
-                  0 / 10M
-                </span>
-              </div>
-            </div>
-            
-            <div style="text-align: center; font-size: 11px; opacity: 0.7;">
-              Claimed: <span id="totalClaimedAmount" style="color: #f59e0b; font-weight: 600;">0</span> $DOG
-            </div>
+            <div style="font-size: 12px; opacity: 0.8; margin-top: 5px;">🪙 Monad Testnet</div>
           </div>
           
           <div style="margin-top: 15px; text-align: center;">
@@ -1147,6 +1124,7 @@
       if (!appState.connected || !appState.provider) {
         document.getElementById('dogTokenBalance').textContent = '0';
         document.getElementById('userDogBalance').textContent = '0';
+        document.getElementById('walletDogDisplay').textContent = '0';
         return;
       }
       
@@ -1168,6 +1146,7 @@
         
         document.getElementById('dogTokenBalance').textContent = displayBalance;
         document.getElementById('userDogBalance').textContent = displayBalance;
+        document.getElementById('walletDogDisplay').textContent = displayBalance;
         
         console.log(`💰 DOG Balance: ${balance.toString()} wei = ${displayBalance} DOG`);
         
@@ -1193,12 +1172,14 @@
           
           document.getElementById('dogTokenBalance').textContent = displayBalance;
           document.getElementById('userDogBalance').textContent = displayBalance;
+          document.getElementById('walletDogDisplay').textContent = displayBalance;
           
           console.log(`💰 DOG Balance (${decimals} decimals): ${displayBalance}`);
         } catch (e) {
           console.error('Fallback also failed:', e);
           document.getElementById('dogTokenBalance').textContent = '0';
           document.getElementById('userDogBalance').textContent = '0';
+          document.getElementById('walletDogDisplay').textContent = '0';
         }
       }
     }
@@ -1277,24 +1258,35 @@
             appState.xp = remainingXP;
             await saveWalletXP(appState.address, remainingXP);
             
-            // Try to get updated balance
-            setTimeout(async () => {
-              try {
-                const newBalance = await dogTokenContract.balanceOf(appState.address);
-                const formattedBalance = ethers.utils.formatUnits(newBalance, 18);
-                
-                document.getElementById('userDogBalance').textContent = parseFloat(formattedBalance).toFixed(2);
-                document.getElementById('dogTokenBalance').textContent = parseFloat(formattedBalance).toFixed(2);
-                console.log('✅ Balance updated after claim:', formattedBalance);
-              } catch (e) {
-                console.log('Could not fetch balance immediately, refreshing...');
-                // Try again after a delay
-                setTimeout(() => updateTokenBalance(), 3000);
+            // Try to get updated balance with multiple retries
+            const updateBalanceWithRetry = async (retries = 3) => {
+              for (let i = 0; i < retries; i++) {
+                try {
+                  await new Promise(resolve => setTimeout(resolve, 2000 * (i + 1)));
+                  
+                  const newBalance = await dogTokenContract.balanceOf(appState.address);
+                  const decimals = await dogTokenContract.decimals();
+                  const formattedBalance = ethers.utils.formatUnits(newBalance, decimals);
+                  
+                  const numBalance = parseFloat(formattedBalance);
+                  const displayBalance = numBalance >= 1 ? numBalance.toFixed(2) : numBalance.toFixed(6);
+                  
+                  document.getElementById('userDogBalance').textContent = displayBalance;
+                  document.getElementById('dogTokenBalance').textContent = displayBalance;
+                  document.getElementById('walletDogDisplay').textContent = displayBalance;
+                  
+                  console.log(`✅ Balance updated after claim (attempt ${i + 1}): ${displayBalance} DOG`);
+                  break;
+                } catch (e) {
+                  console.log(`Balance update attempt ${i + 1} failed, retrying...`);
+                }
               }
-            }, 2000);
+            };
+            
+            updateBalanceWithRetry();
             
             // Update total claimed stats
-            await updateClaimedStats();
+            // Removed - not needed anymore
             
             // Save claim history
             await saveClaimHistory(appState.address, {
@@ -1355,75 +1347,10 @@
       }
     };
     
-    // Update claimed stats - Fixed version
+    // Update claimed stats - Simplified version without complex stats
     async function updateClaimedStats() {
-      if (!appState.connected || !appState.provider) return;
-      
-      try {
-        const dogTokenContract = new ethers.Contract(
-          CONTRACTS.DOG_TOKEN,
-          [
-            "function getClaimedXP(address user) public view returns (uint256)",
-            "function totalMinted() public view returns (uint256)",
-            "function totalSupply() public view returns (uint256)"
-          ],
-          appState.provider
-        );
-        
-        // Get user's claimed XP
-        try {
-          const claimedXP = await dogTokenContract.getClaimedXP(appState.address);
-          const claimedXPNumber = parseInt(claimedXP.toString());
-          const claimedDOG = claimedXPNumber / XP_TO_DOG_RATE;
-          
-          document.getElementById('totalClaimedXP').textContent = `${claimedXPNumber} XP`;
-          document.getElementById('totalDogClaimed').textContent = `${claimedDOG} $DOG`;
-        } catch (e) {
-          console.log('Could not fetch user claimed XP');
-          document.getElementById('totalClaimedXP').textContent = '0 XP';
-          document.getElementById('totalDogClaimed').textContent = '0 $DOG';
-        }
-        
-        // Get total minted supply for progress bar
-        try {
-          const totalMinted = await dogTokenContract.totalMinted();
-          const totalSupply = await dogTokenContract.totalSupply();
-          
-          // DOG token has 18 decimals
-          const mintedAmount = parseFloat(ethers.utils.formatUnits(totalMinted, 18));
-          const maxSupply = parseFloat(ethers.utils.formatUnits(totalSupply, 18));
-          
-          // Update progress bar
-          const percentage = maxSupply > 0 ? (mintedAmount / maxSupply) * 100 : 0;
-          document.getElementById('claimedProgressBar').style.width = Math.min(percentage, 100) + '%';
-          
-          // Format numbers for display
-          const formattedMinted = mintedAmount >= 1000000 ? 
-            (mintedAmount / 1000000).toFixed(2) + 'M' : 
-            mintedAmount >= 1000 ? 
-            (mintedAmount / 1000).toFixed(1) + 'K' : 
-            mintedAmount.toFixed(0);
-          
-          const formattedMax = maxSupply >= 1000000 ? 
-            (maxSupply / 1000000).toFixed(0) + 'M' : 
-            maxSupply.toFixed(0);
-            
-          document.getElementById('claimedProgressText').textContent = `${formattedMinted} / ${formattedMax}`;
-          document.getElementById('totalClaimedAmount').textContent = mintedAmount.toLocaleString(undefined, {maximumFractionDigits: 0});
-          
-          console.log(`📊 Total minted: ${mintedAmount}, Max supply: ${maxSupply}`);
-          
-        } catch (e) {
-          console.log('Could not fetch total minted:', e);
-          // Set default values
-          document.getElementById('claimedProgressBar').style.width = '0%';
-          document.getElementById('claimedProgressText').textContent = '0 / 10M';
-          document.getElementById('totalClaimedAmount').textContent = '0';
-        }
-        
-      } catch (e) {
-        console.log('Could not fetch claimed stats:', e);
-      }
+      // This function is no longer needed since we removed the stats
+      return;
     }
 
     // Contract interaction tracking with Supabase - optimized
@@ -1752,8 +1679,10 @@
         // Update claim UI when switching to claim tab
         if (tabName === 'claim') {
           updateClaimUI();
-          updateTokenBalance();
-          updateClaimedStats();
+          // Update balance with delay for better reliability
+          setTimeout(() => {
+            updateTokenBalance();
+          }, 500);
         }
       };
 
@@ -1813,8 +1742,16 @@
         
         // Load data asynchronously
         updateXPDisplay().catch(console.error);
-        updateTokenBalance().catch(console.error);
-        updateClaimedStats().catch(console.error);
+        
+        // Update token balance with retry
+        setTimeout(() => {
+          updateTokenBalance().catch(console.error);
+        }, 1000);
+        
+        // Try again after 3 seconds if needed
+        setTimeout(() => {
+          updateTokenBalance().catch(console.error);
+        }, 3000);
 
       } catch (error) {
         console.error('Connection error:', error);
