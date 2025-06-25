@@ -543,10 +543,7 @@
   <div class="container app-content">
     <div class="header">
       <div class="title">🐕 Monad Dog</div>
-      <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
-        <div class="xp">✨ XP: <span id="xp">0</span></div>
-        <div class="token-stats">🪙 $DOG: <span id="dogTokenBalance">0</span></div>
-      </div>
+      <div class="xp">✨ XP: <span id="xp">0</span></div>
     </div>
 
     <div class="wallet-section">
@@ -1122,7 +1119,6 @@
     // Update token balance display - Fixed version
     async function updateTokenBalance() {
       if (!appState.connected || !appState.provider) {
-        document.getElementById('dogTokenBalance').textContent = '0';
         document.getElementById('userDogBalance').textContent = '0';
         document.getElementById('walletDogDisplay').textContent = '0';
         return;
@@ -1144,7 +1140,6 @@
         const numBalance = parseFloat(formattedBalance);
         const displayBalance = numBalance >= 1 ? numBalance.toFixed(2) : numBalance.toFixed(6);
         
-        document.getElementById('dogTokenBalance').textContent = displayBalance;
         document.getElementById('userDogBalance').textContent = displayBalance;
         document.getElementById('walletDogDisplay').textContent = displayBalance;
         
@@ -1170,14 +1165,12 @@
           const numBalance = parseFloat(formattedBalance);
           const displayBalance = numBalance >= 1 ? numBalance.toFixed(2) : numBalance.toFixed(6);
           
-          document.getElementById('dogTokenBalance').textContent = displayBalance;
           document.getElementById('userDogBalance').textContent = displayBalance;
           document.getElementById('walletDogDisplay').textContent = displayBalance;
           
           console.log(`💰 DOG Balance (${decimals} decimals): ${displayBalance}`);
         } catch (e) {
           console.error('Fallback also failed:', e);
-          document.getElementById('dogTokenBalance').textContent = '0';
           document.getElementById('userDogBalance').textContent = '0';
           document.getElementById('walletDogDisplay').textContent = '0';
         }
