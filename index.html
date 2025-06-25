@@ -4,6 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Monad Dog</title>
+
+<!-- Supabase Client -->
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   
   <!-- Farcaster Manifest Link -->
   <link rel="manifest" href="/farcaster.json">
@@ -752,11 +755,28 @@
   </div>
 
   <script>
+    // Wait for Supabase to load
+    window.addEventListener('DOMContentLoaded', function() {
+      // Supabase Configuration
+      const SUPABASE_URL = 'https://uhqszfoekqrjtybrwqzt.supabase.co';
+      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVocXN6Zm9la3FyanR5YnJ3cXp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4MDMxNTAsImV4cCI6MjA2NjM3OTE1MH0.gGch8B6AlvGrZTDVjfd0xidVnh_Dsua4qRxbaixBqM0';
+      
+      // Initialize Supabase
+      let supabaseClient;
+      if (window.supabase) {
+        const { createClient } = window.supabase;
+        supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        console.log('✅ Supabase initialized');
+      } else {
+        console.error('❌ Supabase not loaded');
+      }
+    
     console.log('🚀 Starting app...');
     
     // Enhanced Loading Management
     let loadingProgress = 0;
     let isAppReady = false;
+    let activeTab = 'pet';
 
     function updateLoadingProgress(progress, message) {
       const progressBar = document.getElementById('loadingProgressBar');
@@ -834,7 +854,7 @@
         setupEventListeners();
         setupGameFunctions();
         
-        // Step 3: Load leaderboard
+        // Step 3: Load leaderboard from Supabase
         updateLoadingProgress(80, 'Loading leaderboard data...<br>🏆 Fetching player rankings');
         await populateLeaderboard();
         
@@ -933,50 +953,107 @@
     // XP to DOG token conversion rate
     const XP_TO_DOG_RATE = 10; // 10 XP = 1 DOG token
 
-    // Wallet-specific XP management
-    function getWalletXP(address) {
+    // Supabase Functions for XP Management
+    async function getWalletXP(address) {
       if (!address) return 0;
-      const key = `wallet_xp_${address.toLowerCase()}`;
-      return parseInt(localStorage.getItem(key) || '0');
+      
+      try {
+        const { data, error } = await supabaseClient
+          .from('user_xp')
+          .select('xp')
+          .eq('wallet_address', address.toLowerCase())
+          .single();
+        
+        if (error) {
+          console.log('No XP record found, returning 0');
+          return 0;
+        }
+        
+        return data.xp || 0;
+      } catch (e) {
+        console.error('Error fetching XP:', e);
+        return 0;
+      }
     }
 
-    function saveWalletXP(address, xp) {
+    async function saveWalletXP(address, xp) {
       if (!address) return;
-      const key = `wallet_xp_${address.toLowerCase()}`;
-      localStorage.setItem(key, xp.toString());
-      console.log(`💾 XP saved for ${address}: ${xp}`);
+      
+      try {
+        const { error } = await supabaseClient
+          .from('user_xp')
+          .upsert({
+            wallet_address: address.toLowerCase(),
+            xp: xp,
+            updated_at: new Date().toISOString()
+          }, {
+            onConflict: 'wallet_address'
+          });
+        
+        if (error) {
+          console.error('Error saving XP:', error);
+        } else {
+          console.log(`💾 XP saved to Supabase for ${address}: ${xp}`);
+        }
+      } catch (e) {
+        console.error('Error saving XP:', e);
+      }
     }
 
-    // Token claim history management
-    function getClaimHistory(address) {
+    // Token claim history management with Supabase
+    async function getClaimHistory(address) {
       if (!address) return [];
-      const key = `claim_history_${address.toLowerCase()}`;
-      const history = localStorage.getItem(key);
-      return history ? JSON.parse(history) : [];
+      
+      try {
+        const { data, error } = await supabaseClient
+          .from('claim_history')
+          .select('*')
+          .eq('wallet_address', address.toLowerCase())
+          .order('timestamp', { ascending: false })
+          .limit(10);
+        
+        if (error) {
+          console.error('Error fetching claim history:', error);
+          return [];
+        }
+        
+        return data || [];
+      } catch (e) {
+        console.error('Error fetching claim history:', e);
+        return [];
+      }
     }
 
-    function saveClaimHistory(address, claimData) {
+    async function saveClaimHistory(address, claimData) {
       if (!address) return;
-      const key = `claim_history_${address.toLowerCase()}`;
-      const history = getClaimHistory(address);
-      history.unshift({
-        ...claimData,
-        timestamp: new Date().toISOString()
-      });
-      // Keep only last 10 claims
-      if (history.length > 10) history.pop();
-      localStorage.setItem(key, JSON.stringify(history));
+      
+      try {
+        const { error } = await supabaseClient
+          .from('claim_history')
+          .insert({
+            wallet_address: address.toLowerCase(),
+            xp_amount: claimData.xpAmount,
+            token_amount: claimData.tokenAmount,
+            tx_hash: claimData.txHash,
+            timestamp: new Date().toISOString()
+          });
+        
+        if (error) {
+          console.error('Error saving claim history:', error);
+        }
+      } catch (e) {
+        console.error('Error saving claim history:', e);
+      }
     }
 
-    function updateXPDisplay() {
+    async function updateXPDisplay() {
       if (appState.connected && appState.address) {
-        const walletXP = getWalletXP(appState.address);
+        const walletXP = await getWalletXP(appState.address);
         document.getElementById('xp').textContent = walletXP;
         appState.xp = walletXP;
         console.log(`📊 XP loaded for ${appState.address}: ${walletXP}`);
         
         // Update claim UI
-        // Ensure claim UI is updated if on claim tab
         if (activeTab === 'claim') {
           setTimeout(() => updateClaimUI(), 100);
         }
@@ -988,19 +1065,12 @@
     }
 
     // Update claim UI based on current XP
-    function updateClaimUI() {
+    async function updateClaimUI() {
       const claimableXP = appState.xp || 0;
       const claimableDOG = Math.floor(claimableXP / XP_TO_DOG_RATE);
       
       document.getElementById('claimableXP').textContent = claimableXP;
       document.getElementById('claimableDOG').textContent = claimableDOG;
-      
-      // Update token contract address display
-      if (CONTRACTS.DOG_TOKEN !== "0x0000000000000000000000000000000000000000") {
-        document.getElementById('tokenContractAddress').textContent = CONTRACTS.DOG_TOKEN;
-      } else {
-        document.getElementById('tokenContractAddress').textContent = 'Not deployed yet';
-      }
       
       const claimButton = document.getElementById('claimButton');
       if (claimableXP >= XP_TO_DOG_RATE && appState.connected) {
@@ -1016,10 +1086,10 @@
       }
       
       // Update token balance
-      updateTokenBalance();
+      await updateTokenBalance();
       
       // Update claim history
-      displayClaimHistory();
+      await displayClaimHistory();
     }
 
     // Update token balance display
@@ -1054,13 +1124,13 @@
     }
 
     // Display claim history
-    function displayClaimHistory() {
+    async function displayClaimHistory() {
       if (!appState.connected || !appState.address) {
         document.getElementById('claimHistory').innerHTML = '';
         return;
       }
       
-      const history = getClaimHistory(appState.address);
+      const history = await getClaimHistory(appState.address);
       const historyContainer = document.getElementById('claimHistory');
       
       if (history.length === 0) {
@@ -1072,7 +1142,7 @@
         history.map(claim => `
           <div class="claim-history-item">
             <span>${new Date(claim.timestamp).toLocaleDateString()}</span>
-            <span>${claim.xpAmount} XP → ${claim.tokenAmount} $DOG</span>
+            <span>${claim.xp_amount} XP → ${claim.token_amount} $DOG</span>
           </div>
         `).join('');
     }
@@ -1120,7 +1190,7 @@
             // Update local XP
             const remainingXP = claimableXP - xpToClaim;
             appState.xp = remainingXP;
-            saveWalletXP(appState.address, remainingXP);
+            await saveWalletXP(appState.address, remainingXP);
             
             // Try to get updated balance
             try {
@@ -1134,17 +1204,17 @@
             }
             
             // Update total claimed stats
-            updateClaimedStats();
+            await updateClaimedStats();
             
             // Save claim history
-            saveClaimHistory(appState.address, {
+            await saveClaimHistory(appState.address, {
               xpAmount: xpToClaim,
               tokenAmount: claimableDOG,
               txHash: tx.hash
             });
             
             // Update UI
-            updateXPDisplay();
+            await updateXPDisplay();
             showStatus('claim-status', `✅ Successfully claimed ${claimableDOG} $DOG tokens!`, 'success');
             
             // Show achievement
@@ -1161,7 +1231,7 @@
           } catch (e) {
             console.log('Post-claim update error:', e);
             // Still show success since transaction was sent
-            updateXPDisplay();
+            await updateXPDisplay();
             showStatus('claim-status', `✅ Claim transaction sent! Tokens will arrive soon.`, 'success');
             setTimeout(() => hideStatus('claim-status'), 5000);
           }
@@ -1200,7 +1270,7 @@
         // Get user's claimed XP
         const claimedXP = await dogTokenContract.getClaimedXP(appState.address);
         const claimedXPNumber = parseInt(claimedXP.toString());
-        const claimedDOG = claimedXPNumber / XP_TO_TOKEN_RATE;
+        const claimedDOG = claimedXPNumber / XP_TO_DOG_RATE;
         
         document.getElementById('totalClaimedXP').textContent = `${claimedXPNumber} XP`;
         document.getElementById('totalDogClaimed').textContent = `${claimedDOG} $DOG`;
@@ -1234,11 +1304,9 @@
       }
     }
 
-    // Contract interaction tracking
-    function getContractInteractions(address) {
-      const key = `contract_interactions_${address.toLowerCase()}`;
-      const data = localStorage.getItem(key);
-      return data ? JSON.parse(data) : {
+    // Contract interaction tracking with Supabase
+    async function getContractInteractions(address) {
+      if (!address) return {
         pet: 0,
         gm: 0,
         gn: 0,
@@ -1247,48 +1315,127 @@
         firstInteraction: null,
         lastInteraction: null
       };
-    }
-
-    function saveContractInteraction(address, contractType) {
-      const key = `contract_interactions_${address.toLowerCase()}`;
-      const data = getContractInteractions(address);
       
-      data[contractType] = (data[contractType] || 0) + 1;
-      data.total = data.pet + data.gm + data.gn + data.flip;
-      data.lastInteraction = new Date().toISOString();
-      
-      if (!data.firstInteraction) {
-        data.firstInteraction = new Date().toISOString();
-      }
-      
-      localStorage.setItem(key, JSON.stringify(data));
-      
-      console.log(`📊 Contract interaction saved: ${contractType} for ${address}`);
-      console.log(`📈 Total interactions: ${data.total}`);
-      
-      return data;
-    }
-
-    function getAllContractInteractions() {
-      const allUsers = [];
-      
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && key.startsWith('contract_interactions_')) {
-          const address = key.replace('contract_interactions_', '');
-          const data = JSON.parse(localStorage.getItem(key));
-          
-          if (data.total > 0) {
-            allUsers.push({
-              address: address,
-              ...data
-            });
-          }
+      try {
+        const { data, error } = await supabaseClient
+          .from('contract_interactions')
+          .select('*')
+          .eq('wallet_address', address.toLowerCase())
+          .single();
+        
+        if (error || !data) {
+          return {
+            pet: 0,
+            gm: 0,
+            gn: 0,
+            flip: 0,
+            total: 0,
+            firstInteraction: null,
+            lastInteraction: null
+          };
         }
+        
+        return {
+          pet: data.pet_count || 0,
+          gm: data.gm_count || 0,
+          gn: data.gn_count || 0,
+          flip: data.flip_count || 0,
+          total: data.total_interactions || 0,
+          firstInteraction: data.first_interaction,
+          lastInteraction: data.last_interaction
+        };
+      } catch (e) {
+        console.error('Error fetching interactions:', e);
+        return {
+          pet: 0,
+          gm: 0,
+          gn: 0,
+          flip: 0,
+          total: 0,
+          firstInteraction: null,
+          lastInteraction: null
+        };
       }
-      
-      allUsers.sort((a, b) => b.total - a.total);
-      return allUsers;
+    }
+
+    async function saveContractInteraction(address, contractType) {
+      try {
+        // First get current data
+        const currentData = await getContractInteractions(address);
+        
+        // Increment the specific interaction
+        const updates = {
+          wallet_address: address.toLowerCase(),
+          pet_count: currentData.pet + (contractType === 'pet' ? 1 : 0),
+          gm_count: currentData.gm + (contractType === 'gm' ? 1 : 0),
+          gn_count: currentData.gn + (contractType === 'gn' ? 1 : 0),
+          flip_count: currentData.flip + (contractType === 'flip' ? 1 : 0),
+          last_interaction: new Date().toISOString()
+        };
+        
+        updates.total_interactions = updates.pet_count + updates.gm_count + updates.gn_count + updates.flip_count;
+        
+        if (!currentData.firstInteraction) {
+          updates.first_interaction = new Date().toISOString();
+        }
+        
+        const { error } = await supabaseClient
+          .from('contract_interactions')
+          .upsert(updates, {
+            onConflict: 'wallet_address'
+          });
+        
+        if (error) {
+          console.error('Error saving interaction:', error);
+        } else {
+          console.log(`📊 Contract interaction saved: ${contractType} for ${address}`);
+          console.log(`📈 Total interactions: ${updates.total_interactions}`);
+          
+          // Refresh leaderboard after interaction
+          await populateLeaderboard();
+        }
+        
+        return {
+          pet: updates.pet_count,
+          gm: updates.gm_count,
+          gn: updates.gn_count,
+          flip: updates.flip_count,
+          total: updates.total_interactions,
+          lastInteraction: updates.last_interaction
+        };
+      } catch (e) {
+        console.error('Error saving interaction:', e);
+        return currentData;
+      }
+    }
+
+    async function getAllContractInteractions() {
+      try {
+        const { data, error } = await supabaseClient
+          .from('contract_interactions')
+          .select('*')
+          .order('total_interactions', { ascending: false })
+          .limit(50);
+        
+        if (error) {
+          console.error('Error fetching all interactions:', error);
+          return [];
+        }
+        
+        return data.map(user => ({
+          address: user.wallet_address,
+          pet: user.pet_count || 0,
+          gm: user.gm_count || 0,
+          gn: user.gn_count || 0,
+          flip: user.flip_count || 0,
+          total: user.total_interactions || 0,
+          firstInteraction: user.first_interaction,
+          lastInteraction: user.last_interaction
+        }));
+      } catch (e) {
+        console.error('Error fetching all interactions:', e);
+        return [];
+      }
     }
 
     function getBadgeForInteractions(interactions) {
@@ -1447,6 +1594,7 @@
 
       window.showTab = function(tabName) {
         console.log('📑 Switching to tab:', tabName);
+        activeTab = tabName;
         
         // Update tabs
         document.querySelectorAll('.tab').forEach(tab => {
@@ -1509,7 +1657,7 @@
 
         // Update UI and load wallet-specific XP
         updateWalletUI();
-        updateXPDisplay();
+        await updateXPDisplay();
 
       } catch (error) {
         console.error('Connection error:', error);
@@ -1517,7 +1665,7 @@
       }
     }
 
-    function disconnect() {
+    async function disconnect() {
       appState = {
         connected: false,
         address: null,
@@ -1526,7 +1674,7 @@
         signer: null
       };
       updateWalletUI();
-      updateXPDisplay();
+      await updateXPDisplay();
       console.log('🔌 Wallet disconnected, XP reset to 0');
     }
 
@@ -1545,7 +1693,7 @@
       }
     }
 
-    function addXP(amount) {
+    async function addXP(amount) {
       if (!appState.connected || !appState.address) {
         console.log('❌ Cannot add XP: wallet not connected');
         return;
@@ -1554,14 +1702,14 @@
       // Add XP to current wallet
       appState.xp += amount;
       
-      // Save to localStorage for this specific wallet
-      saveWalletXP(appState.address, appState.xp);
+      // Save to Supabase
+      await saveWalletXP(appState.address, appState.xp);
       
       // Update display
       document.getElementById('xp').textContent = appState.xp;
       
       // Update claim UI
-      updateClaimUI();
+      await updateClaimUI();
       
       // Add celebration effect
       const xpElement = document.getElementById('xp');
@@ -1623,15 +1771,15 @@
 
         // Since Farcaster wallet doesn't support eth_getTransactionReceipt,
         // we'll assume success after a delay and track the interaction
-        setTimeout(() => {
+        setTimeout(async () => {
           console.log('✅ Transaction assumed successful');
           showStatus(statusId, successMsg, 'success');
-          addXP(xpAmount);
+          await addXP(xpAmount);
           
           // Track contract interaction
           if (appState.connected && appState.address) {
             const contractType = getContractType(contractAddress, methodName);
-            const interactionData = saveContractInteraction(appState.address, contractType);
+            const interactionData = await saveContractInteraction(appState.address, contractType);
             console.log(`🎯 Contract interaction tracked: ${contractType}`);
             
             // Check for achievements
@@ -1725,8 +1873,8 @@
       `;
 
       try {
-        // Get all contract interactions from localStorage
-        const contractUsers = getAllContractInteractions();
+        // Get all contract interactions from Supabase
+        const contractUsers = await getAllContractInteractions();
         
         console.log('📊 Found', contractUsers.length, 'users with contract interactions');
         
@@ -1806,7 +1954,7 @@
     function generateShareableContent(type, data = {}) {
       const baseUrl = window.location.origin;
       const userStats = appState.connected ? getContractInteractions(appState.address) : null;
-      const tokenBalance = appState.connected ? (localStorage.getItem(`dog_token_balance_${appState.address.toLowerCase()}`) || '0') : '0';
+      const tokenBalance = document.getElementById('dogTokenBalance')?.textContent || '0';
       
       const shareTemplates = {
         pet: {
@@ -1900,13 +2048,13 @@
     }
 
     // Individual Share Functions
-    window.sharePetAchievement = function() {
+    window.sharePetAchievement = async function() {
       if (!appState.connected) {
         showError('Connect wallet to share achievements');
         return;
       }
       
-      const userStats = getContractInteractions(appState.address);
+      const userStats = await getContractInteractions(appState.address);
       const achievement = {
         icon: '🐕',
         title: 'Dog Lover Achievement!',
@@ -1918,13 +2066,13 @@
       showAchievementModal(achievement);
     };
 
-    window.shareGreetAchievement = function() {
+    window.shareGreetAchievement = async function() {
       if (!appState.connected) {
         showError('Connect wallet to share achievements');
         return;
       }
       
-      const userStats = getContractInteractions(appState.address);
+      const userStats = await getContractInteractions(appState.address);
       const totalGreets = userStats.gm + userStats.gn;
       const achievement = {
         icon: '👋',
@@ -1937,13 +2085,13 @@
       showAchievementModal(achievement);
     };
 
-    window.shareFlipAchievement = function() {
+    window.shareFlipAchievement = async function() {
       if (!appState.connected) {
         showError('Connect wallet to share achievements');
         return;
       }
       
-      const userStats = getContractInteractions(appState.address);
+      const userStats = await getContractInteractions(appState.address);
       const lastResult = document.getElementById('flip-result').textContent;
       const achievement = {
         icon: '🪙',
@@ -1956,20 +2104,20 @@
       showAchievementModal(achievement);
     };
 
-    window.shareLeaderboardPosition = function() {
+    window.shareLeaderboardPosition = async function() {
       if (!appState.connected) {
         showError('Connect wallet to share position');
         return;
       }
       
       // Find user's position in leaderboard
-      const allUsers = getAllContractInteractions();
+      const allUsers = await getAllContractInteractions();
       const userIndex = allUsers.findIndex(user => 
         user.address.toLowerCase() === appState.address.toLowerCase()
       );
       
       const rank = userIndex >= 0 ? userIndex + 1 : '?';
-      const userStats = getContractInteractions(appState.address);
+      const userStats = await getContractInteractions(appState.address);
       
       const achievement = {
         icon: '🏆',
@@ -2083,241 +2231,6 @@
       }
     }
 
-    // Configuration
-    const OWNER_ADDRESS = "0x97675F03D65FAB7371fa2BeB3dbF9c6842c8d525"; // Your owner wallet address
-    
-    // Owner-only bonus function
-    window.giveBonus = function(walletAddress, bonusXP = 500) {
-      // Security check - only owner can give bonus
-      if (!appState.connected || appState.address.toLowerCase() !== OWNER_ADDRESS.toLowerCase()) {
-        console.error('❌ Only owner can give bonuses');
-        console.log('Connected:', appState.connected);
-        console.log('Your address:', appState.address);
-        console.log('Owner address:', OWNER_ADDRESS);
-        showError('Only owner can give bonuses');
-        return;
-      }
-      
-      if (!walletAddress) {
-        console.log('❌ Please provide a wallet address');
-        return;
-      }
-      
-      // Simple storage key for the wallet
-      const storageKey = `monad_dog_xp_${walletAddress.toLowerCase()}_v2`;
-      const currentXP = parseInt(localStorage.getItem(storageKey) || '0');
-      const newXP = currentXP + bonusXP;
-      
-      localStorage.setItem(storageKey, newXP.toString());
-      console.log(`✅ Gave ${bonusXP} XP bonus to ${walletAddress}. Total XP: ${newXP}`);
-      showSuccessNotification(`Gave ${bonusXP} XP bonus to ${walletAddress}`);
-      
-      // If it's the current user, update UI immediately
-      if (walletAddress.toLowerCase() === appState.address?.toLowerCase()) {
-        appState.xp = newXP;
-        updateXP(newXP);
-        updateClaimUI();
-        console.log('Updated current user XP to:', newXP);
-      }
-    };
-    
-    // Owner-only: Give bonus to all existing users (improved version)
-    window.giveBonusToAll = function(bonusXP = 500) {
-      // Security check
-      if (!appState.connected || appState.address.toLowerCase() !== OWNER_ADDRESS.toLowerCase()) {
-        console.error('❌ Only owner can give bonuses');
-        showError('Only owner can give bonuses');
-        return;
-      }
-      
-      let count = 0;
-      const wallets = new Set(); // Use Set to avoid duplicates
-      
-      // Find all wallet XP entries
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        
-        // Look for XP keys - both old and new format
-        if (key && (key.includes('wallet_xp_0x') || key.includes('monad_dog_xp_0x'))) {
-          // Extract wallet address
-          let wallet = key;
-          
-          // Remove prefixes
-          wallet = wallet.replace('wallet_xp_', '');
-          wallet = wallet.replace('monad_dog_xp_', '');
-          wallet = wallet.replace('_v2', '');
-          wallet = wallet.replace('_initial_bonus', '');
-          wallet = wallet.replace('_timestamp', '');
-          
-          // Validate address format
-          if (wallet.startsWith('0x') && wallet.length === 42) {
-            wallets.add(wallet.toLowerCase());
-          }
-        }
-      }
-      
-      console.log(`Found ${wallets.size} unique wallets`);
-      
-      // Give bonus to each wallet
-      wallets.forEach(wallet => {
-        const storageKey = `monad_dog_xp_${wallet.toLowerCase()}_v2`;
-        const currentXP = parseInt(localStorage.getItem(storageKey) || '0');
-        const newXP = currentXP + bonusXP;
-        
-        localStorage.setItem(storageKey, newXP.toString());
-        count++;
-        
-        console.log(`${wallet}: ${currentXP} → ${newXP} XP`);
-      });
-      
-      console.log(`✅ Gave ${bonusXP} XP bonus to ${count} users`);
-      
-      if (count > 0) {
-        showSuccessNotification(`Gave ${bonusXP} XP bonus to ${count} users!`);
-      } else {
-        showNotification('No users found. Users need to connect and play first.', 'info');
-      }
-      
-      // Refresh current user if connected
-      if (appState.connected && appState.address) {
-        getWalletXP(appState.address).then(xp => {
-          updateXP(xp);
-          updateClaimUI();
-        });
-      }
-    };
-    
-    // Debug function to check claim status
-    window.checkClaimStatus = function() {
-      console.log('=== Claim Status Debug ===');
-      console.log('Connected:', appState.connected);
-      console.log('Address:', appState.address);
-      console.log('Current XP:', appState.xp);
-      console.log('XP to Token Rate:', XP_TO_TOKEN_RATE);
-      console.log('Can claim?', appState.xp >= XP_TO_TOKEN_RATE);
-      
-      const claimButton = document.getElementById('claimTokensBtn');
-      if (claimButton) {
-        console.log('Claim button found');
-        console.log('Button disabled:', claimButton.disabled);
-        console.log('Button classes:', claimButton.className);
-      } else {
-        console.log('❌ Claim button NOT found!');
-      }
-      
-      // Force update
-      updateClaimUI();
-    };
-    
-    // Owner panel (shows only for owner)
-    function showOwnerPanel() {
-      console.log('Checking owner status...');
-      console.log('Connected address:', appState.address);
-      console.log('Owner address:', OWNER_ADDRESS);
-      console.log('Is owner?', appState.address?.toLowerCase() === OWNER_ADDRESS.toLowerCase());
-      
-      // Remove existing panel
-      const existingPanel = document.getElementById('ownerPanel');
-      if (existingPanel) existingPanel.remove();
-      
-      if (appState.address?.toLowerCase() === OWNER_ADDRESS.toLowerCase()) {
-        console.log('✅ Owner detected, showing panel');
-        const panel = document.createElement('div');
-        panel.id = 'ownerPanel';
-        panel.style.cssText = `
-          position: fixed;
-          bottom: 20px;
-          right: 20px;
-          background: rgba(0,0,0,0.9);
-          border: 2px solid #f59e0b;
-          padding: 15px;
-          border-radius: 12px;
-          font-size: 12px;
-          z-index: 1000;
-        `;
-        panel.innerHTML = `
-          <div style="color: #f59e0b; font-weight: bold; margin-bottom: 10px;">👑 Owner Panel</div>
-          <button onclick="giveBonusToAll(500)" style="background: #f59e0b; color: black; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 12px; margin-right: 5px;">
-            Give 500 XP to All
-          </button>
-          <button onclick="giveBonusToAll(1000)" style="background: #dc2626; color: white; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 12px;">
-            Give 1000 XP to All
-          </button>
-        `;
-        document.body.appendChild(panel);
-      } else {
-        console.log('❌ Not owner, panel hidden');
-      }
-    }
-
-    window.checkXP = function() {
-      if (!appState.connected || !appState.address) {
-        console.log('❌ No wallet connected');
-        return 0;
-      }
-      
-      console.log(`💎 Current XP for ${appState.address}:`, appState.xp);
-      console.log(`💾 Stored XP:`, getWalletXP(appState.address));
-      return appState.xp;
-    };
-
-    window.getAllWalletsXP = function() {
-      const allWallets = {};
-      
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && key.startsWith('wallet_xp_')) {
-          const address = key.replace('wallet_xp_', '');
-          const xp = parseInt(localStorage.getItem(key));
-          allWallets[address] = xp;
-        }
-      }
-      
-      console.log('🎯 All wallets XP:', allWallets);
-      return allWallets;
-    };
-
-    window.checkTokenBalance = function() {
-      if (!appState.connected || !appState.address) {
-        console.log('❌ No wallet connected');
-        return 0;
-      }
-      
-      const balance = localStorage.getItem(`dog_token_balance_${appState.address.toLowerCase()}`) || '0';
-      console.log(`🪙 $DOG Token balance for ${appState.address}:`, balance);
-      return parseInt(balance);
-    };
-
-    window.getClaimHistoryDebug = function() {
-      if (!appState.connected || !appState.address) {
-        console.log('❌ No wallet connected');
-        return [];
-      }
-      
-      const history = getClaimHistory(appState.address);
-      console.log(`📜 Claim history for ${appState.address}:`, history);
-      return history;
-    };
-
-    function showTab(tabName) {
-      // Update tabs
-      document.querySelectorAll('.tab').forEach(tab => {
-        tab.classList.remove('active');
-      });
-      event.target.classList.add('active');
-      
-      // Update content
-      document.querySelectorAll('.tab-content').forEach(content => {
-        content.classList.remove('active');
-      });
-      document.getElementById(tabName).classList.add('active');
-      
-      // Update claim UI when switching to claim tab
-      if (tabName === 'claim') {
-        updateClaimUI();
-      }
-    }
-
     // Start app when DOM is ready with preloading
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', () => {
@@ -2330,6 +2243,7 @@
     }
 
     console.log('📱 App script loaded');
+    }); // End of DOMContentLoaded
   </script>
 </body>
 </html>
