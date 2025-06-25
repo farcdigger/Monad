@@ -641,12 +641,6 @@
           <div id="claim-status" class="status"></div>
         </div>
         
-        <div class="token-balance">
-          <span>Your $DOG Balance:</span>
-          <strong id="userDogBalance">0</strong>
-          <span>$DOG</span>
-        </div>
-        
         <!-- Token Info -->
         <div style="margin-top: 20px; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 12px;">
           <div style="text-align: center; margin-bottom: 15px;">
@@ -1177,7 +1171,7 @@
         }
         
         // Update all balance displays
-        const elements = ['userDogBalance', 'walletDogDisplay'];
+        const elements = ['walletDogDisplay'];
         elements.forEach(id => {
           const el = document.getElementById(id);
           if (el) {
@@ -1193,7 +1187,6 @@
         console.error('Error details:', error.message);
         
         // Set to 0 on error
-        document.getElementById('userDogBalance').textContent = '0';
         document.getElementById('walletDogDisplay').textContent = '0';
       }
     }
