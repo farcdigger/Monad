@@ -433,6 +433,12 @@
       cursor: pointer;
       width: auto;
       padding: 5px;
+      opacity: 0.8;
+      transition: opacity 0.2s;
+    }
+    
+    .close-modal:hover {
+      opacity: 1;
     }
 
     /* Token Claim Styles */
@@ -709,7 +715,7 @@
     </div>
 
     <!-- Achievement Modal -->
-    <div id="achievementModal" class="achievement-modal">
+    <div id="achievementModal" class="achievement-modal" onclick="if(event.target === this) closeAchievementModal()">
       <div class="achievement-content">
         <button class="close-modal" onclick="closeAchievementModal()">×</button>
         <div id="achievementIcon" class="achievement-icon">🎉</div>
@@ -827,9 +833,9 @@
         setupEventListeners();
         setupGameFunctions();
         
-        // Step 3: Load leaderboard from Supabase
-        updateLoadingProgress(80, 'Loading leaderboard data...<br>🏆 Fetching player rankings');
-        await populateLeaderboard();
+        // Step 3: Initialize app
+        updateLoadingProgress(80, 'Initializing app...<br>🎮 Setting up game');
+        await new Promise(resolve => setTimeout(resolve, 300));
         
         // Step 4: Finalize
         updateLoadingProgress(95, 'Almost ready...<br>✨ Final preparations');
@@ -1212,15 +1218,20 @@
             await saveWalletXP(appState.address, remainingXP);
             
             // Try to get updated balance
-            try {
-              const newBalance = await dogTokenContract.balanceOf(appState.address);
-              const formattedBalance = ethers.utils.formatEther(newBalance);
-              
-              document.getElementById('userDogBalance').textContent = parseFloat(formattedBalance).toFixed(2);
-              document.getElementById('dogTokenBalance').textContent = parseFloat(formattedBalance).toFixed(2);
-            } catch (e) {
-              console.log('Could not fetch balance, will update on next refresh');
-            }
+            setTimeout(async () => {
+              try {
+                const newBalance = await dogTokenContract.balanceOf(appState.address);
+                const formattedBalance = ethers.utils.formatUnits(newBalance, 18);
+                
+                document.getElementById('userDogBalance').textContent = parseFloat(formattedBalance).toFixed(2);
+                document.getElementById('dogTokenBalance').textContent = parseFloat(formattedBalance).toFixed(2);
+                console.log('✅ Balance updated after claim:', formattedBalance);
+              } catch (e) {
+                console.log('Could not fetch balance immediately, refreshing...');
+                // Try again after a delay
+                setTimeout(() => updateTokenBalance(), 3000);
+              }
+            }, 2000);
             
             // Update total claimed stats
             await updateClaimedStats();
@@ -1672,6 +1683,8 @@
         // Update claim UI when switching to claim tab
         if (tabName === 'claim') {
           updateClaimUI();
+          updateTokenBalance();
+          updateClaimedStats();
         }
       };
 
@@ -1726,11 +1739,13 @@
         appState.address = accounts[0];
         appState.connected = true;
 
-        // Update UI first
+        // Update UI and load wallet-specific data
         updateWalletUI();
         
-        // Then load data asynchronously
+        // Load data asynchronously
         updateXPDisplay().catch(console.error);
+        updateTokenBalance().catch(console.error);
+        updateClaimedStats().catch(console.error);
 
       } catch (error) {
         console.error('Connection error:', error);
@@ -2093,35 +2108,67 @@
       }
     }
 
-    // Achievement Modal Functions
-    function showAchievementModal(achievement) {
+    // Achievement Modal Functions - Fixed with proper event handling
+    window.showAchievementModal = function(achievement) {
       const modal = document.getElementById('achievementModal');
       const icon = document.getElementById('achievementIcon');
       const title = document.getElementById('achievementTitle');
       const description = document.getElementById('achievementDescription');
       
-      icon.textContent = achievement.icon;
-      title.textContent = achievement.title;
-      description.textContent = achievement.description;
+      if (!modal || !icon || !title || !description) {
+        console.error('Achievement modal elements not found');
+        return;
+      }
+      
+      icon.textContent = achievement.icon || '🎉';
+      title.textContent = achievement.title || 'Achievement!';
+      description.textContent = achievement.description || '';
       
       modal.style.display = 'flex';
       
       // Store current achievement for sharing
       window.currentAchievement = achievement;
       
+      // Add escape key listener
+      window.achievementEscapeHandler = function(e) {
+        if (e.key === 'Escape') {
+          closeAchievementModal();
+        }
+      };
+      document.addEventListener('keydown', window.achievementEscapeHandler);
+      
       console.log('🎉 Achievement modal shown:', achievement);
     }
 
-    function closeAchievementModal() {
-      document.getElementById('achievementModal').style.display = 'none';
+    window.closeAchievementModal = function() {
+      const modal = document.getElementById('achievementModal');
+      if (modal) {
+        modal.style.display = 'none';
+      }
       window.currentAchievement = null;
+      
+      // Remove escape key listener
+      if (window.achievementEscapeHandler) {
+        document.removeEventListener('keydown', window.achievementEscapeHandler);
+      }
+      
+      console.log('Modal closed');
     }
 
-    function shareCurrentAchievement() {
+    window.shareCurrentAchievement = function() {
       if (window.currentAchievement) {
-        const content = generateShareableContent(window.currentAchievement.type, window.currentAchievement.data);
-        shareOnFarcaster(content);
-        closeAchievementModal();
+        try {
+          const content = generateShareableContent(window.currentAchievement.type, window.currentAchievement.data);
+          shareOnFarcaster(content);
+          
+          // Close modal after sharing
+          setTimeout(() => {
+            closeAchievementModal();
+          }, 500);
+        } catch (error) {
+          console.error('Error sharing achievement:', error);
+          closeAchievementModal();
+        }
       }
     }
 
@@ -2183,29 +2230,7 @@
     };
 
     window.shareLeaderboardPosition = async function() {
-      if (!appState.connected) {
-        showError('Connect wallet to share position');
-        return;
-      }
-      
-      // Find user's position in leaderboard
-      const allUsers = await getAllContractInteractions();
-      const userIndex = allUsers.findIndex(user => 
-        user.address.toLowerCase() === appState.address.toLowerCase()
-      );
-      
-      const rank = userIndex >= 0 ? userIndex + 1 : '?';
-      const userStats = await getContractInteractions(appState.address);
-      
-      const achievement = {
-        icon: '🏆',
-        title: 'Leaderboard Position!',
-        description: `Rank #${rank} with ${userStats.total} total interactions and ${appState.xp} XP!`,
-        type: 'leaderboard',
-        data: { rank, total: userStats.total }
-      };
-      
-      showAchievementModal(achievement);
+      showError('Leaderboard feature has been removed');
     };
 
     window.shareAppWithFriends = function() {
