@@ -953,11 +953,17 @@
     // XP to DOG token conversion rate
     const XP_TO_DOG_RATE = 10; // 10 XP = 1 DOG token
 
-    // Supabase Functions for XP Management
+    // Supabase Functions for XP Management - with error handling and fallback
     async function getWalletXP(address) {
       if (!address) return 0;
       
       try {
+        // Check if Supabase is available
+        if (!supabaseClient) {
+          console.log('Supabase not available, using localStorage fallback');
+          return parseInt(localStorage.getItem(`wallet_xp_${address.toLowerCase()}`) || '0');
+        }
+
         const { data, error } = await supabaseClient
           .from('user_xp')
           .select('xp')
@@ -966,21 +972,27 @@
         
         if (error) {
           console.log('No XP record found, returning 0');
-          return 0;
+          // Fallback to localStorage
+          return parseInt(localStorage.getItem(`wallet_xp_${address.toLowerCase()}`) || '0');
         }
         
         return data.xp || 0;
       } catch (e) {
         console.error('Error fetching XP:', e);
-        return 0;
+        // Fallback to localStorage
+        return parseInt(localStorage.getItem(`wallet_xp_${address.toLowerCase()}`) || '0');
       }
     }
 
     async function saveWalletXP(address, xp) {
       if (!address) return;
       
-      try {
-        const { error } = await supabaseClient
+      // Always save to localStorage first (immediate)
+      localStorage.setItem(`wallet_xp_${address.toLowerCase()}`, xp.toString());
+      
+      // Then try Supabase (async, non-blocking)
+      if (supabaseClient) {
+        supabaseClient
           .from('user_xp')
           .upsert({
             wallet_address: address.toLowerCase(),
@@ -988,21 +1000,27 @@
             updated_at: new Date().toISOString()
           }, {
             onConflict: 'wallet_address'
+          })
+          .then(({ error }) => {
+            if (!error) {
+              console.log(`💾 XP saved to Supabase for ${address}: ${xp}`);
+            }
+          })
+          .catch(e => {
+            console.error('Error saving XP to Supabase:', e);
           });
-        
-        if (error) {
-          console.error('Error saving XP:', error);
-        } else {
-          console.log(`💾 XP saved to Supabase for ${address}: ${xp}`);
-        }
-      } catch (e) {
-        console.error('Error saving XP:', e);
       }
     }
 
-    // Token claim history management with Supabase
+    // Token claim history management with Supabase - optimized
     async function getClaimHistory(address) {
       if (!address) return [];
+      
+      // Use localStorage as immediate fallback
+      const localHistory = localStorage.getItem(`claim_history_${address.toLowerCase()}`);
+      if (!supabaseClient && localHistory) {
+        return JSON.parse(localHistory) || [];
+      }
       
       try {
         const { data, error } = await supabaseClient
@@ -1014,21 +1032,29 @@
         
         if (error) {
           console.error('Error fetching claim history:', error);
-          return [];
+          return localHistory ? JSON.parse(localHistory) || [] : [];
         }
         
         return data || [];
       } catch (e) {
         console.error('Error fetching claim history:', e);
-        return [];
+        return localHistory ? JSON.parse(localHistory) || [] : [];
       }
     }
 
     async function saveClaimHistory(address, claimData) {
       if (!address) return;
       
-      try {
-        const { error } = await supabaseClient
+      // Save to localStorage first
+      const key = `claim_history_${address.toLowerCase()}`;
+      const history = JSON.parse(localStorage.getItem(key) || '[]');
+      history.unshift(claimData);
+      if (history.length > 10) history.pop();
+      localStorage.setItem(key, JSON.stringify(history));
+      
+      // Then try Supabase (non-blocking)
+      if (supabaseClient) {
+        supabaseClient
           .from('claim_history')
           .insert({
             wallet_address: address.toLowerCase(),
@@ -1036,26 +1062,36 @@
             token_amount: claimData.tokenAmount,
             tx_hash: claimData.txHash,
             timestamp: new Date().toISOString()
+          })
+          .then(({ error }) => {
+            if (error) {
+              console.error('Error saving claim history:', error);
+            }
+          })
+          .catch(e => {
+            console.error('Error saving claim history:', e);
           });
-        
-        if (error) {
-          console.error('Error saving claim history:', error);
-        }
-      } catch (e) {
-        console.error('Error saving claim history:', e);
       }
     }
 
     async function updateXPDisplay() {
       if (appState.connected && appState.address) {
-        const walletXP = await getWalletXP(appState.address);
+        // Show current value immediately
+        const currentDisplay = document.getElementById('xp').textContent;
+        
+        // Get XP (with timeout to prevent hanging)
+        const xpPromise = getWalletXP(appState.address);
+        const timeoutPromise = new Promise((resolve) => setTimeout(() => resolve(parseInt(currentDisplay) || 0), 1000));
+        
+        const walletXP = await Promise.race([xpPromise, timeoutPromise]);
+        
         document.getElementById('xp').textContent = walletXP;
         appState.xp = walletXP;
         console.log(`📊 XP loaded for ${appState.address}: ${walletXP}`);
         
-        // Update claim UI
+        // Update claim UI non-blocking
         if (activeTab === 'claim') {
-          setTimeout(() => updateClaimUI(), 100);
+          requestAnimationFrame(() => updateClaimUI());
         }
       } else {
         document.getElementById('xp').textContent = '0';
@@ -1304,9 +1340,9 @@
       }
     }
 
-    // Contract interaction tracking with Supabase
+    // Contract interaction tracking with Supabase - optimized
     async function getContractInteractions(address) {
-      if (!address) return {
+      const defaultData = {
         pet: 0,
         gm: 0,
         gn: 0,
@@ -1316,6 +1352,14 @@
         lastInteraction: null
       };
       
+      if (!address) return defaultData;
+      
+      // Get from localStorage first (immediate)
+      const localData = localStorage.getItem(`contract_interactions_${address.toLowerCase()}`);
+      if (!supabaseClient && localData) {
+        return JSON.parse(localData) || defaultData;
+      }
+      
       try {
         const { data, error } = await supabaseClient
           .from('contract_interactions')
@@ -1324,15 +1368,7 @@
           .single();
         
         if (error || !data) {
-          return {
-            pet: 0,
-            gm: 0,
-            gn: 0,
-            flip: 0,
-            total: 0,
-            firstInteraction: null,
-            lastInteraction: null
-          };
+          return localData ? JSON.parse(localData) || defaultData : defaultData;
         }
         
         return {
@@ -1346,21 +1382,13 @@
         };
       } catch (e) {
         console.error('Error fetching interactions:', e);
-        return {
-          pet: 0,
-          gm: 0,
-          gn: 0,
-          flip: 0,
-          total: 0,
-          firstInteraction: null,
-          lastInteraction: null
-        };
+        return localData ? JSON.parse(localData) || defaultData : defaultData;
       }
     }
 
     async function saveContractInteraction(address, contractType) {
       try {
-        // First get current data
+        // Get current data
         const currentData = await getContractInteractions(address);
         
         // Increment the specific interaction
@@ -1379,30 +1407,38 @@
           updates.first_interaction = new Date().toISOString();
         }
         
-        const { error } = await supabaseClient
-          .from('contract_interactions')
-          .upsert(updates, {
-            onConflict: 'wallet_address'
-          });
-        
-        if (error) {
-          console.error('Error saving interaction:', error);
-        } else {
-          console.log(`📊 Contract interaction saved: ${contractType} for ${address}`);
-          console.log(`📈 Total interactions: ${updates.total_interactions}`);
-          
-          // Refresh leaderboard after interaction
-          await populateLeaderboard();
-        }
-        
-        return {
+        // Save to localStorage first (immediate)
+        const localData = {
           pet: updates.pet_count,
           gm: updates.gm_count,
           gn: updates.gn_count,
           flip: updates.flip_count,
           total: updates.total_interactions,
-          lastInteraction: updates.last_interaction
+          lastInteraction: updates.last_interaction,
+          firstInteraction: updates.first_interaction || currentData.firstInteraction
         };
+        localStorage.setItem(`contract_interactions_${address.toLowerCase()}`, JSON.stringify(localData));
+        
+        // Then try Supabase (non-blocking)
+        if (supabaseClient) {
+          supabaseClient
+            .from('contract_interactions')
+            .upsert(updates, {
+              onConflict: 'wallet_address'
+            })
+            .then(({ error }) => {
+              if (!error) {
+                console.log(`📊 Contract interaction saved: ${contractType} for ${address}`);
+                // Don't await - refresh leaderboard in background
+                populateLeaderboard();
+              }
+            })
+            .catch(e => {
+              console.error('Error saving interaction:', e);
+            });
+        }
+        
+        return localData;
       } catch (e) {
         console.error('Error saving interaction:', e);
         return currentData;
@@ -1410,32 +1446,51 @@
     }
 
     async function getAllContractInteractions() {
-      try {
-        const { data, error } = await supabaseClient
-          .from('contract_interactions')
-          .select('*')
-          .order('total_interactions', { ascending: false })
-          .limit(50);
-        
-        if (error) {
-          console.error('Error fetching all interactions:', error);
-          return [];
+      // First check localStorage for immediate response
+      const allUsers = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('contract_interactions_')) {
+          const address = key.replace('contract_interactions_', '');
+          const data = JSON.parse(localStorage.getItem(key));
+          if (data && data.total > 0) {
+            allUsers.push({
+              address: address,
+              ...data
+            });
+          }
         }
-        
-        return data.map(user => ({
-          address: user.wallet_address,
-          pet: user.pet_count || 0,
-          gm: user.gm_count || 0,
-          gn: user.gn_count || 0,
-          flip: user.flip_count || 0,
-          total: user.total_interactions || 0,
-          firstInteraction: user.first_interaction,
-          lastInteraction: user.last_interaction
-        }));
-      } catch (e) {
-        console.error('Error fetching all interactions:', e);
-        return [];
       }
+      
+      // If Supabase is available, fetch from there too
+      if (supabaseClient) {
+        try {
+          const { data, error } = await supabaseClient
+            .from('contract_interactions')
+            .select('*')
+            .order('total_interactions', { ascending: false })
+            .limit(50);
+          
+          if (!error && data) {
+            return data.map(user => ({
+              address: user.wallet_address,
+              pet: user.pet_count || 0,
+              gm: user.gm_count || 0,
+              gn: user.gn_count || 0,
+              flip: user.flip_count || 0,
+              total: user.total_interactions || 0,
+              firstInteraction: user.first_interaction,
+              lastInteraction: user.last_interaction
+            }));
+          }
+        } catch (e) {
+          console.error('Error fetching all interactions:', e);
+        }
+      }
+      
+      // Return localStorage data if Supabase fails
+      allUsers.sort((a, b) => b.total - a.total);
+      return allUsers;
     }
 
     function getBadgeForInteractions(interactions) {
@@ -1626,6 +1681,11 @@
       try {
         console.log('Connecting wallet...');
         
+        // Show loading state
+        const connectBtn = document.getElementById('connect-btn');
+        connectBtn.textContent = '🔄 Connecting...';
+        connectBtn.disabled = true;
+        
         let provider;
         
         if (sdk && sdk.wallet && sdk.wallet.ethProvider) {
@@ -1638,10 +1698,15 @@
           throw new Error('No wallet available');
         }
 
-        // Request accounts
-        const accounts = await provider.request({
+        // Request accounts with timeout
+        const accountsPromise = provider.request({
           method: 'eth_requestAccounts'
         });
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Connection timeout')), 10000)
+        );
+        
+        const accounts = await Promise.race([accountsPromise, timeoutPromise]);
 
         if (!accounts || accounts.length === 0) {
           throw new Error('No accounts found');
@@ -1655,13 +1720,20 @@
         appState.address = accounts[0];
         appState.connected = true;
 
-        // Update UI and load wallet-specific XP
+        // Update UI first
         updateWalletUI();
-        await updateXPDisplay();
+        
+        // Then load data asynchronously
+        updateXPDisplay().catch(console.error);
 
       } catch (error) {
         console.error('Connection error:', error);
         showError(error.message);
+        
+        // Reset button
+        const connectBtn = document.getElementById('connect-btn');
+        connectBtn.textContent = '🟣 Connect Wallet';
+        connectBtn.disabled = false;
       }
     }
 
