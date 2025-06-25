@@ -750,7 +750,40 @@
         console.error('❌ Supabase not loaded');
       }
     
-    console.log('🚀 Starting app...');
+          // Initialize modal close functions globally
+      window.closeAchievementModal = function() {
+        const modal = document.getElementById('achievementModal');
+        if (modal) {
+          modal.style.display = 'none';
+        }
+        window.currentAchievement = null;
+        
+        // Remove escape key listener
+        if (window.achievementEscapeHandler) {
+          document.removeEventListener('keydown', window.achievementEscapeHandler);
+        }
+        
+        console.log('Modal closed');
+      }
+      
+      window.shareCurrentAchievement = function() {
+        if (window.currentAchievement) {
+          try {
+            const content = generateShareableContent(window.currentAchievement.type, window.currentAchievement.data);
+            shareOnFarcaster(content);
+            
+            // Close modal after sharing
+            setTimeout(() => {
+              closeAchievementModal();
+            }, 500);
+          } catch (error) {
+            console.error('Error sharing achievement:', error);
+            closeAchievementModal();
+          }
+        }
+      }
+      
+      console.log('🚀 Starting app...');
     
     // Enhanced Loading Management
     let loadingProgress = 0;
@@ -1128,18 +1161,45 @@
         const balance = await dogTokenContract.balanceOf(appState.address);
         // DOG token has 18 decimals
         const formattedBalance = ethers.utils.formatUnits(balance, 18);
-        const displayBalance = parseFloat(formattedBalance).toFixed(2);
+        
+        // Parse and format the balance
+        const numBalance = parseFloat(formattedBalance);
+        const displayBalance = numBalance >= 1 ? numBalance.toFixed(2) : numBalance.toFixed(6);
         
         document.getElementById('dogTokenBalance').textContent = displayBalance;
         document.getElementById('userDogBalance').textContent = displayBalance;
         
-        console.log(`💰 DOG Balance updated: ${displayBalance}`);
+        console.log(`💰 DOG Balance: ${balance.toString()} wei = ${displayBalance} DOG`);
         
       } catch (error) {
         console.error('Error fetching token balance:', error);
-        // Show 0 if error
-        document.getElementById('dogTokenBalance').textContent = '0';
-        document.getElementById('userDogBalance').textContent = '0';
+        // Try fallback with different decimal
+        try {
+          const dogTokenContract = new ethers.Contract(
+            CONTRACTS.DOG_TOKEN,
+            [
+              "function balanceOf(address account) public view returns (uint256)",
+              "function decimals() public view returns (uint8)"
+            ],
+            appState.provider
+          );
+          
+          const decimals = await dogTokenContract.decimals();
+          const balance = await dogTokenContract.balanceOf(appState.address);
+          const formattedBalance = ethers.utils.formatUnits(balance, decimals);
+          
+          const numBalance = parseFloat(formattedBalance);
+          const displayBalance = numBalance >= 1 ? numBalance.toFixed(2) : numBalance.toFixed(6);
+          
+          document.getElementById('dogTokenBalance').textContent = displayBalance;
+          document.getElementById('userDogBalance').textContent = displayBalance;
+          
+          console.log(`💰 DOG Balance (${decimals} decimals): ${displayBalance}`);
+        } catch (e) {
+          console.error('Fallback also failed:', e);
+          document.getElementById('dogTokenBalance').textContent = '0';
+          document.getElementById('userDogBalance').textContent = '0';
+        }
       }
     }
 
@@ -1247,7 +1307,7 @@
             await updateXPDisplay();
             showStatus('claim-status', `✅ Successfully claimed ${claimableDOG} $DOG tokens!`, 'success');
             
-            // Show achievement
+            // Show achievement with auto-close fallback
             showAchievementModal({
               icon: '💰',
               title: 'Tokens Claimed!',
@@ -1255,6 +1315,15 @@
               type: 'claim',
               data: { amount: claimableDOG }
             });
+            
+            // Auto-close after 10 seconds if user doesn't interact
+            setTimeout(() => {
+              const modal = document.getElementById('achievementModal');
+              if (modal && modal.style.display === 'flex') {
+                console.log('Auto-closing achievement modal');
+                closeAchievementModal();
+              }
+            }, 10000);
             
             setTimeout(() => hideStatus('claim-status'), 5000);
             
