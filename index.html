@@ -1890,9 +1890,8 @@
         showStatus(statusId, '🔐 Please confirm in your wallet...', 'pending');
 
         // Send transaction
-        const estimatedGas = await contract.estimateGas[methodName]();
-        const tx = await contract[methodName]({
-        gasLimit: estimatedGas.mul(2)
+           const tx = await contract[methodName]({
+         gasLimit: 60000
         });
 
 
