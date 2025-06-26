@@ -1105,11 +1105,10 @@
       // Removed claim history display
     }
 
-    // Update token balance display - Debug version
+    // Update token balance display - Farcaster wallet compatible version
     async function updateTokenBalance() {
       if (!appState.connected || !appState.provider || !appState.address) {
         console.log('❌ Not connected, cannot fetch balance');
-        document.getElementById('userDogBalance').textContent = '0';
         document.getElementById('walletDogDisplay').textContent = '0';
         return;
       }
@@ -1117,77 +1116,109 @@
       console.log('🔄 Fetching DOG balance for:', appState.address);
       
       try {
-        // Ensure we're on the right network
-        const network = await appState.provider.getNetwork();
-        console.log('📡 Network:', network);
+        // Check if we're using Farcaster wallet
+        const isFarcasterWallet = sdk && sdk.wallet && sdk.wallet.ethProvider;
         
-        // Create contract instance
-        const dogTokenContract = new ethers.Contract(
-          CONTRACTS.DOG_TOKEN,
-          [
-            "function balanceOf(address) view returns (uint256)",
-            "function decimals() view returns (uint8)",
-            "function symbol() view returns (string)"
-          ],
-          appState.provider
-        );
-        
-        // Check if contract exists
-        const code = await appState.provider.getCode(CONTRACTS.DOG_TOKEN);
-        if (code === '0x') {
-          console.error('❌ No contract at address:', CONTRACTS.DOG_TOKEN);
-          return;
-        }
-        
-        // Get decimals first
-        let decimals = 18; // default
-        try {
-          decimals = await dogTokenContract.decimals();
-          console.log('📊 Token decimals:', decimals);
-        } catch (e) {
-          console.log('⚠️ Could not fetch decimals, using 18');
-        }
-        
-        // Get balance
-        const balance = await dogTokenContract.balanceOf(appState.address);
-        console.log('💰 Raw balance:', balance.toString());
-        
-        // Format balance
-        const formattedBalance = ethers.utils.formatUnits(balance, decimals);
-        console.log('💰 Formatted balance:', formattedBalance);
-        
-        // Parse and format the balance
-        const numBalance = parseFloat(formattedBalance);
-        let displayBalance;
-        
-        if (numBalance === 0) {
-          displayBalance = '0';
-        } else if (numBalance >= 1) {
-          displayBalance = numBalance.toFixed(2);
-        } else if (numBalance >= 0.01) {
-          displayBalance = numBalance.toFixed(4);
-        } else {
-          displayBalance = numBalance.toFixed(6);
-        }
-        
-        // Update all balance displays
-        const elements = ['walletDogDisplay'];
-        elements.forEach(id => {
-          const el = document.getElementById(id);
-          if (el) {
-            el.textContent = displayBalance;
-            console.log(`✅ Updated ${id}: ${displayBalance}`);
+        if (isFarcasterWallet) {
+          console.log('🟣 Using Farcaster wallet - trying direct RPC call');
+          
+          // For Farcaster, try a direct eth_getBalance first to test connection
+          try {
+            const ethBalance = await appState.provider.getBalance(appState.address);
+            console.log('ETH Balance:', ethers.utils.formatEther(ethBalance));
+          } catch (e) {
+            console.log('Basic balance check failed:', e);
           }
-        });
-        
-        console.log(`✅ DOG Balance updated: ${displayBalance} DOG`);
+          
+          // Try to get token balance using eth_call directly
+          try {
+            // Encode the balanceOf function call
+            const iface = new ethers.utils.Interface([
+              "function balanceOf(address account) public view returns (uint256)"
+            ]);
+            const data = iface.encodeFunctionData("balanceOf", [appState.address]);
+            
+            // Make the call using the provider's send method
+            const result = await appState.provider.send("eth_call", [{
+              to: CONTRACTS.DOG_TOKEN,
+              data: data
+            }, "latest"]);
+            
+            console.log('Raw result:', result);
+            
+            if (result && result !== '0x') {
+              const balance = ethers.BigNumber.from(result);
+              const formattedBalance = ethers.utils.formatUnits(balance, 18);
+              const numBalance = parseFloat(formattedBalance);
+              const displayBalance = numBalance >= 1 ? numBalance.toFixed(2) : 
+                                   numBalance > 0 ? numBalance.toFixed(6) : '0';
+              
+              document.getElementById('walletDogDisplay').textContent = displayBalance;
+              console.log(`✅ DOG Balance (Farcaster): ${displayBalance}`);
+            } else {
+              console.log('No balance or contract not found');
+              document.getElementById('walletDogDisplay').textContent = '0';
+            }
+            
+          } catch (callError) {
+            console.error('Direct eth_call failed:', callError);
+            
+            // Fallback: Try using a public RPC endpoint
+            console.log('Trying fallback RPC...');
+            try {
+              const fallbackProvider = new ethers.providers.JsonRpcProvider('https://testnet-rpc.monad.xyz');
+              const dogTokenContract = new ethers.Contract(
+                CONTRACTS.DOG_TOKEN,
+                ["function balanceOf(address) view returns (uint256)"],
+                fallbackProvider
+              );
+              
+              const balance = await dogTokenContract.balanceOf(appState.address);
+              const formattedBalance = ethers.utils.formatUnits(balance, 18);
+              const numBalance = parseFloat(formattedBalance);
+              const displayBalance = numBalance >= 1 ? numBalance.toFixed(2) : 
+                                   numBalance > 0 ? numBalance.toFixed(6) : '0';
+              
+              document.getElementById('walletDogDisplay').textContent = displayBalance;
+              console.log(`✅ DOG Balance (Fallback RPC): ${displayBalance}`);
+              
+            } catch (fallbackError) {
+              console.error('Fallback RPC also failed:', fallbackError);
+              document.getElementById('walletDogDisplay').textContent = '0';
+            }
+          }
+          
+        } else {
+          // Regular wallet (MetaMask, etc.)
+          console.log('🦊 Using regular wallet provider');
+          
+          const dogTokenContract = new ethers.Contract(
+            CONTRACTS.DOG_TOKEN,
+            ["function balanceOf(address) view returns (uint256)"],
+            appState.provider
+          );
+          
+          const balance = await dogTokenContract.balanceOf(appState.address);
+          const formattedBalance = ethers.utils.formatUnits(balance, 18);
+          const numBalance = parseFloat(formattedBalance);
+          const displayBalance = numBalance >= 1 ? numBalance.toFixed(2) : 
+                               numBalance > 0 ? numBalance.toFixed(6) : '0';
+          
+          document.getElementById('walletDogDisplay').textContent = displayBalance;
+          console.log(`✅ DOG Balance: ${displayBalance}`);
+        }
         
       } catch (error) {
         console.error('❌ Error fetching token balance:', error);
-        console.error('Error details:', error.message);
         
-        // Set to 0 on error
-        document.getElementById('walletDogDisplay').textContent = '0';
+        // Last resort: Use localStorage cache if available
+        const cachedBalance = localStorage.getItem(`dog_balance_${appState.address.toLowerCase()}`);
+        if (cachedBalance) {
+          document.getElementById('walletDogDisplay').textContent = cachedBalance;
+          console.log(`📦 Using cached balance: ${cachedBalance}`);
+        } else {
+          document.getElementById('walletDogDisplay').textContent = '0';
+        }
       }
     }
 
@@ -1260,8 +1291,10 @@
                   const numBalance = parseFloat(formattedBalance);
                   const displayBalance = numBalance >= 1 ? numBalance.toFixed(2) : numBalance.toFixed(6);
                   
-                  document.getElementById('userDogBalance').textContent = displayBalance;
                   document.getElementById('walletDogDisplay').textContent = displayBalance;
+                  
+                  // Cache the balance for Farcaster wallet
+                  localStorage.setItem(`dog_balance_${appState.address.toLowerCase()}`, displayBalance);
                   
                   console.log(`✅ Balance updated after claim (attempt ${i + 1}): ${displayBalance} DOG`);
                   break;
@@ -2049,7 +2082,7 @@
     function generateShareableContent(type, data = {}) {
       const baseUrl = window.location.origin;
       const userStats = appState.connected ? getContractInteractions(appState.address) : null;
-      const tokenBalance = document.getElementById('userDogBalance')?.textContent || '0';
+      const tokenBalance = document.getElementById('walletDogDisplay')?.textContent || '0';
       
       const shareTemplates = {
         pet: {
