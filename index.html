@@ -1264,7 +1264,7 @@
         
         // Execute claim transaction with proper gas limit
         const tx = await dogTokenContract.claim(xpToClaim, {
-          gasLimit: 500000 // Set appropriate gas limit
+          gasLimit: 250000 // Set appropriate gas limit
         });
         
         showStatus('claim-status', `📡 Transaction sent: ${tx.hash.slice(0,10)}...`, 'pending');
@@ -1891,7 +1891,7 @@
 
         // Send transaction
         const tx = await contract[methodName]({
-          gasLimit: 1000000
+          gasLimit: 500000
         });
 
         console.log('✅ Transaction sent:', tx.hash);
