@@ -561,6 +561,192 @@
       padding: 8px 0;
       border-bottom: 1px solid rgba(255,255,255,0.1);
     }
+
+    /* Sloth Game Styles */
+    .sloth-game-container {
+      position: relative;
+      width: 100%;
+      max-width: 350px;
+      height: 400px;
+      margin: 0 auto;
+      background: linear-gradient(180deg, #87CEEB 0%, #98D8C8 100%);
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+
+    .sloth-character {
+      position: absolute;
+      left: 50%;
+      bottom: 60px;
+      transform: translateX(-50%);
+      font-size: 60px;
+      transition: all 0.3s ease;
+      z-index: 10;
+    }
+
+    .sloth-character.jumping {
+      animation: jump 0.6s ease;
+    }
+
+    @keyframes jump {
+      0%, 100% { bottom: 60px; }
+      50% { bottom: 180px; }
+    }
+
+    .obstacle {
+      position: absolute;
+      right: -50px;
+      bottom: 60px;
+      font-size: 40px;
+      animation: moveObstacle 2s linear infinite;
+    }
+
+    @keyframes moveObstacle {
+      to { right: 100%; }
+    }
+
+    .sloth-ground {
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      height: 60px;
+      background: linear-gradient(180deg, #8B7355 0%, #654321 100%);
+      border-top: 3px solid #5D4E37;
+    }
+
+    .sloth-cloud {
+      position: absolute;
+      font-size: 30px;
+      opacity: 0.8;
+      animation: float 20s linear infinite;
+    }
+
+    .sloth-cloud:nth-child(1) { top: 20px; left: -50px; animation-duration: 15s; }
+    .sloth-cloud:nth-child(2) { top: 50px; left: -100px; animation-duration: 20s; animation-delay: 5s; }
+    .sloth-cloud:nth-child(3) { top: 80px; left: -80px; animation-duration: 25s; animation-delay: 10s; }
+
+    @keyframes float {
+      to { left: 100%; }
+    }
+
+    .sloth-score {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      font-size: 24px;
+      font-weight: bold;
+      color: #333;
+      background: rgba(255,255,255,0.9);
+      padding: 10px 20px;
+      border-radius: 15px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+    }
+
+    .sloth-game-over {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(255,255,255,0.95);
+      padding: 30px;
+      border-radius: 20px;
+      text-align: center;
+      display: none;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      z-index: 100;
+    }
+
+    .sloth-game-over h3 {
+      color: #333;
+      margin-bottom: 15px;
+      font-size: 24px;
+    }
+
+    .sloth-game-over p {
+      color: #666;
+      margin-bottom: 20px;
+      font-size: 18px;
+    }
+
+    .sloth-game-over button {
+      background: #6366f1;
+      color: white;
+      border: none;
+      padding: 12px 30px;
+      border-radius: 10px;
+      font-size: 16px;
+      cursor: pointer;
+      margin: 5px;
+    }
+
+    .sloth-controls {
+      margin-top: 20px;
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    .sloth-controls button {
+      padding: 10px 20px;
+      font-size: 14px;
+      width: auto;
+    }
+
+    .sloth-info {
+      background: rgba(255,255,255,0.1);
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .sloth-info p {
+      margin: 5px 0;
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
+    .sloth-multiplier {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      font-size: 18px;
+      font-weight: bold;
+      color: #333;
+      background: rgba(255,255,255,0.9);
+      padding: 8px 15px;
+      border-radius: 10px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+    }
+
+    .sloth-powerup {
+      position: absolute;
+      right: -50px;
+      top: 150px;
+      font-size: 35px;
+      animation: movePowerup 4s linear infinite;
+    }
+
+    @keyframes movePowerup {
+      to { right: 100%; }
+    }
+
+    .sloth-effect {
+      position: absolute;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 30px;
+      animation: fadeUp 1s ease-out forwards;
+      pointer-events: none;
+      z-index: 50;
+    }
+
+    @keyframes fadeUp {
+      0% { opacity: 1; bottom: 100px; }
+      100% { opacity: 0; bottom: 200px; }
+    }
   </style>
 </head>
 <body>
@@ -591,6 +777,7 @@
       <button class="tab active" onclick="showTab('pet')">🐕 Pet</button>
       <button class="tab" onclick="showTab('greet')">👋 Greet</button>
       <button class="tab" onclick="showTab('flip')">🪙 Flip</button>
+      <button class="tab" onclick="showTab('sloth')">🦥 Sloth</button>
       <button class="tab" onclick="showTab('claim')">💰 Claim</button>
     </div>
 
@@ -637,6 +824,45 @@
             🪙 Share Lucky Moment
           </button>
         </div>
+      </div>
+
+      <!-- Sloth Game Tab -->
+      <div id="sloth" class="tab-content">
+        <h3>🦥 Sloth Runner</h3>
+        
+        <div class="sloth-info">
+          <p>🎮 Jump to avoid obstacles and collect power-ups!</p>
+          <p>⭐ Survive longer for higher XP multipliers!</p>
+        </div>
+
+        <div class="sloth-game-container" id="slothGameContainer">
+          <!-- Clouds -->
+          <div class="sloth-cloud">☁️</div>
+          <div class="sloth-cloud">☁️</div>
+          <div class="sloth-cloud">☁️</div>
+          
+          <!-- Game elements -->
+          <div class="sloth-multiplier" id="slothMultiplier">1x</div>
+          <div class="sloth-score" id="slothScore">0</div>
+          <div class="sloth-character" id="slothCharacter">🦥</div>
+          <div class="sloth-ground"></div>
+          
+          <!-- Game over screen -->
+          <div class="sloth-game-over" id="slothGameOver">
+            <h3>Game Over!</h3>
+            <p>Score: <span id="finalScore">0</span></p>
+            <p>XP Earned: <span id="xpEarned">0</span></p>
+            <button onclick="restartSlothGame()">🔄 Play Again</button>
+            <button onclick="shareSlothScore()">📢 Share Score</button>
+          </div>
+        </div>
+
+        <div class="sloth-controls">
+          <button id="startSlothBtn" onclick="startSlothGame()">🎮 Start Game</button>
+          <button onclick="jumpSloth()">⬆️ Jump</button>
+        </div>
+
+        <div id="sloth-status" class="status"></div>
       </div>
 
       <!-- Claim Tab -->
@@ -744,7 +970,7 @@
         console.error('❌ Supabase not loaded');
       }
     
-          // Initialize modal close functions globally
+      // Initialize modal close functions globally
       window.closeAchievementModal = function() {
         const modal = document.getElementById('achievementModal');
         if (modal) {
@@ -783,6 +1009,23 @@
     let loadingProgress = 0;
     let isAppReady = false;
     let activeTab = 'pet';
+
+    // Sloth Game Variables
+    let slothGame = {
+      isPlaying: false,
+      score: 0,
+      multiplier: 1,
+      obstacles: [],
+      powerups: [],
+      gameLoop: null,
+      obstacleInterval: null,
+      powerupInterval: null,
+      speed: 2000,
+      jumpCooldown: false,
+      invincible: false,
+      lastObstacleTime: 0,
+      highScore: 0
+    };
 
     function updateLoadingProgress(progress, message) {
       const progressBar = document.getElementById('loadingProgressBar');
@@ -2275,6 +2518,292 @@
         }, 3000);
       };
 
+      // Sloth Game Functions
+      window.startSlothGame = function() {
+        if (!appState.connected) {
+          showError('Connect wallet first to play');
+          return;
+        }
+
+        if (slothGame.isPlaying) {
+          showError('Game already in progress');
+          return;
+        }
+
+        console.log('🦥 Starting Sloth Runner...');
+        
+        // Reset game state
+        slothGame.score = 0;
+        slothGame.multiplier = 1;
+        slothGame.obstacles = [];
+        slothGame.powerups = [];
+        slothGame.isPlaying = true;
+        slothGame.speed = 2000;
+        slothGame.lastObstacleTime = Date.now();
+        
+        // Update UI
+        document.getElementById('slothScore').textContent = '0';
+        document.getElementById('slothMultiplier').textContent = '1x';
+        document.getElementById('slothGameOver').style.display = 'none';
+        document.getElementById('startSlothBtn').disabled = true;
+        document.getElementById('startSlothBtn').textContent = '🎮 Playing...';
+        
+        // Clear any existing obstacles/powerups
+        document.querySelectorAll('.obstacle, .sloth-powerup').forEach(el => el.remove());
+        
+        // Start game loops
+        startGameLoops();
+        
+        showStatus('sloth-status', '🎮 Game started! Jump to avoid obstacles!', 'success');
+        setTimeout(() => hideStatus('sloth-status'), 3000);
+      };
+
+      window.jumpSloth = function() {
+        if (!slothGame.isPlaying) {
+          showError('Start the game first!');
+          return;
+        }
+
+        if (slothGame.jumpCooldown) {
+          return;
+        }
+
+        const sloth = document.getElementById('slothCharacter');
+        if (!sloth.classList.contains('jumping')) {
+          sloth.classList.add('jumping');
+          slothGame.jumpCooldown = true;
+          
+          // Remove jump class after animation
+          setTimeout(() => {
+            sloth.classList.remove('jumping');
+            slothGame.jumpCooldown = false;
+          }, 600);
+          
+          console.log('🦥 Sloth jumped!');
+        }
+      };
+
+      window.restartSlothGame = function() {
+        document.getElementById('slothGameOver').style.display = 'none';
+        startSlothGame();
+      };
+
+      window.shareSlothScore = function() {
+        const score = slothGame.score;
+        const xpEarned = calculateSlothXP(score);
+        
+        const achievement = {
+          icon: '🦥',
+          title: 'Sloth Runner Score!',
+          description: `Score: ${score} points! Earned ${xpEarned} XP!`,
+          type: 'sloth',
+          data: { score: score, xp: xpEarned }
+        };
+        
+        showAchievementModal(achievement);
+      };
+
+      // Sloth game mechanics
+      function startGameLoops() {
+        // Score increment
+        slothGame.gameLoop = setInterval(() => {
+          if (slothGame.isPlaying) {
+            slothGame.score += slothGame.multiplier;
+            document.getElementById('slothScore').textContent = slothGame.score;
+            
+            // Increase difficulty over time
+            if (slothGame.score % 50 === 0 && slothGame.speed > 1000) {
+              slothGame.speed -= 100;
+              console.log(`🎮 Difficulty increased! Speed: ${slothGame.speed}`);
+            }
+            
+            // Update multiplier
+            if (slothGame.score % 100 === 0 && slothGame.multiplier < 5) {
+              slothGame.multiplier++;
+              document.getElementById('slothMultiplier').textContent = `${slothGame.multiplier}x`;
+              showSlothEffect(`${slothGame.multiplier}x!`);
+            }
+          }
+        }, 100);
+        
+        // Spawn obstacles
+        slothGame.obstacleInterval = setInterval(() => {
+          if (slothGame.isPlaying) {
+            spawnObstacle();
+          }
+        }, slothGame.speed);
+        
+        // Spawn power-ups
+        slothGame.powerupInterval = setInterval(() => {
+          if (slothGame.isPlaying && Math.random() < 0.3) {
+            spawnPowerup();
+          }
+        }, 3000);
+        
+        // Collision detection
+        setInterval(() => {
+          if (slothGame.isPlaying) {
+            checkCollisions();
+          }
+        }, 50);
+      }
+
+      function spawnObstacle() {
+        const container = document.getElementById('slothGameContainer');
+        const obstacle = document.createElement('div');
+        obstacle.className = 'obstacle';
+        obstacle.textContent = ['🌳', '🪨', '🌵', '🪵'][Math.floor(Math.random() * 4)];
+        obstacle.style.animationDuration = `${slothGame.speed}ms`;
+        container.appendChild(obstacle);
+        
+        // Remove obstacle after animation
+        setTimeout(() => {
+          obstacle.remove();
+        }, slothGame.speed);
+      }
+
+      function spawnPowerup() {
+        const container = document.getElementById('slothGameContainer');
+        const powerup = document.createElement('div');
+        powerup.className = 'sloth-powerup';
+        powerup.textContent = ['⭐', '💎', '🍀', '✨'][Math.floor(Math.random() * 4)];
+        container.appendChild(powerup);
+        
+        // Remove powerup after animation
+        setTimeout(() => {
+          powerup.remove();
+        }, 4000);
+      }
+
+      function checkCollisions() {
+        const sloth = document.getElementById('slothCharacter');
+        const slothRect = sloth.getBoundingClientRect();
+        const isJumping = sloth.classList.contains('jumping');
+        
+        // Check obstacle collisions
+        document.querySelectorAll('.obstacle').forEach(obstacle => {
+          const obstacleRect = obstacle.getBoundingClientRect();
+          
+          if (!isJumping && !slothGame.invincible &&
+              slothRect.left < obstacleRect.right &&
+              slothRect.right > obstacleRect.left &&
+              slothRect.bottom > obstacleRect.top) {
+            // Collision detected
+            endSlothGame();
+          }
+        });
+        
+        // Check powerup collisions
+        document.querySelectorAll('.sloth-powerup').forEach(powerup => {
+          const powerupRect = powerup.getBoundingClientRect();
+          
+          if (slothRect.left < powerupRect.right &&
+              slothRect.right > powerupRect.left &&
+              slothRect.bottom > powerupRect.top &&
+              slothRect.top < powerupRect.bottom) {
+            // Powerup collected
+            collectPowerup(powerup);
+          }
+        });
+      }
+
+      function collectPowerup(powerup) {
+        const type = powerup.textContent;
+        powerup.remove();
+        
+        switch(type) {
+          case '⭐':
+            slothGame.score += 10;
+            showSlothEffect('+10');
+            break;
+          case '💎':
+            slothGame.score += 20;
+            showSlothEffect('+20');
+            break;
+          case '🍀':
+            slothGame.invincible = true;
+            showSlothEffect('Shield!');
+            setTimeout(() => {
+              slothGame.invincible = false;
+            }, 3000);
+            break;
+          case '✨':
+            slothGame.multiplier = Math.min(slothGame.multiplier + 1, 5);
+            document.getElementById('slothMultiplier').textContent = `${slothGame.multiplier}x`;
+            showSlothEffect('Multiplier!');
+            break;
+        }
+        
+        document.getElementById('slothScore').textContent = slothGame.score;
+      }
+
+      function showSlothEffect(text) {
+        const container = document.getElementById('slothGameContainer');
+        const effect = document.createElement('div');
+        effect.className = 'sloth-effect';
+        effect.textContent = text;
+        container.appendChild(effect);
+        
+        setTimeout(() => {
+          effect.remove();
+        }, 1000);
+      }
+
+      function endSlothGame() {
+        slothGame.isPlaying = false;
+        
+        // Clear intervals
+        clearInterval(slothGame.gameLoop);
+        clearInterval(slothGame.obstacleInterval);
+        clearInterval(slothGame.powerupInterval);
+        
+        // Calculate XP earned
+        const xpEarned = calculateSlothXP(slothGame.score);
+        
+        // Update high score
+        if (slothGame.score > slothGame.highScore) {
+          slothGame.highScore = slothGame.score;
+          localStorage.setItem(`sloth_highscore_${appState.address}`, slothGame.highScore);
+        }
+        
+        // Show game over screen
+        document.getElementById('finalScore').textContent = slothGame.score;
+        document.getElementById('xpEarned').textContent = xpEarned;
+        document.getElementById('slothGameOver').style.display = 'block';
+        
+        // Add XP to player
+        if (xpEarned > 0) {
+          addXP(xpEarned);
+          showStatus('sloth-status', `🎮 Game Over! You earned ${xpEarned} XP!`, 'success');
+        }
+        
+        // Reset button
+        document.getElementById('startSlothBtn').disabled = false;
+        document.getElementById('startSlothBtn').textContent = '🎮 Start Game';
+        
+        console.log(`🦥 Game ended! Score: ${slothGame.score}, XP: ${xpEarned}`);
+      }
+
+      function calculateSlothXP(score) {
+        // XP calculation based on score
+        if (score < 50) return 1;
+        if (score < 100) return 2;
+        if (score < 200) return 3;
+        if (score < 300) return 5;
+        if (score < 500) return 8;
+        return 10;
+      }
+
+      // Keyboard controls for sloth game
+      document.addEventListener('keydown', (e) => {
+        if (activeTab === 'sloth' && slothGame.isPlaying) {
+          if (e.code === 'Space' || e.code === 'ArrowUp') {
+            e.preventDefault();
+            jumpSloth();
+          }
+        }
+      });
+
       window.showTab = function(tabName) {
         console.log('📑 Switching to tab:', tabName);
         activeTab = tabName;
@@ -2298,6 +2827,11 @@
           setTimeout(() => {
             updateTokenBalance();
           }, 500);
+        }
+        
+        // End sloth game if switching away
+        if (activeTab !== 'sloth' && slothGame.isPlaying) {
+          endSlothGame();
         }
       };
 
@@ -2402,6 +2936,12 @@
         
         fetchBalance();
 
+        // Load sloth high score
+        const highScore = localStorage.getItem(`sloth_highscore_${accounts[0]}`);
+        if (highScore) {
+          slothGame.highScore = parseInt(highScore);
+        }
+
       } catch (error) {
         console.error('Connection error:', error);
         showError(error.message);
@@ -2425,6 +2965,12 @@
       };
       updateWalletUI();
       await updateXPDisplay();
+      
+      // End sloth game if playing
+      if (slothGame.isPlaying) {
+        endSlothGame();
+      }
+      
       console.log('🔌 Wallet disconnected, XP reset to 0');
     }
 
@@ -2743,13 +3289,18 @@
           url: `${baseUrl}?ref=claim&tokens=${data.amount}`,
           image: "💰"
         },
+        sloth: {
+          text: `Just scored ${data.score || 0} points in Sloth Runner! 🦥\n\nEarned ${data.xp || 0} XP!\nTotal XP: ${appState.xp}\n$DOG Balance: ${tokenBalance}\n\nCan you beat my score?`,
+          url: `${baseUrl}?ref=sloth&score=${data.score}&xp=${data.xp}`,
+          image: "🦥"
+        },
         leaderboard: {
           text: `Check out my Monad Dog stats! 🏆\n\nRank: ${data.rank || '?'}\nTotal interactions: ${userStats?.total || 0}\nXP: ${appState.xp}\n$DOG Tokens: ${tokenBalance}\n\nCan you beat me?`,
           url: `${baseUrl}?ref=leaderboard&rank=${data.rank}&xp=${appState.xp}`,
           image: "🏆"
         },
         invite: {
-          text: `Playing Monad Dog - the cutest way to explore Monad Testnet! 🐕⛓️\n\n✨ Pet dogs, flip coins, say GM/GN\n🎯 Earn XP and claim $DOG tokens\n💰 Convert XP to tokens (10:1 rate)\n🚀 Real blockchain interactions\n\nJoin me!`,
+          text: `Playing Monad Dog - the cutest way to explore Monad Testnet! 🐕⛓️\n\n✨ Pet dogs, flip coins, say GM/GN\n🦥 Play Sloth Runner mini-game\n🎯 Earn XP and claim $DOG tokens\n💰 Convert XP to tokens (10:1 rate)\n🚀 Real blockchain interactions\n\nJoin me!`,
           url: `https://monad-snowy.vercel.app?ref=invite&inviter=${appState.address?.slice(0,6)}`,
           image: "🚀"
         }
