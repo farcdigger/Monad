@@ -1,16 +1,4 @@
-// Wait for Supabase to be available
-        const waitForSupabase = async () => {
-          let attempts = 0;
-          while (!window.supabaseClient && attempts < 10) {
-            await new Promise(resolve => setTimeout(resolve, 100));
-            attempts++;
-          }
-          if (window.supabaseClient) {
-            console.log('✅ Supabase client ready');
-          }
-        };
-        
-        await waitForSupabase();<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
