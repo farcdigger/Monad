@@ -967,13 +967,14 @@
 
   <script>
     // Wait for Supabase to load
+    let supabaseClient = null; // Global supabase client
+    
     window.addEventListener('DOMContentLoaded', function() {
       // Supabase Configuration
       const SUPABASE_URL = 'https://uhqszfoekqrjtybrwqzt.supabase.co';
       const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVocXN6Zm9la3FyanR5YnJ3cXp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4MDMxNTAsImV4cCI6MjA2NjM3OTE1MH0.gGch8B6AlvGrZTDVjfd0xidVnh_Dsua4qRxbaixBqM0';
       
       // Initialize Supabase
-      let supabaseClient;
       if (window.supabase) {
         const { createClient } = window.supabase;
         supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -1325,10 +1326,11 @@
             
             // Cache the result
             claimedXP[address.toLowerCase()] = claimedAmount;
+            console.log('Claimed XP from contract:', claimedAmount);
             
             return claimedAmount;
           } catch (e) {
-            console.log('Could not fetch claimed XP from contract:', e);
+            console.log('Could not fetch claimed XP from contract:', e.message);
           }
         }
         
@@ -1338,10 +1340,11 @@
             .from('claimed_xp')
             .select('total_claimed')
             .eq('wallet_address', address.toLowerCase())
-            .single();
+            .maybeSingle();
           
           if (!error && data) {
             claimedXP[address.toLowerCase()] = data.total_claimed || 0;
+            console.log('Claimed XP from Supabase:', data.total_claimed || 0);
             return data.total_claimed || 0;
           }
         }
@@ -1349,6 +1352,7 @@
         // Final fallback to localStorage
         const localClaimed = parseInt(localStorage.getItem(`claimed_xp_${address.toLowerCase()}`) || '0');
         claimedXP[address.toLowerCase()] = localClaimed;
+        console.log('Claimed XP from localStorage:', localClaimed);
         return localClaimed;
         
       } catch (e) {
@@ -3145,7 +3149,14 @@
         setTimeout(async () => {
           console.log('✅ Transaction assumed successful');
           showStatus(statusId, successMsg, 'success');
-          await addXP(xpAmount);
+          
+          // Add XP - wait for completion
+          try {
+            await addXP(xpAmount);
+            console.log(`✅ XP added successfully: +${xpAmount}`);
+          } catch (error) {
+            console.error('❌ Error adding XP:', error);
+          }
           
           // Track contract interaction
           if (appState.connected && appState.address) {
