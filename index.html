@@ -1636,7 +1636,7 @@
       return;
     }
 
-    // Claim tokens function with double-spend protection
+    // Claim tokens function - XP is spent when claiming
     window.claimTokens = async function() {
       if (!appState.connected || !appState.signer) {
         showError('Please connect your wallet first');
@@ -1678,16 +1678,18 @@
         showStatus('claim-status', `📡 Transaction sent: ${tx.hash.slice(0,10)}...`, 'pending');
         console.log('Transaction hash:', tx.hash);
         
-        // Immediately update claimed XP to prevent double-spending
-        await saveClaimedXP(appState.address, xpToClaim);
-        
-        // Update local XP immediately
+        // Immediately update XP (subtract the claimed amount)
         const remainingXP = availableXP - xpToClaim;
         appState.xp = remainingXP;
-        appState.claimedXP = (appState.claimedXP || 0) + xpToClaim;
+        appState.totalXP = remainingXP;
         
         // Update display immediately
         document.getElementById('xp').textContent = remainingXP;
+        
+        // Save new XP amount to Supabase
+        await saveWalletXP(appState.address, remainingXP);
+        
+        // Update claim UI
         await updateClaimUI();
         
         // Wait for confirmation (but don't wait too long for Farcaster wallet)
@@ -1720,13 +1722,6 @@
             };
             
             updateBalanceWithRetry();
-            
-            // Save claim history
-            await saveClaimHistory(appState.address, {
-              xpAmount: xpToClaim,
-              tokenAmount: claimableDOG,
-              txHash: tx.hash
-            });
             
             // Update UI
             await updateXPDisplay();
@@ -1769,14 +1764,6 @@
           errorMsg = 'Transaction cancelled';
         } else if (error.message.includes('insufficient funds')) {
           errorMsg = 'Insufficient gas funds';
-        } else if (error.message.includes('XP already claimed')) {
-          errorMsg = 'This XP has already been claimed';
-          // Update claimed XP from contract
-          const claimed = await getClaimedXPAmount(appState.address);
-          appState.claimedXP = claimed;
-          await updateXPDisplay();
-        } else if (error.message.includes('Invalid XP amount')) {
-          errorMsg = 'Invalid XP amount. Must be multiple of 10';
         }
         
         showStatus('claim-status', errorMsg, 'error');
