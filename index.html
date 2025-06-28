@@ -1,4 +1,16 @@
-<!DOCTYPE html>
+// Wait for Supabase to be available
+        const waitForSupabase = async () => {
+          let attempts = 0;
+          while (!window.supabaseClient && attempts < 10) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            attempts++;
+          }
+          if (window.supabaseClient) {
+            console.log('✅ Supabase client ready');
+          }
+        };
+        
+        await waitForSupabase();<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -1457,16 +1469,22 @@
         try {
           // Get XP from Supabase/localStorage
           const walletXP = await getWalletXP(appState.address);
-          console.log('Current XP from storage:', walletXP);
+          console.log('Total XP from storage:', walletXP);
           
-          // No claimed XP - just use the actual XP value
-          appState.xp = walletXP;
-          appState.totalXP = walletXP;
+          // Get claimed XP to calculate available XP
+          const claimedAmount = await getClaimedXPAmount(appState.address);
+          console.log('Claimed XP:', claimedAmount);
+          
+          const availableXP = Math.max(0, walletXP - claimedAmount);
+          console.log('Available XP:', availableXP);
           
           // Update display
-          document.getElementById('xp').textContent = walletXP;
+          document.getElementById('xp').textContent = availableXP;
+          appState.xp = availableXP;
+          appState.totalXP = walletXP;
+          appState.claimedXP = claimedAmount;
           
-          console.log(`📊 XP Display Updated - Current XP: ${walletXP}`);
+          console.log(`📊 XP Display Updated - Total: ${walletXP}, Claimed: ${claimedAmount}, Available: ${availableXP}`);
           
           // Update claim UI if on claim tab
           if (activeTab === 'claim') {
@@ -1477,11 +1495,13 @@
           document.getElementById('xp').textContent = '0';
           appState.xp = 0;
           appState.totalXP = 0;
+          appState.claimedXP = 0;
         }
       } else {
         document.getElementById('xp').textContent = '0';
         appState.xp = 0;
         appState.totalXP = 0;
+        appState.claimedXP = 0;
         updateClaimUI();
       }
     }
@@ -1636,7 +1656,7 @@
       return;
     }
 
-    // Claim tokens function - XP is spent when claiming
+    // Claim tokens function with double-spend protection
     window.claimTokens = async function() {
       if (!appState.connected || !appState.signer) {
         showError('Please connect your wallet first');
@@ -1678,18 +1698,16 @@
         showStatus('claim-status', `📡 Transaction sent: ${tx.hash.slice(0,10)}...`, 'pending');
         console.log('Transaction hash:', tx.hash);
         
-        // Immediately update XP (subtract the claimed amount)
+        // Immediately update claimed XP to prevent double-spending
+        await saveClaimedXP(appState.address, xpToClaim);
+        
+        // Update local XP immediately
         const remainingXP = availableXP - xpToClaim;
         appState.xp = remainingXP;
-        appState.totalXP = remainingXP;
+        appState.claimedXP = (appState.claimedXP || 0) + xpToClaim;
         
         // Update display immediately
         document.getElementById('xp').textContent = remainingXP;
-        
-        // Save new XP amount to Supabase
-        await saveWalletXP(appState.address, remainingXP);
-        
-        // Update claim UI
         await updateClaimUI();
         
         // Wait for confirmation (but don't wait too long for Farcaster wallet)
@@ -1722,6 +1740,13 @@
             };
             
             updateBalanceWithRetry();
+            
+            // Save claim history
+            await saveClaimHistory(appState.address, {
+              xpAmount: xpToClaim,
+              tokenAmount: claimableDOG,
+              txHash: tx.hash
+            });
             
             // Update UI
             await updateXPDisplay();
@@ -1764,6 +1789,14 @@
           errorMsg = 'Transaction cancelled';
         } else if (error.message.includes('insufficient funds')) {
           errorMsg = 'Insufficient gas funds';
+        } else if (error.message.includes('XP already claimed')) {
+          errorMsg = 'This XP has already been claimed';
+          // Update claimed XP from contract
+          const claimed = await getClaimedXPAmount(appState.address);
+          appState.claimedXP = claimed;
+          await updateXPDisplay();
+        } else if (error.message.includes('Invalid XP amount')) {
+          errorMsg = 'Invalid XP amount. Must be multiple of 10';
         }
         
         showStatus('claim-status', errorMsg, 'error');
@@ -2702,17 +2735,14 @@
         const slothRect = sloth.getBoundingClientRect();
         const isJumping = sloth.classList.contains('jumping');
         
-        // Check obstacle collisions (more forgiving hitbox)
+        // Check obstacle collisions
         document.querySelectorAll('.obstacle').forEach(obstacle => {
           const obstacleRect = obstacle.getBoundingClientRect();
           
-          // Make collision detection more forgiving
-          const collisionMargin = 20; // pixels of forgiveness
-          
           if (!isJumping && !slothGame.invincible &&
-              slothRect.left < obstacleRect.right - collisionMargin &&
-              slothRect.right > obstacleRect.left + collisionMargin &&
-              slothRect.bottom > obstacleRect.top + collisionMargin) {
+              slothRect.left < obstacleRect.right &&
+              slothRect.right > obstacleRect.left &&
+              slothRect.bottom > obstacleRect.top) {
             // Collision detected
             endSlothGame();
           }
@@ -3055,15 +3085,15 @@
       
       console.log(`➕ Adding ${amount} XP to wallet ${appState.address}`);
       
-      // Add XP to current XP
-      appState.xp = (appState.xp || 0) + amount;
-      appState.totalXP = appState.xp;
+      // Add XP to total wallet XP
+      appState.totalXP = (appState.totalXP || 0) + amount;
+      appState.xp = Math.max(0, appState.totalXP - (appState.claimedXP || 0));
       
       // Update display immediately
       document.getElementById('xp').textContent = appState.xp;
       
-      // Save XP to Supabase (wait for completion to ensure it's saved)
-      await saveWalletXP(appState.address, appState.xp);
+      // Save total XP to Supabase (wait for completion to ensure it's saved)
+      await saveWalletXP(appState.address, appState.totalXP);
       
       // Update claim UI
       if (activeTab === 'claim') {
@@ -3080,7 +3110,7 @@
         xpElement.style.color = 'white';
       }, 500);
       
-      console.log(`✨ XP added successfully - Current XP: ${appState.xp}`);
+      console.log(`✨ XP added successfully - Total: ${appState.totalXP}, Available: ${appState.xp}`);
     }
 
     function showStatus(id, message, type) {
