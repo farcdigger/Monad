@@ -1661,22 +1661,31 @@
           ABIS.DOG_TOKEN,
           appState.signer
         );
-        
-        // Calculate XP to claim (must be multiple of 10)
+       // Calculate XP to claim (must be multiple of 10)
         const xpToClaim = claimableDOG * XP_TO_DOG_RATE;
-        
-        console.log(`Claiming ${xpToClaim} XP for ${claimableDOG} DOG tokens`);
-        
-        // Execute claim transaction with proper gas limit
-        const tx = await dogTokenContract.claim(xpToClaim, {
-          gasLimit: 100000 // Reduced gas limit
-        });
-        
-        showStatus('claim-status', `📡 Transaction sent: ${tx.hash.slice(0,10)}...`, 'pending');
-        console.log('Transaction hash:', tx.hash);
-        
-        // Immediately update claimed XP to prevent double-spending
-        await saveClaimedXP(appState.address, xpToClaim);
+
+          console.log(`Claiming ${xpToClaim} XP for ${claimableDOG} DOG tokens`);
+
+           try {
+          // Execute claim transaction with proper gas limit
+          const tx = await dogTokenContract.claim(xpToClaim, {
+           gasLimit: 100000 // Reduced gas limit
+            });
+
+  showStatus('claim-status', `📡 Transaction sent: ${tx.hash.slice(0, 10)}...`, 'pending');
+  console.log('Transaction hash:', tx.hash);
+
+  // ✅ ONLY after tx is successfully sent:
+  await saveClaimedXP(appState.address, xpToClaim);
+
+  showStatus('claim-status', `✅ Claimed ${claimableDOG} DOG`, 'success');
+  await updateXPDisplay(); // Refresh XP display
+
+} catch (error) {
+  console.error('❌ Claim transaction failed:', error);
+  showStatus('claim-status', '❌ Claim failed. Please try again.', 'error');
+}
+
         
         // Update local XP immediately
         const remainingXP = availableXP - xpToClaim;
