@@ -1,16 +1,4 @@
-// Wait for Supabase to be available
-        const waitForSupabase = async () => {
-          let attempts = 0;
-          while (!window.supabaseClient && attempts < 10) {
-            await new Promise(resolve => setTimeout(resolve, 100));
-            attempts++;
-          }
-          if (window.supabaseClient) {
-            console.log('✅ Supabase client ready');
-          }
-        };
-        
-        await waitForSupabase();<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -573,192 +561,6 @@
       padding: 8px 0;
       border-bottom: 1px solid rgba(255,255,255,0.1);
     }
-
-    /* Sloth Game Styles */
-    .sloth-game-container {
-      position: relative;
-      width: 100%;
-      max-width: 350px;
-      height: 400px;
-      margin: 0 auto;
-      background: linear-gradient(180deg, #87CEEB 0%, #98D8C8 100%);
-      border-radius: 20px;
-      overflow: hidden;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-    }
-
-    .sloth-character {
-      position: absolute;
-      left: 50%;
-      bottom: 60px;
-      transform: translateX(-50%);
-      font-size: 60px;
-      transition: all 0.3s ease;
-      z-index: 10;
-    }
-
-    .sloth-character.jumping {
-      animation: jump 0.6s ease;
-    }
-
-    @keyframes jump {
-      0%, 100% { bottom: 60px; }
-      50% { bottom: 180px; }
-    }
-
-    .obstacle {
-      position: absolute;
-      right: -50px;
-      bottom: 60px;
-      font-size: 40px;
-      animation: moveObstacle 2s linear infinite;
-    }
-
-    @keyframes moveObstacle {
-      to { right: 100%; }
-    }
-
-    .sloth-ground {
-      position: absolute;
-      bottom: 0;
-      width: 100%;
-      height: 60px;
-      background: linear-gradient(180deg, #8B7355 0%, #654321 100%);
-      border-top: 3px solid #5D4E37;
-    }
-
-    .sloth-cloud {
-      position: absolute;
-      font-size: 30px;
-      opacity: 0.8;
-      animation: float 20s linear infinite;
-    }
-
-    .sloth-cloud:nth-child(1) { top: 20px; left: -50px; animation-duration: 15s; }
-    .sloth-cloud:nth-child(2) { top: 50px; left: -100px; animation-duration: 20s; animation-delay: 5s; }
-    .sloth-cloud:nth-child(3) { top: 80px; left: -80px; animation-duration: 25s; animation-delay: 10s; }
-
-    @keyframes float {
-      to { left: 100%; }
-    }
-
-    .sloth-score {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      font-size: 24px;
-      font-weight: bold;
-      color: #333;
-      background: rgba(255,255,255,0.9);
-      padding: 10px 20px;
-      border-radius: 15px;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.2);
-    }
-
-    .sloth-game-over {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(255,255,255,0.95);
-      padding: 30px;
-      border-radius: 20px;
-      text-align: center;
-      display: none;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-      z-index: 100;
-    }
-
-    .sloth-game-over h3 {
-      color: #333;
-      margin-bottom: 15px;
-      font-size: 24px;
-    }
-
-    .sloth-game-over p {
-      color: #666;
-      margin-bottom: 20px;
-      font-size: 18px;
-    }
-
-    .sloth-game-over button {
-      background: #6366f1;
-      color: white;
-      border: none;
-      padding: 12px 30px;
-      border-radius: 10px;
-      font-size: 16px;
-      cursor: pointer;
-      margin: 5px;
-    }
-
-    .sloth-controls {
-      margin-top: 20px;
-      display: flex;
-      gap: 10px;
-      justify-content: center;
-    }
-
-    .sloth-controls button {
-      padding: 10px 20px;
-      font-size: 14px;
-      width: auto;
-    }
-
-    .sloth-info {
-      background: rgba(255,255,255,0.1);
-      padding: 15px;
-      border-radius: 10px;
-      margin-bottom: 20px;
-      text-align: center;
-    }
-
-    .sloth-info p {
-      margin: 5px 0;
-      font-size: 14px;
-      opacity: 0.9;
-    }
-
-    .sloth-multiplier {
-      position: absolute;
-      top: 20px;
-      left: 20px;
-      font-size: 18px;
-      font-weight: bold;
-      color: #333;
-      background: rgba(255,255,255,0.9);
-      padding: 8px 15px;
-      border-radius: 10px;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.2);
-    }
-
-    .sloth-powerup {
-      position: absolute;
-      right: -50px;
-      top: 150px;
-      font-size: 35px;
-      animation: movePowerup 4s linear infinite;
-    }
-
-    @keyframes movePowerup {
-      to { right: 100%; }
-    }
-
-    .sloth-effect {
-      position: absolute;
-      bottom: 100px;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: 30px;
-      animation: fadeUp 1s ease-out forwards;
-      pointer-events: none;
-      z-index: 50;
-    }
-
-    @keyframes fadeUp {
-      0% { opacity: 1; bottom: 100px; }
-      100% { opacity: 0; bottom: 200px; }
-    }
   </style>
 </head>
 <body>
@@ -789,7 +591,6 @@
       <button class="tab active" onclick="showTab('pet')">🐕 Pet</button>
       <button class="tab" onclick="showTab('greet')">👋 Greet</button>
       <button class="tab" onclick="showTab('flip')">🪙 Flip</button>
-      <button class="tab" onclick="showTab('sloth')">🦥 Sloth</button>
       <button class="tab" onclick="showTab('claim')">💰 Claim</button>
     </div>
 
@@ -836,45 +637,6 @@
             🪙 Share Lucky Moment
           </button>
         </div>
-      </div>
-
-      <!-- Sloth Game Tab -->
-      <div id="sloth" class="tab-content">
-        <h3>🦥 Sloth Runner</h3>
-        
-        <div class="sloth-info">
-          <p>🎮 Jump to avoid obstacles and collect power-ups!</p>
-          <p>⭐ Survive longer for higher XP multipliers!</p>
-        </div>
-
-        <div class="sloth-game-container" id="slothGameContainer">
-          <!-- Clouds -->
-          <div class="sloth-cloud">☁️</div>
-          <div class="sloth-cloud">☁️</div>
-          <div class="sloth-cloud">☁️</div>
-          
-          <!-- Game elements -->
-          <div class="sloth-multiplier" id="slothMultiplier">1x</div>
-          <div class="sloth-score" id="slothScore">0</div>
-          <div class="sloth-character" id="slothCharacter">🦥</div>
-          <div class="sloth-ground"></div>
-          
-          <!-- Game over screen -->
-          <div class="sloth-game-over" id="slothGameOver">
-            <h3>Game Over!</h3>
-            <p>Score: <span id="finalScore">0</span></p>
-            <p>XP Earned: <span id="xpEarned">0</span></p>
-            <button onclick="restartSlothGame()">🔄 Play Again</button>
-            <button onclick="shareSlothScore()">📢 Share Score</button>
-          </div>
-        </div>
-
-        <div class="sloth-controls">
-          <button id="startSlothBtn" onclick="startSlothGame()">🎮 Start Game</button>
-          <button onclick="jumpSloth()">⬆️ Jump</button>
-        </div>
-
-        <div id="sloth-status" class="status"></div>
       </div>
 
       <!-- Claim Tab -->
@@ -967,26 +729,22 @@
 
   <script>
     // Wait for Supabase to load
-    let supabaseClient = null; // Global supabase client
-    
     window.addEventListener('DOMContentLoaded', function() {
       // Supabase Configuration
       const SUPABASE_URL = 'https://uhqszfoekqrjtybrwqzt.supabase.co';
       const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVocXN6Zm9la3FyanR5YnJ3cXp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4MDMxNTAsImV4cCI6MjA2NjM3OTE1MH0.gGch8B6AlvGrZTDVjfd0xidVnh_Dsua4qRxbaixBqM0';
       
       // Initialize Supabase
+      let supabaseClient;
       if (window.supabase) {
         const { createClient } = window.supabase;
         supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         console.log('✅ Supabase initialized');
-        
-        // Make it globally available
-        window.supabaseClient = supabaseClient;
       } else {
         console.error('❌ Supabase not loaded');
       }
     
-      // Initialize modal close functions globally
+          // Initialize modal close functions globally
       window.closeAchievementModal = function() {
         const modal = document.getElementById('achievementModal');
         if (modal) {
@@ -1025,23 +783,6 @@
     let loadingProgress = 0;
     let isAppReady = false;
     let activeTab = 'pet';
-
-    // Sloth Game Variables
-    let slothGame = {
-      isPlaying: false,
-      score: 0,
-      multiplier: 1,
-      obstacles: [],
-      powerups: [],
-      gameLoop: null,
-      obstacleInterval: null,
-      powerupInterval: null,
-      speed: 2000,
-      jumpCooldown: false,
-      invincible: false,
-      lastObstacleTime: 0,
-      highScore: 0
-    };
 
     function updateLoadingProgress(progress, message) {
       const progressBar = document.getElementById('loadingProgressBar');
@@ -1228,77 +969,57 @@
       if (!address) return 0;
       
       try {
-        // Always try Supabase first if available
-        if (supabaseClient) {
-          console.log('📊 Fetching XP from Supabase for:', address.toLowerCase());
-          
-          const { data, error } = await supabaseClient
-            .from('user_xp')
-            .select('xp')
-            .eq('wallet_address', address.toLowerCase())
-            .maybeSingle(); // Use maybeSingle instead of single to avoid error if no record
-          
-          if (error) {
-            console.error('Supabase XP fetch error:', error);
-            // Try localStorage fallback
-            const localXP = parseInt(localStorage.getItem(`wallet_xp_${address.toLowerCase()}`) || '0');
-            console.log('Using localStorage XP:', localXP);
-            return localXP;
-          }
-          
-          if (data && data.xp !== undefined) {
-            console.log('✅ Found XP in Supabase:', data.xp);
-            // Also update localStorage for faster future access
-            localStorage.setItem(`wallet_xp_${address.toLowerCase()}`, data.xp.toString());
-            return data.xp;
-          } else {
-            console.log('No XP record in Supabase, checking localStorage');
-            // No record in Supabase, check localStorage
-            const localXP = parseInt(localStorage.getItem(`wallet_xp_${address.toLowerCase()}`) || '0');
-            return localXP;
-          }
-        } else {
-          console.log('Supabase not available, using localStorage');
+        // Check if Supabase is available
+        if (!supabaseClient) {
+          console.log('Supabase not available, using localStorage fallback');
           return parseInt(localStorage.getItem(`wallet_xp_${address.toLowerCase()}`) || '0');
         }
+
+        const { data, error } = await supabaseClient
+          .from('user_xp')
+          .select('xp')
+          .eq('wallet_address', address.toLowerCase())
+          .single();
+        
+        if (error) {
+          console.log('No XP record found, returning 0');
+          // Fallback to localStorage
+          return parseInt(localStorage.getItem(`wallet_xp_${address.toLowerCase()}`) || '0');
+        }
+        
+        return data.xp || 0;
       } catch (e) {
         console.error('Error fetching XP:', e);
         // Fallback to localStorage
-        const localXP = parseInt(localStorage.getItem(`wallet_xp_${address.toLowerCase()}`) || '0');
-        console.log('Error fallback to localStorage XP:', localXP);
-        return localXP;
+        return parseInt(localStorage.getItem(`wallet_xp_${address.toLowerCase()}`) || '0');
       }
     }
 
     async function saveWalletXP(address, xp) {
       if (!address) return;
       
-      console.log(`💾 Saving XP for ${address}: ${xp}`);
-      
       // Always save to localStorage first (immediate)
       localStorage.setItem(`wallet_xp_${address.toLowerCase()}`, xp.toString());
       
-      // Then save to Supabase
+      // Then try Supabase (async, non-blocking)
       if (supabaseClient) {
-        try {
-          const { data, error } = await supabaseClient
-            .from('user_xp')
-            .upsert({
-              wallet_address: address.toLowerCase(),
-              xp: xp,
-              updated_at: new Date().toISOString()
-            }, {
-              onConflict: 'wallet_address'
-            });
-          
-          if (error) {
-            console.error('Error saving XP to Supabase:', error);
-          } else {
-            console.log(`✅ XP saved to Supabase successfully`);
-          }
-        } catch (e) {
-          console.error('Exception saving XP to Supabase:', e);
-        }
+        supabaseClient
+          .from('user_xp')
+          .upsert({
+            wallet_address: address.toLowerCase(),
+            xp: xp,
+            updated_at: new Date().toISOString()
+          }, {
+            onConflict: 'wallet_address'
+          })
+          .then(({ error }) => {
+            if (!error) {
+              console.log(`💾 XP saved to Supabase for ${address}: ${xp}`);
+            }
+          })
+          .catch(e => {
+            console.error('Error saving XP to Supabase:', e);
+          });
       }
     }
 
@@ -1326,11 +1047,10 @@
             
             // Cache the result
             claimedXP[address.toLowerCase()] = claimedAmount;
-            console.log('Claimed XP from contract:', claimedAmount);
             
             return claimedAmount;
           } catch (e) {
-            console.log('Could not fetch claimed XP from contract:', e.message);
+            console.log('Could not fetch claimed XP from contract:', e);
           }
         }
         
@@ -1340,11 +1060,10 @@
             .from('claimed_xp')
             .select('total_claimed')
             .eq('wallet_address', address.toLowerCase())
-            .maybeSingle();
+            .single();
           
           if (!error && data) {
             claimedXP[address.toLowerCase()] = data.total_claimed || 0;
-            console.log('Claimed XP from Supabase:', data.total_claimed || 0);
             return data.total_claimed || 0;
           }
         }
@@ -1352,7 +1071,6 @@
         // Final fallback to localStorage
         const localClaimed = parseInt(localStorage.getItem(`claimed_xp_${address.toLowerCase()}`) || '0');
         claimedXP[address.toLowerCase()] = localClaimed;
-        console.log('Claimed XP from localStorage:', localClaimed);
         return localClaimed;
         
       } catch (e) {
@@ -1457,38 +1175,29 @@
 
     async function updateXPDisplay() {
       if (appState.connected && appState.address) {
-        console.log('🔄 Updating XP display for:', appState.address);
+        // Show current value immediately
+        const currentDisplay = document.getElementById('xp').textContent;
         
-        try {
-          // Get XP from Supabase/localStorage
-          const walletXP = await getWalletXP(appState.address);
-          console.log('Total XP from storage:', walletXP);
-          
-          // Get claimed XP to calculate available XP
-          const claimedAmount = await getClaimedXPAmount(appState.address);
-          console.log('Claimed XP:', claimedAmount);
-          
-          const availableXP = Math.max(0, walletXP - claimedAmount);
-          console.log('Available XP:', availableXP);
-          
-          // Update display
-          document.getElementById('xp').textContent = availableXP;
-          appState.xp = availableXP;
-          appState.totalXP = walletXP;
-          appState.claimedXP = claimedAmount;
-          
-          console.log(`📊 XP Display Updated - Total: ${walletXP}, Claimed: ${claimedAmount}, Available: ${availableXP}`);
-          
-          // Update claim UI if on claim tab
-          if (activeTab === 'claim') {
-            requestAnimationFrame(() => updateClaimUI());
-          }
-        } catch (error) {
-          console.error('Error updating XP display:', error);
-          document.getElementById('xp').textContent = '0';
-          appState.xp = 0;
-          appState.totalXP = 0;
-          appState.claimedXP = 0;
+        // Get XP (with timeout to prevent hanging)
+        const xpPromise = getWalletXP(appState.address);
+        const timeoutPromise = new Promise((resolve) => setTimeout(() => resolve(parseInt(currentDisplay) || 0), 1000));
+        
+        const walletXP = await Promise.race([xpPromise, timeoutPromise]);
+        
+        // Get claimed XP to calculate available XP
+        const claimedAmount = await getClaimedXPAmount(appState.address);
+        const availableXP = Math.max(0, walletXP - claimedAmount);
+        
+        document.getElementById('xp').textContent = availableXP;
+        appState.xp = availableXP;
+        appState.totalXP = walletXP;
+        appState.claimedXP = claimedAmount;
+        
+        console.log(`📊 XP Display - Total: ${walletXP}, Claimed: ${claimedAmount}, Available: ${availableXP}`);
+        
+        // Update claim UI non-blocking
+        if (activeTab === 'claim') {
+          requestAnimationFrame(() => updateClaimUI());
         }
       } else {
         document.getElementById('xp').textContent = '0';
@@ -2566,292 +2275,6 @@
         }, 3000);
       };
 
-      // Sloth Game Functions
-      window.startSlothGame = function() {
-        if (!appState.connected) {
-          showError('Connect wallet first to play');
-          return;
-        }
-
-        if (slothGame.isPlaying) {
-          showError('Game already in progress');
-          return;
-        }
-
-        console.log('🦥 Starting Sloth Runner...');
-        
-        // Reset game state
-        slothGame.score = 0;
-        slothGame.multiplier = 1;
-        slothGame.obstacles = [];
-        slothGame.powerups = [];
-        slothGame.isPlaying = true;
-        slothGame.speed = 2000;
-        slothGame.lastObstacleTime = Date.now();
-        
-        // Update UI
-        document.getElementById('slothScore').textContent = '0';
-        document.getElementById('slothMultiplier').textContent = '1x';
-        document.getElementById('slothGameOver').style.display = 'none';
-        document.getElementById('startSlothBtn').disabled = true;
-        document.getElementById('startSlothBtn').textContent = '🎮 Playing...';
-        
-        // Clear any existing obstacles/powerups
-        document.querySelectorAll('.obstacle, .sloth-powerup').forEach(el => el.remove());
-        
-        // Start game loops
-        startGameLoops();
-        
-        showStatus('sloth-status', '🎮 Game started! Jump to avoid obstacles!', 'success');
-        setTimeout(() => hideStatus('sloth-status'), 3000);
-      };
-
-      window.jumpSloth = function() {
-        if (!slothGame.isPlaying) {
-          showError('Start the game first!');
-          return;
-        }
-
-        if (slothGame.jumpCooldown) {
-          return;
-        }
-
-        const sloth = document.getElementById('slothCharacter');
-        if (!sloth.classList.contains('jumping')) {
-          sloth.classList.add('jumping');
-          slothGame.jumpCooldown = true;
-          
-          // Remove jump class after animation
-          setTimeout(() => {
-            sloth.classList.remove('jumping');
-            slothGame.jumpCooldown = false;
-          }, 600);
-          
-          console.log('🦥 Sloth jumped!');
-        }
-      };
-
-      window.restartSlothGame = function() {
-        document.getElementById('slothGameOver').style.display = 'none';
-        startSlothGame();
-      };
-
-      window.shareSlothScore = function() {
-        const score = slothGame.score;
-        const xpEarned = calculateSlothXP(score);
-        
-        const achievement = {
-          icon: '🦥',
-          title: 'Sloth Runner Score!',
-          description: `Score: ${score} points! Earned ${xpEarned} XP!`,
-          type: 'sloth',
-          data: { score: score, xp: xpEarned }
-        };
-        
-        showAchievementModal(achievement);
-      };
-
-      // Sloth game mechanics
-      function startGameLoops() {
-        // Score increment
-        slothGame.gameLoop = setInterval(() => {
-          if (slothGame.isPlaying) {
-            slothGame.score += slothGame.multiplier;
-            document.getElementById('slothScore').textContent = slothGame.score;
-            
-            // Increase difficulty over time
-            if (slothGame.score % 50 === 0 && slothGame.speed > 1000) {
-              slothGame.speed -= 100;
-              console.log(`🎮 Difficulty increased! Speed: ${slothGame.speed}`);
-            }
-            
-            // Update multiplier
-            if (slothGame.score % 100 === 0 && slothGame.multiplier < 5) {
-              slothGame.multiplier++;
-              document.getElementById('slothMultiplier').textContent = `${slothGame.multiplier}x`;
-              showSlothEffect(`${slothGame.multiplier}x!`);
-            }
-          }
-        }, 100);
-        
-        // Spawn obstacles
-        slothGame.obstacleInterval = setInterval(() => {
-          if (slothGame.isPlaying) {
-            spawnObstacle();
-          }
-        }, slothGame.speed);
-        
-        // Spawn power-ups
-        slothGame.powerupInterval = setInterval(() => {
-          if (slothGame.isPlaying && Math.random() < 0.3) {
-            spawnPowerup();
-          }
-        }, 3000);
-        
-        // Collision detection
-        setInterval(() => {
-          if (slothGame.isPlaying) {
-            checkCollisions();
-          }
-        }, 50);
-      }
-
-      function spawnObstacle() {
-        const container = document.getElementById('slothGameContainer');
-        const obstacle = document.createElement('div');
-        obstacle.className = 'obstacle';
-        obstacle.textContent = ['🌳', '🪨', '🌵', '🪵'][Math.floor(Math.random() * 4)];
-        obstacle.style.animationDuration = `${slothGame.speed}ms`;
-        container.appendChild(obstacle);
-        
-        // Remove obstacle after animation
-        setTimeout(() => {
-          obstacle.remove();
-        }, slothGame.speed);
-      }
-
-      function spawnPowerup() {
-        const container = document.getElementById('slothGameContainer');
-        const powerup = document.createElement('div');
-        powerup.className = 'sloth-powerup';
-        powerup.textContent = ['⭐', '💎', '🍀', '✨'][Math.floor(Math.random() * 4)];
-        container.appendChild(powerup);
-        
-        // Remove powerup after animation
-        setTimeout(() => {
-          powerup.remove();
-        }, 4000);
-      }
-
-      function checkCollisions() {
-        const sloth = document.getElementById('slothCharacter');
-        const slothRect = sloth.getBoundingClientRect();
-        const isJumping = sloth.classList.contains('jumping');
-        
-        // Check obstacle collisions
-        document.querySelectorAll('.obstacle').forEach(obstacle => {
-          const obstacleRect = obstacle.getBoundingClientRect();
-          
-          if (!isJumping && !slothGame.invincible &&
-              slothRect.left < obstacleRect.right &&
-              slothRect.right > obstacleRect.left &&
-              slothRect.bottom > obstacleRect.top) {
-            // Collision detected
-            endSlothGame();
-          }
-        });
-        
-        // Check powerup collisions
-        document.querySelectorAll('.sloth-powerup').forEach(powerup => {
-          const powerupRect = powerup.getBoundingClientRect();
-          
-          if (slothRect.left < powerupRect.right &&
-              slothRect.right > powerupRect.left &&
-              slothRect.bottom > powerupRect.top &&
-              slothRect.top < powerupRect.bottom) {
-            // Powerup collected
-            collectPowerup(powerup);
-          }
-        });
-      }
-
-      function collectPowerup(powerup) {
-        const type = powerup.textContent;
-        powerup.remove();
-        
-        switch(type) {
-          case '⭐':
-            slothGame.score += 10;
-            showSlothEffect('+10');
-            break;
-          case '💎':
-            slothGame.score += 20;
-            showSlothEffect('+20');
-            break;
-          case '🍀':
-            slothGame.invincible = true;
-            showSlothEffect('Shield!');
-            setTimeout(() => {
-              slothGame.invincible = false;
-            }, 3000);
-            break;
-          case '✨':
-            slothGame.multiplier = Math.min(slothGame.multiplier + 1, 5);
-            document.getElementById('slothMultiplier').textContent = `${slothGame.multiplier}x`;
-            showSlothEffect('Multiplier!');
-            break;
-        }
-        
-        document.getElementById('slothScore').textContent = slothGame.score;
-      }
-
-      function showSlothEffect(text) {
-        const container = document.getElementById('slothGameContainer');
-        const effect = document.createElement('div');
-        effect.className = 'sloth-effect';
-        effect.textContent = text;
-        container.appendChild(effect);
-        
-        setTimeout(() => {
-          effect.remove();
-        }, 1000);
-      }
-
-      function endSlothGame() {
-        slothGame.isPlaying = false;
-        
-        // Clear intervals
-        clearInterval(slothGame.gameLoop);
-        clearInterval(slothGame.obstacleInterval);
-        clearInterval(slothGame.powerupInterval);
-        
-        // Calculate XP earned
-        const xpEarned = calculateSlothXP(slothGame.score);
-        
-        // Update high score
-        if (slothGame.score > slothGame.highScore) {
-          slothGame.highScore = slothGame.score;
-          localStorage.setItem(`sloth_highscore_${appState.address}`, slothGame.highScore);
-        }
-        
-        // Show game over screen
-        document.getElementById('finalScore').textContent = slothGame.score;
-        document.getElementById('xpEarned').textContent = xpEarned;
-        document.getElementById('slothGameOver').style.display = 'block';
-        
-        // Add XP to player
-        if (xpEarned > 0) {
-          addXP(xpEarned);
-          showStatus('sloth-status', `🎮 Game Over! You earned ${xpEarned} XP!`, 'success');
-        }
-        
-        // Reset button
-        document.getElementById('startSlothBtn').disabled = false;
-        document.getElementById('startSlothBtn').textContent = '🎮 Start Game';
-        
-        console.log(`🦥 Game ended! Score: ${slothGame.score}, XP: ${xpEarned}`);
-      }
-
-      function calculateSlothXP(score) {
-        // XP calculation based on score
-        if (score < 50) return 1;
-        if (score < 100) return 2;
-        if (score < 200) return 3;
-        if (score < 300) return 5;
-        if (score < 500) return 8;
-        return 10;
-      }
-
-      // Keyboard controls for sloth game
-      document.addEventListener('keydown', (e) => {
-        if (activeTab === 'sloth' && slothGame.isPlaying) {
-          if (e.code === 'Space' || e.code === 'ArrowUp') {
-            e.preventDefault();
-            jumpSloth();
-          }
-        }
-      });
-
       window.showTab = function(tabName) {
         console.log('📑 Switching to tab:', tabName);
         activeTab = tabName;
@@ -2875,11 +2298,6 @@
           setTimeout(() => {
             updateTokenBalance();
           }, 500);
-        }
-        
-        // End sloth game if switching away
-        if (activeTab !== 'sloth' && slothGame.isPlaying) {
-          endSlothGame();
         }
       };
 
@@ -2963,25 +2381,8 @@
         // Update UI and load wallet-specific data
         updateWalletUI();
         
-        // Load data asynchronously with retry
-        const loadUserData = async () => {
-          try {
-            await updateXPDisplay();
-            console.log('✅ User data loaded successfully');
-          } catch (error) {
-            console.error('Error loading user data:', error);
-            // Retry after 2 seconds
-            setTimeout(async () => {
-              try {
-                await updateXPDisplay();
-              } catch (e) {
-                console.error('Retry failed:', e);
-              }
-            }, 2000);
-          }
-        };
-        
-        loadUserData();
+        // Load data asynchronously
+        updateXPDisplay().catch(console.error);
         
         // Ensure network is correct before fetching balance
         await ensureMonadNetwork();
@@ -3000,12 +2401,6 @@
         };
         
         fetchBalance();
-
-        // Load sloth high score
-        const highScore = localStorage.getItem(`sloth_highscore_${accounts[0]}`);
-        if (highScore) {
-          slothGame.highScore = parseInt(highScore);
-        }
 
       } catch (error) {
         console.error('Connection error:', error);
@@ -3030,12 +2425,6 @@
       };
       updateWalletUI();
       await updateXPDisplay();
-      
-      // End sloth game if playing
-      if (slothGame.isPlaying) {
-        endSlothGame();
-      }
-      
       console.log('🔌 Wallet disconnected, XP reset to 0');
     }
 
@@ -3060,8 +2449,6 @@
         return;
       }
       
-      console.log(`➕ Adding ${amount} XP to wallet ${appState.address}`);
-      
       // Add XP to total wallet XP
       appState.totalXP = (appState.totalXP || 0) + amount;
       appState.xp = Math.max(0, appState.totalXP - (appState.claimedXP || 0));
@@ -3069,13 +2456,11 @@
       // Update display immediately
       document.getElementById('xp').textContent = appState.xp;
       
-      // Save total XP to Supabase (wait for completion to ensure it's saved)
-      await saveWalletXP(appState.address, appState.totalXP);
+      // Save total XP to Supabase in background (non-blocking)
+      saveWalletXP(appState.address, appState.totalXP);
       
-      // Update claim UI
-      if (activeTab === 'claim') {
-        requestAnimationFrame(() => updateClaimUI());
-      }
+      // Update claim UI non-blocking
+      requestAnimationFrame(() => updateClaimUI());
       
       // Add celebration effect
       const xpElement = document.getElementById('xp');
@@ -3087,7 +2472,7 @@
         xpElement.style.color = 'white';
       }, 500);
       
-      console.log(`✨ XP added successfully - Total: ${appState.totalXP}, Available: ${appState.xp}`);
+      console.log(`✨ XP added to ${appState.address}: +${amount}, Total: ${appState.totalXP}, Available: ${appState.xp}`);
     }
 
     function showStatus(id, message, type) {
@@ -3149,14 +2534,7 @@
         setTimeout(async () => {
           console.log('✅ Transaction assumed successful');
           showStatus(statusId, successMsg, 'success');
-          
-          // Add XP - wait for completion
-          try {
-            await addXP(xpAmount);
-            console.log(`✅ XP added successfully: +${xpAmount}`);
-          } catch (error) {
-            console.error('❌ Error adding XP:', error);
-          }
+          await addXP(xpAmount);
           
           // Track contract interaction
           if (appState.connected && appState.address) {
@@ -3365,18 +2743,13 @@
           url: `${baseUrl}?ref=claim&tokens=${data.amount}`,
           image: "💰"
         },
-        sloth: {
-          text: `Just scored ${data.score || 0} points in Sloth Runner! 🦥\n\nEarned ${data.xp || 0} XP!\nTotal XP: ${appState.xp}\n$DOG Balance: ${tokenBalance}\n\nCan you beat my score?`,
-          url: `${baseUrl}?ref=sloth&score=${data.score}&xp=${data.xp}`,
-          image: "🦥"
-        },
         leaderboard: {
           text: `Check out my Monad Dog stats! 🏆\n\nRank: ${data.rank || '?'}\nTotal interactions: ${userStats?.total || 0}\nXP: ${appState.xp}\n$DOG Tokens: ${tokenBalance}\n\nCan you beat me?`,
           url: `${baseUrl}?ref=leaderboard&rank=${data.rank}&xp=${appState.xp}`,
           image: "🏆"
         },
         invite: {
-          text: `Playing Monad Dog - the cutest way to explore Monad Testnet! 🐕⛓️\n\n✨ Pet dogs, flip coins, say GM/GN\n🦥 Play Sloth Runner mini-game\n🎯 Earn XP and claim $DOG tokens\n💰 Convert XP to tokens (10:1 rate)\n🚀 Real blockchain interactions\n\nJoin me!`,
+          text: `Playing Monad Dog - the cutest way to explore Monad Testnet! 🐕⛓️\n\n✨ Pet dogs, flip coins, say GM/GN\n🎯 Earn XP and claim $DOG tokens\n💰 Convert XP to tokens (10:1 rate)\n🚀 Real blockchain interactions\n\nJoin me!`,
           url: `https://monad-snowy.vercel.app?ref=invite&inviter=${appState.address?.slice(0,6)}`,
           image: "🚀"
         }
