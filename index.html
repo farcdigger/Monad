@@ -1,4 +1,16 @@
-<!DOCTYPE html>
+// Wait for Supabase to be available
+        const waitForSupabase = async () => {
+          let attempts = 0;
+          while (!window.supabaseClient && attempts < 10) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            attempts++;
+          }
+          if (window.supabaseClient) {
+            console.log('✅ Supabase client ready');
+          }
+        };
+        
+        await waitForSupabase();<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -59,8 +71,6 @@
     });
   </script>
 
-  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
-  
   <style>
     * {
       margin: 0;
@@ -562,7 +572,7 @@
       border-bottom: 1px solid rgba(255,255,255,0.1);
     }
 
-    /* Sloth Game Styles */
+    /* Sloth Game Styles - Updated jump height */
     .sloth-game-container {
       position: relative;
       width: 100%;
@@ -586,12 +596,12 @@
     }
 
     .sloth-character.jumping {
-      animation: jump 0.6s ease;
+      animation: jump 0.8s ease;
     }
 
     @keyframes jump {
       0%, 100% { bottom: 60px; }
-      50% { bottom: 180px; }
+      50% { bottom: 200px; }
     }
 
     .obstacle {
@@ -832,6 +842,7 @@
         
         <div class="sloth-info">
           <p>🎮 Jump to avoid obstacles and collect power-ups!</p>
+          <p>📱 Tap screen or press Space/↑ to jump</p>
           <p>⭐ Survive longer for higher XP multipliers!</p>
         </div>
 
@@ -859,7 +870,7 @@
 
         <div class="sloth-controls">
           <button id="startSlothBtn" onclick="startSlothGame()">🎮 Start Game</button>
-          <button onclick="jumpSloth()">⬆️ Jump</button>
+          <button onclick="jumpSloth()" style="display: none;">⬆️ Jump</button>
         </div>
 
         <div id="sloth-status" class="status"></div>
@@ -955,13 +966,14 @@
 
   <script>
     // Wait for Supabase to load
+    let supabaseClient = null; // Global supabase client
+    
     window.addEventListener('DOMContentLoaded', function() {
       // Supabase Configuration
       const SUPABASE_URL = 'https://uhqszfoekqrjtybrwqzt.supabase.co';
       const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVocXN6Zm9la3FyanR5YnJ3cXp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4MDMxNTAsImV4cCI6MjA2NjM3OTE1MH0.gGch8B6AlvGrZTDVjfd0xidVnh_Dsua4qRxbaixBqM0';
       
       // Initialize Supabase
-      let supabaseClient;
       if (window.supabase) {
         const { createClient } = window.supabase;
         supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -1210,6 +1222,8 @@
     // Track claimed XP to prevent double-spending
     let claimedXP = {};
 
+    // Remove all claimed XP related functions since we don't need them
+    
     // Supabase Functions for XP Management - with error handling and fallback
     async function getWalletXP(address) {
       if (!address) return 0;
@@ -1295,12 +1309,30 @@
       
       try {
         // First check local cache
-        if (claimedXP[address.toLowerCase()]) {
+        if (claimedXP[address.toLowerCase()] !== undefined) {
+          console.log('Using cached claimed XP:', claimedXP[address.toLowerCase()]);
           return claimedXP[address.toLowerCase()];
         }
         
-        // Try to get from contract (most reliable)
-        if (appState.provider) {
+        // Try Supabase first (more reliable than contract call in Farcaster)
+        if (supabaseClient) {
+          const { data, error } = await supabaseClient
+            .from('claimed_xp')
+            .select('total_claimed')
+            .eq('wallet_address', address.toLowerCase())
+            .maybeSingle();
+          
+          if (!error && data && data.total_claimed !== undefined) {
+            claimedXP[address.toLowerCase()] = data.total_claimed || 0;
+            console.log('Claimed XP from Supabase:', data.total_claimed || 0);
+            return data.total_claimed || 0;
+          } else {
+            console.log('No claimed XP record in Supabase');
+          }
+        }
+        
+        // Try contract as fallback (may fail in Farcaster)
+        if (appState.provider && !sdk?.wallet?.ethProvider) {
           try {
             const dogTokenContract = new ethers.Contract(
               CONTRACTS.DOG_TOKEN,
@@ -1311,32 +1343,23 @@
             const claimed = await dogTokenContract.getClaimedXP(address);
             const claimedAmount = claimed.toNumber();
             
-            // Cache the result
+            // Cache and save to Supabase
             claimedXP[address.toLowerCase()] = claimedAmount;
+            if (supabaseClient && claimedAmount > 0) {
+              await saveClaimedXP(address, 0); // This will update the total
+            }
+            console.log('Claimed XP from contract:', claimedAmount);
             
             return claimedAmount;
           } catch (e) {
-            console.log('Could not fetch claimed XP from contract:', e);
-          }
-        }
-        
-        // Fallback to Supabase
-        if (supabaseClient) {
-          const { data, error } = await supabaseClient
-            .from('claimed_xp')
-            .select('total_claimed')
-            .eq('wallet_address', address.toLowerCase())
-            .single();
-          
-          if (!error && data) {
-            claimedXP[address.toLowerCase()] = data.total_claimed || 0;
-            return data.total_claimed || 0;
+            console.log('Contract call failed (expected in Farcaster):', e.message);
           }
         }
         
         // Final fallback to localStorage
         const localClaimed = parseInt(localStorage.getItem(`claimed_xp_${address.toLowerCase()}`) || '0');
         claimedXP[address.toLowerCase()] = localClaimed;
+        console.log('Claimed XP from localStorage:', localClaimed);
         return localClaimed;
         
       } catch (e) {
@@ -1446,22 +1469,16 @@
         try {
           // Get XP from Supabase/localStorage
           const walletXP = await getWalletXP(appState.address);
-          console.log('Total XP from storage:', walletXP);
+          console.log('Current XP from storage:', walletXP);
           
-          // Get claimed XP to calculate available XP
-          const claimedAmount = await getClaimedXPAmount(appState.address);
-          console.log('Claimed XP:', claimedAmount);
-          
-          const availableXP = Math.max(0, walletXP - claimedAmount);
-          console.log('Available XP:', availableXP);
+          // No claimed XP - just use the actual XP value
+          appState.xp = walletXP;
+          appState.totalXP = walletXP;
           
           // Update display
-          document.getElementById('xp').textContent = availableXP;
-          appState.xp = availableXP;
-          appState.totalXP = walletXP;
-          appState.claimedXP = claimedAmount;
+          document.getElementById('xp').textContent = walletXP;
           
-          console.log(`📊 XP Display Updated - Total: ${walletXP}, Claimed: ${claimedAmount}, Available: ${availableXP}`);
+          console.log(`📊 XP Display Updated - Current XP: ${walletXP}`);
           
           // Update claim UI if on claim tab
           if (activeTab === 'claim') {
@@ -1472,13 +1489,11 @@
           document.getElementById('xp').textContent = '0';
           appState.xp = 0;
           appState.totalXP = 0;
-          appState.claimedXP = 0;
         }
       } else {
         document.getElementById('xp').textContent = '0';
         appState.xp = 0;
         appState.totalXP = 0;
-        appState.claimedXP = 0;
         updateClaimUI();
       }
     }
@@ -1633,7 +1648,7 @@
       return;
     }
 
-    // Claim tokens function with double-spend protection
+    // Claim tokens function - XP is spent when claiming
     window.claimTokens = async function() {
       if (!appState.connected || !appState.signer) {
         showError('Please connect your wallet first');
@@ -1675,16 +1690,18 @@
         showStatus('claim-status', `📡 Transaction sent: ${tx.hash.slice(0,10)}...`, 'pending');
         console.log('Transaction hash:', tx.hash);
         
-        // Immediately update claimed XP to prevent double-spending
-        await saveClaimedXP(appState.address, xpToClaim);
-        
-        // Update local XP immediately
+        // Immediately update XP (subtract the claimed amount)
         const remainingXP = availableXP - xpToClaim;
         appState.xp = remainingXP;
-        appState.claimedXP = (appState.claimedXP || 0) + xpToClaim;
+        appState.totalXP = remainingXP;
         
         // Update display immediately
         document.getElementById('xp').textContent = remainingXP;
+        
+        // Save new XP amount to Supabase
+        await saveWalletXP(appState.address, remainingXP);
+        
+        // Update claim UI
         await updateClaimUI();
         
         // Wait for confirmation (but don't wait too long for Farcaster wallet)
@@ -1717,13 +1734,6 @@
             };
             
             updateBalanceWithRetry();
-            
-            // Save claim history
-            await saveClaimHistory(appState.address, {
-              xpAmount: xpToClaim,
-              tokenAmount: claimableDOG,
-              txHash: tx.hash
-            });
             
             // Update UI
             await updateXPDisplay();
@@ -1766,14 +1776,6 @@
           errorMsg = 'Transaction cancelled';
         } else if (error.message.includes('insufficient funds')) {
           errorMsg = 'Insufficient gas funds';
-        } else if (error.message.includes('XP already claimed')) {
-          errorMsg = 'This XP has already been claimed';
-          // Update claimed XP from contract
-          const claimed = await getClaimedXPAmount(appState.address);
-          appState.claimedXP = claimed;
-          await updateXPDisplay();
-        } else if (error.message.includes('Invalid XP amount')) {
-          errorMsg = 'Invalid XP amount. Must be multiple of 10';
         }
         
         showStatus('claim-status', errorMsg, 'error');
@@ -2364,7 +2366,6 @@
       address: null,
       xp: 0,
       totalXP: 0,
-      claimedXP: 0,
       provider: null,
       signer: null,
       isTransactionPending: false
@@ -2605,11 +2606,11 @@
           sloth.classList.add('jumping');
           slothGame.jumpCooldown = true;
           
-          // Remove jump class after animation
+          // Remove jump class after animation (increased to 800ms)
           setTimeout(() => {
             sloth.classList.remove('jumping');
             slothGame.jumpCooldown = false;
-          }, 600);
+          }, 800);
           
           console.log('🦥 Sloth jumped!');
         }
@@ -2712,14 +2713,17 @@
         const slothRect = sloth.getBoundingClientRect();
         const isJumping = sloth.classList.contains('jumping');
         
-        // Check obstacle collisions
+        // Check obstacle collisions (more forgiving hitbox)
         document.querySelectorAll('.obstacle').forEach(obstacle => {
           const obstacleRect = obstacle.getBoundingClientRect();
           
+          // Make collision detection more forgiving
+          const collisionMargin = 20; // pixels of forgiveness
+          
           if (!isJumping && !slothGame.invincible &&
-              slothRect.left < obstacleRect.right &&
-              slothRect.right > obstacleRect.left &&
-              slothRect.bottom > obstacleRect.top) {
+              slothRect.left < obstacleRect.right - collisionMargin &&
+              slothRect.right > obstacleRect.left + collisionMargin &&
+              slothRect.bottom > obstacleRect.top + collisionMargin) {
             // Collision detected
             endSlothGame();
           }
@@ -2833,6 +2837,22 @@
             e.preventDefault();
             jumpSloth();
           }
+        }
+      });
+
+      // Touch controls for mobile
+      document.getElementById('slothGameContainer').addEventListener('touchstart', (e) => {
+        if (slothGame.isPlaying) {
+          e.preventDefault();
+          jumpSloth();
+        }
+      });
+
+      // Click controls for desktop
+      document.getElementById('slothGameContainer').addEventListener('click', (e) => {
+        if (slothGame.isPlaying && e.target.id !== 'slothGameOver' && !e.target.closest('#slothGameOver')) {
+          e.preventDefault();
+          jumpSloth();
         }
       });
 
@@ -3008,7 +3028,6 @@
         address: null,
         xp: 0,
         totalXP: 0,
-        claimedXP: 0,
         provider: null,
         signer: null
       };
@@ -3046,15 +3065,15 @@
       
       console.log(`➕ Adding ${amount} XP to wallet ${appState.address}`);
       
-      // Add XP to total wallet XP
-      appState.totalXP = (appState.totalXP || 0) + amount;
-      appState.xp = Math.max(0, appState.totalXP - (appState.claimedXP || 0));
+      // Add XP to current XP
+      appState.xp = (appState.xp || 0) + amount;
+      appState.totalXP = appState.xp;
       
       // Update display immediately
       document.getElementById('xp').textContent = appState.xp;
       
-      // Save total XP to Supabase (wait for completion to ensure it's saved)
-      await saveWalletXP(appState.address, appState.totalXP);
+      // Save XP to Supabase (wait for completion to ensure it's saved)
+      await saveWalletXP(appState.address, appState.xp);
       
       // Update claim UI
       if (activeTab === 'claim') {
@@ -3071,7 +3090,7 @@
         xpElement.style.color = 'white';
       }, 500);
       
-      console.log(`✨ XP added successfully - Total: ${appState.totalXP}, Available: ${appState.xp}`);
+      console.log(`✨ XP added successfully - Current XP: ${appState.xp}`);
     }
 
     function showStatus(id, message, type) {
@@ -3133,7 +3152,14 @@
         setTimeout(async () => {
           console.log('✅ Transaction assumed successful');
           showStatus(statusId, successMsg, 'success');
-          await addXP(xpAmount);
+          
+          // Add XP - wait for completion
+          try {
+            await addXP(xpAmount);
+            console.log(`✅ XP added successfully: +${xpAmount}`);
+          } catch (error) {
+            console.error('❌ Error adding XP:', error);
+          }
           
           // Track contract interaction
           if (appState.connected && appState.address) {
