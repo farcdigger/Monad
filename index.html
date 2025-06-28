@@ -1,4 +1,16 @@
-<!DOCTYPE html>
+// Wait for Supabase to be available
+        const waitForSupabase = async () => {
+          let attempts = 0;
+          while (!window.supabaseClient && attempts < 10) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            attempts++;
+          }
+          if (window.supabaseClient) {
+            console.log('✅ Supabase client ready');
+          }
+        };
+        
+        await waitForSupabase();<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -966,6 +978,9 @@
         const { createClient } = window.supabase;
         supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         console.log('✅ Supabase initialized');
+        
+        // Make it globally available
+        window.supabaseClient = supabaseClient;
       } else {
         console.error('❌ Supabase not loaded');
       }
@@ -1212,57 +1227,77 @@
       if (!address) return 0;
       
       try {
-        // Check if Supabase is available
-        if (!supabaseClient) {
-          console.log('Supabase not available, using localStorage fallback');
+        // Always try Supabase first if available
+        if (supabaseClient) {
+          console.log('📊 Fetching XP from Supabase for:', address.toLowerCase());
+          
+          const { data, error } = await supabaseClient
+            .from('user_xp')
+            .select('xp')
+            .eq('wallet_address', address.toLowerCase())
+            .maybeSingle(); // Use maybeSingle instead of single to avoid error if no record
+          
+          if (error) {
+            console.error('Supabase XP fetch error:', error);
+            // Try localStorage fallback
+            const localXP = parseInt(localStorage.getItem(`wallet_xp_${address.toLowerCase()}`) || '0');
+            console.log('Using localStorage XP:', localXP);
+            return localXP;
+          }
+          
+          if (data && data.xp !== undefined) {
+            console.log('✅ Found XP in Supabase:', data.xp);
+            // Also update localStorage for faster future access
+            localStorage.setItem(`wallet_xp_${address.toLowerCase()}`, data.xp.toString());
+            return data.xp;
+          } else {
+            console.log('No XP record in Supabase, checking localStorage');
+            // No record in Supabase, check localStorage
+            const localXP = parseInt(localStorage.getItem(`wallet_xp_${address.toLowerCase()}`) || '0');
+            return localXP;
+          }
+        } else {
+          console.log('Supabase not available, using localStorage');
           return parseInt(localStorage.getItem(`wallet_xp_${address.toLowerCase()}`) || '0');
         }
-
-        const { data, error } = await supabaseClient
-          .from('user_xp')
-          .select('xp')
-          .eq('wallet_address', address.toLowerCase())
-          .single();
-        
-        if (error) {
-          console.log('No XP record found, returning 0');
-          // Fallback to localStorage
-          return parseInt(localStorage.getItem(`wallet_xp_${address.toLowerCase()}`) || '0');
-        }
-        
-        return data.xp || 0;
       } catch (e) {
         console.error('Error fetching XP:', e);
         // Fallback to localStorage
-        return parseInt(localStorage.getItem(`wallet_xp_${address.toLowerCase()}`) || '0');
+        const localXP = parseInt(localStorage.getItem(`wallet_xp_${address.toLowerCase()}`) || '0');
+        console.log('Error fallback to localStorage XP:', localXP);
+        return localXP;
       }
     }
 
     async function saveWalletXP(address, xp) {
       if (!address) return;
       
+      console.log(`💾 Saving XP for ${address}: ${xp}`);
+      
       // Always save to localStorage first (immediate)
       localStorage.setItem(`wallet_xp_${address.toLowerCase()}`, xp.toString());
       
-      // Then try Supabase (async, non-blocking)
+      // Then save to Supabase
       if (supabaseClient) {
-        supabaseClient
-          .from('user_xp')
-          .upsert({
-            wallet_address: address.toLowerCase(),
-            xp: xp,
-            updated_at: new Date().toISOString()
-          }, {
-            onConflict: 'wallet_address'
-          })
-          .then(({ error }) => {
-            if (!error) {
-              console.log(`💾 XP saved to Supabase for ${address}: ${xp}`);
-            }
-          })
-          .catch(e => {
-            console.error('Error saving XP to Supabase:', e);
-          });
+        try {
+          const { data, error } = await supabaseClient
+            .from('user_xp')
+            .upsert({
+              wallet_address: address.toLowerCase(),
+              xp: xp,
+              updated_at: new Date().toISOString()
+            }, {
+              onConflict: 'wallet_address'
+            });
+          
+          if (error) {
+            console.error('Error saving XP to Supabase:', error);
+          } else {
+            console.log(`✅ XP saved to Supabase successfully`);
+          }
+        } catch (e) {
+          console.error('Exception saving XP to Supabase:', e);
+        }
       }
     }
 
@@ -1418,29 +1453,38 @@
 
     async function updateXPDisplay() {
       if (appState.connected && appState.address) {
-        // Show current value immediately
-        const currentDisplay = document.getElementById('xp').textContent;
+        console.log('🔄 Updating XP display for:', appState.address);
         
-        // Get XP (with timeout to prevent hanging)
-        const xpPromise = getWalletXP(appState.address);
-        const timeoutPromise = new Promise((resolve) => setTimeout(() => resolve(parseInt(currentDisplay) || 0), 1000));
-        
-        const walletXP = await Promise.race([xpPromise, timeoutPromise]);
-        
-        // Get claimed XP to calculate available XP
-        const claimedAmount = await getClaimedXPAmount(appState.address);
-        const availableXP = Math.max(0, walletXP - claimedAmount);
-        
-        document.getElementById('xp').textContent = availableXP;
-        appState.xp = availableXP;
-        appState.totalXP = walletXP;
-        appState.claimedXP = claimedAmount;
-        
-        console.log(`📊 XP Display - Total: ${walletXP}, Claimed: ${claimedAmount}, Available: ${availableXP}`);
-        
-        // Update claim UI non-blocking
-        if (activeTab === 'claim') {
-          requestAnimationFrame(() => updateClaimUI());
+        try {
+          // Get XP from Supabase/localStorage
+          const walletXP = await getWalletXP(appState.address);
+          console.log('Total XP from storage:', walletXP);
+          
+          // Get claimed XP to calculate available XP
+          const claimedAmount = await getClaimedXPAmount(appState.address);
+          console.log('Claimed XP:', claimedAmount);
+          
+          const availableXP = Math.max(0, walletXP - claimedAmount);
+          console.log('Available XP:', availableXP);
+          
+          // Update display
+          document.getElementById('xp').textContent = availableXP;
+          appState.xp = availableXP;
+          appState.totalXP = walletXP;
+          appState.claimedXP = claimedAmount;
+          
+          console.log(`📊 XP Display Updated - Total: ${walletXP}, Claimed: ${claimedAmount}, Available: ${availableXP}`);
+          
+          // Update claim UI if on claim tab
+          if (activeTab === 'claim') {
+            requestAnimationFrame(() => updateClaimUI());
+          }
+        } catch (error) {
+          console.error('Error updating XP display:', error);
+          document.getElementById('xp').textContent = '0';
+          appState.xp = 0;
+          appState.totalXP = 0;
+          appState.claimedXP = 0;
         }
       } else {
         document.getElementById('xp').textContent = '0';
@@ -2915,8 +2959,25 @@
         // Update UI and load wallet-specific data
         updateWalletUI();
         
-        // Load data asynchronously
-        updateXPDisplay().catch(console.error);
+        // Load data asynchronously with retry
+        const loadUserData = async () => {
+          try {
+            await updateXPDisplay();
+            console.log('✅ User data loaded successfully');
+          } catch (error) {
+            console.error('Error loading user data:', error);
+            // Retry after 2 seconds
+            setTimeout(async () => {
+              try {
+                await updateXPDisplay();
+              } catch (e) {
+                console.error('Retry failed:', e);
+              }
+            }, 2000);
+          }
+        };
+        
+        loadUserData();
         
         // Ensure network is correct before fetching balance
         await ensureMonadNetwork();
@@ -2995,6 +3056,8 @@
         return;
       }
       
+      console.log(`➕ Adding ${amount} XP to wallet ${appState.address}`);
+      
       // Add XP to total wallet XP
       appState.totalXP = (appState.totalXP || 0) + amount;
       appState.xp = Math.max(0, appState.totalXP - (appState.claimedXP || 0));
@@ -3002,11 +3065,13 @@
       // Update display immediately
       document.getElementById('xp').textContent = appState.xp;
       
-      // Save total XP to Supabase in background (non-blocking)
-      saveWalletXP(appState.address, appState.totalXP);
+      // Save total XP to Supabase (wait for completion to ensure it's saved)
+      await saveWalletXP(appState.address, appState.totalXP);
       
-      // Update claim UI non-blocking
-      requestAnimationFrame(() => updateClaimUI());
+      // Update claim UI
+      if (activeTab === 'claim') {
+        requestAnimationFrame(() => updateClaimUI());
+      }
       
       // Add celebration effect
       const xpElement = document.getElementById('xp');
@@ -3018,7 +3083,7 @@
         xpElement.style.color = 'white';
       }, 500);
       
-      console.log(`✨ XP added to ${appState.address}: +${amount}, Total: ${appState.totalXP}, Available: ${appState.xp}`);
+      console.log(`✨ XP added successfully - Total: ${appState.totalXP}, Available: ${appState.xp}`);
     }
 
     function showStatus(id, message, type) {
