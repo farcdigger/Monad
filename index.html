@@ -1440,12 +1440,10 @@
     }
 
     async function updateXPDisplay() {
-  const xp = await getWalletXP(appState.address); // sadece user_xp tablosundan çeker
-  document.getElementById('xp-total').textContent = xp;
-
-  console.log(`📊 XP Display Updated - Total: ${xp}`);
-}
-
+      if (appState.connected && appState.address) {
+        console.log('🔄 Updating XP display for:', appState.address);
+        
+        try {
           // Get XP from Supabase/localStorage
           const walletXP = await getWalletXP(appState.address);
           console.log('Total XP from storage:', walletXP);
