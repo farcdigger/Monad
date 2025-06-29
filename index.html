@@ -1532,12 +1532,34 @@
       }
     }
 
-    // ✅ FIXED CLAIM FUNCTION - XP resets after user confirms transaction + Button cooldown
+    // ✅ OWNER-ONLY CLAIM SYSTEM
+    const OWNER_ADDRESS = "0xYOUR_OWNER_ADDRESS_HERE"; // 👈 BURAYA OWNER ADRES EKLE
+    
+    // ✅ EMERGENCY: Only owner can claim until system is fixed
     window.claimTokens = async function() {
       if (!appState.connected || !appState.signer) {
         showError('Please connect your wallet first');
         return;
       }
+      
+      // ✅ OWNER CHECK - Only owner can claim
+      if (appState.address.toLowerCase() !== OWNER_ADDRESS.toLowerCase()) {
+        showError('🚨 Claim temporarily disabled for security. Only owner can claim until XP exploit is fixed.');
+        showStatus('claim-status', '🔒 Claim disabled for non-owners until security update', 'error');
+        
+        // Show explanation modal
+        showAchievementModal({
+          icon: '🔒',
+          title: 'Claim Temporarily Disabled',
+          description: 'Due to a security exploit in the XP system, claiming is temporarily restricted to prevent further abuse. The system will be restored soon with enhanced security.',
+          type: 'security',
+          data: {}
+        });
+        
+        return;
+      }
+      
+      console.log('✅ Owner detected, proceeding with claim...');
       
       const availableXP = appState.xp;
       const claimableDOG = Math.floor(availableXP / XP_TO_DOG_RATE);
@@ -1550,7 +1572,7 @@
       const claimButton = document.getElementById('claimButton');
       
       try {
-        console.log('💰 Starting token claim...');
+        console.log('💰 Owner starting token claim...');
         
         // ✅ Disable button immediately for 30 seconds
         claimButton.disabled = true;
@@ -1570,7 +1592,7 @@
           }
         }, 1000);
         
-        showStatus('claim-status', '🔐 Please confirm transaction in your wallet...', 'pending');
+        showStatus('claim-status', '🔐 Owner claim: Please confirm transaction in your wallet...', 'pending');
         
         // Ensure correct network
         await ensureMonadNetwork();
@@ -1578,14 +1600,18 @@
         // Call the actual DOG token contract
         const dogTokenContract = new ethers.Contract(
           CONTRACTS.DOG_TOKEN,
-          ABIS.DOG_TOKEN,
+          [
+            "function claim(uint256 xpAmount) public",
+            "function balanceOf(address account) public view returns (uint256)",
+            "function decimals() public view returns (uint8)"
+          ],
           appState.signer
         );
         
         // Calculate XP to claim (must be multiple of 10)
         const xpToClaim = claimableDOG * XP_TO_DOG_RATE;
         
-        console.log(`Claiming ${xpToClaim} XP for ${claimableDOG} DOG tokens`);
+        console.log(`Owner claiming ${xpToClaim} XP for ${claimableDOG} DOG tokens`);
         
         // Execute claim transaction with proper gas limit
         const tx = await dogTokenContract.claim(xpToClaim, {
@@ -1593,21 +1619,21 @@
         });
         
         // ✅ USER CONFIRMED TRANSACTION - NOW RESET XP IMMEDIATELY
-        console.log('🎯 Transaction confirmed by user - resetting XP to 0');
+        console.log('🎯 Owner transaction confirmed - resetting XP to 0');
         
         // Reset XP to 0 in state and display immediately
         appState.xp = 0;
         document.getElementById('xp').textContent = '0';
         
-        // ✅ Save XP as 0 to Supabase immediately
-        await saveWalletXP(appState.address, 0);
+        // ✅ Save XP as 0 to localStorage (owner privilege)
+        localStorage.setItem(`wallet_xp_${appState.address.toLowerCase()}`, '0');
         
         // Update claim UI immediately
         await updateClaimUI();
         
-        showStatus('claim-status', `📡 Transaction sent: ${tx.hash.slice(0,10)}... XP reset to 0`, 'pending');
+        showStatus('claim-status', `📡 Owner transaction sent: ${tx.hash.slice(0,10)}... XP reset to 0`, 'pending');
         console.log('Transaction hash:', tx.hash);
-        console.log('✅ XP successfully reset to 0 - user can continue earning');
+        console.log('✅ Owner XP successfully reset to 0');
         
         // Wait for confirmation and update balance
         setTimeout(async () => {
@@ -1630,7 +1656,7 @@
                   // Cache the balance
                   localStorage.setItem(`dog_balance_${appState.address.toLowerCase()}`, displayBalance);
                   
-                  console.log(`✅ Balance updated after claim (attempt ${i + 1}): ${displayBalance} DOG`);
+                  console.log(`✅ Owner balance updated after claim (attempt ${i + 1}): ${displayBalance} DOG`);
                   break;
                 } catch (e) {
                   console.log(`Balance update attempt ${i + 1} failed, retrying...`);
@@ -1640,14 +1666,14 @@
             
             updateBalanceWithRetry();
             
-            showStatus('claim-status', `✅ Successfully claimed ${claimableDOG} $DOG tokens! XP reset - start earning again!`, 'success');
+            showStatus('claim-status', `✅ Owner successfully claimed ${claimableDOG} $DOG tokens! XP reset.`, 'success');
             
             // Show achievement
             showAchievementModal({
-              icon: '💰',
-              title: 'Tokens Claimed!',
-              description: `You've successfully claimed ${claimableDOG} $DOG tokens! Your XP has been reset - start earning again!`,
-              type: 'claim',
+              icon: '👑',
+              title: 'Owner Claim Successful!',
+              description: `You've successfully claimed ${claimableDOG} $DOG tokens as the contract owner. XP has been reset.`,
+              type: 'owner_claim',
               data: { amount: claimableDOG }
             });
             
@@ -1655,30 +1681,21 @@
             
           } catch (e) {
             console.log('Post-claim update error:', e);
-            showStatus('claim-status', `✅ Claim transaction sent! Tokens will arrive soon. XP reset successfully.`, 'success');
+            showStatus('claim-status', `✅ Owner claim transaction sent! Tokens will arrive soon.`, 'success');
             setTimeout(() => hideStatus('claim-status'), 8000);
           }
         }, 5000);
         
       } catch (error) {
-        console.error('❌ Claim error:', error);
+        console.error('❌ Owner claim error:', error);
         
-        let errorMsg = 'Failed to claim tokens';
+        let errorMsg = 'Owner claim failed';
         
         if (error.message.includes('user rejected')) {
-          errorMsg = 'Transaction cancelled - XP not affected';
-          // Don't reset XP if user cancelled
-          console.log('🚫 Transaction cancelled - XP remains unchanged');
+          errorMsg = 'Transaction cancelled';
+          console.log('🚫 Owner transaction cancelled');
         } else if (error.message.includes('insufficient funds')) {
           errorMsg = 'Insufficient gas funds';
-        } else if (error.message.includes('XP already claimed')) {
-          errorMsg = 'This XP has already been claimed';
-          // Reset XP if already claimed on contract
-          appState.xp = 0;
-          await saveWalletXP(appState.address, 0);
-          await updateXPDisplay();
-        } else if (error.message.includes('Invalid XP amount')) {
-          errorMsg = 'Invalid XP amount. Must be multiple of 10';
         }
         
         showStatus('claim-status', errorMsg, 'error');
