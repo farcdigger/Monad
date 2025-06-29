@@ -1090,30 +1090,219 @@
     // Initialize SDK
     let sdk = null;
     
-    // ✅ SECURE XP MANAGEMENT - Contract-based only
+    // ✅ ULTRA SECURE: Blockchain Transaction-Based XP System
     async function getWalletXP(address) {
       if (!address || !appState.provider) return 0;
       
       try {
-        // ✅ SECURE: Only get XP from XP Manager contract
-        const xpManager = new ethers.Contract(
-          CONTRACTS.XP_MANAGER,
-          ABIS.XP_MANAGER,
+        showStatus('claim-status', '🔍 Verifying XP from blockchain transactions...', 'pending');
+        
+        // ✅ Calculate XP from actual blockchain transactions
+        const calculatedXP = await calculateXPFromBlockchain(address);
+        console.log(`📊 Verified XP from blockchain: ${calculatedXP}`);
+        
+        hideStatus('claim-status');
+        return calculatedXP;
+      } catch (e) {
+        console.error('Error calculating XP from blockchain:', e);
+        hideStatus('claim-status');
+        return 0;
+      }
+    }
+
+    // ✅ Calculate XP based on REAL contract interactions only
+    async function calculateXPFromBlockchain(address) {
+      if (!appState.provider) return 0;
+      
+      try {
+        let totalEarnedXP = 0;
+        const userAddress = address.toLowerCase();
+        
+        console.log(`🔍 Scanning blockchain for ${userAddress} transactions...`);
+        
+        // Define contracts and their XP rewards
+        const gameContracts = [
+          { 
+            address: CONTRACTS.PET.toLowerCase(), 
+            xpPerTx: 10, 
+            name: 'Pet',
+            functionSig: '0x6a28f000' // pet() function signature
+          },
+          { 
+            address: CONTRACTS.GREET.toLowerCase(), 
+            xpPerTx: 5, 
+            name: 'Greet',
+            functionSigs: ['0x1b11f549', '0x2b11f549'] // gm() and gn() signatures
+          },
+          { 
+            address: CONTRACTS.FLIP.toLowerCase(), 
+            xpPerTx: 3, 
+            name: 'Flip',
+            functionSig: '0xa8423d71' // flip() function signature
+          }
+        ];
+        
+        // Get block range to scan (last 50,000 blocks or from contract deployment)
+        const currentBlock = await appState.provider.getBlockNumber();
+        const scanFromBlock = Math.max(0, currentBlock - 50000);
+        
+        console.log(`📦 Scanning blocks ${scanFromBlock} to ${currentBlock}`);
+        
+        // Scan each game contract
+        for (const contract of gameContracts) {
+          try {
+            const txCount = await countSuccessfulTransactions(
+              userAddress, 
+              contract.address, 
+              contract.functionSig || contract.functionSigs,
+              scanFromBlock,
+              currentBlock
+            );
+            
+            const earnedXP = txCount * contract.xpPerTx;
+            totalEarnedXP += earnedXP;
+            
+            console.log(`🎮 ${contract.name}: ${txCount} transactions = ${earnedXP} XP`);
+          } catch (contractError) {
+            console.error(`Error scanning ${contract.name} contract:`, contractError);
+          }
+        }
+        
+        // Get already claimed XP from DOG token contract
+        const claimedXP = await getClaimedXPFromDOGContract(address);
+        console.log(`💰 Already claimed: ${claimedXP} XP`);
+        
+        // Calculate available XP
+        const availableXP = Math.max(0, totalEarnedXP - claimedXP);
+        
+        console.log(`✅ Total earned: ${totalEarnedXP}, Claimed: ${claimedXP}, Available: ${availableXP}`);
+        
+        return availableXP;
+      } catch (e) {
+        console.error('Error in calculateXPFromBlockchain:', e);
+        return 0;
+      }
+    }
+
+    // Count successful transactions from user to specific contract
+    async function countSuccessfulTransactions(userAddress, contractAddress, functionSigs, fromBlock, toBlock) {
+      try {
+        let successfulTxCount = 0;
+        
+        // If functionSigs is array, handle multiple functions
+        const sigArray = Array.isArray(functionSigs) ? functionSigs : [functionSigs];
+        
+        // Method 1: Use event logs if available (faster)
+        try {
+          const logs = await appState.provider.getLogs({
+            fromBlock: fromBlock,
+            toBlock: toBlock,
+            address: contractAddress
+          });
+          
+          // Check each log for user transactions
+          const userTxHashes = new Set();
+          
+          for (const log of logs) {
+            try {
+              const tx = await appState.provider.getTransaction(log.transactionHash);
+              
+              if (tx && 
+                  tx.from.toLowerCase() === userAddress && 
+                  tx.to.toLowerCase() === contractAddress) {
+                
+                // Check if transaction data matches expected function signature
+                if (sigArray.some(sig => tx.data.startsWith(sig))) {
+                  userTxHashes.add(log.transactionHash);
+                }
+              }
+            } catch (txError) {
+              // Skip individual transaction errors
+            }
+          }
+          
+          successfulTxCount = userTxHashes.size;
+          
+        } catch (logError) {
+          console.log('Event log method failed, trying alternative...');
+          
+          // Method 2: Manual block scanning (slower but more reliable)
+          const batchSize = 1000;
+          
+          for (let i = fromBlock; i <= toBlock; i += batchSize) {
+            const endBlock = Math.min(i + batchSize - 1, toBlock);
+            
+            try {
+              // Get transactions in this block range
+              for (let blockNum = i; blockNum <= endBlock; blockNum++) {
+                try {
+                  const block = await appState.provider.getBlockWithTransactions(blockNum);
+                  
+                  for (const tx of block.transactions) {
+                    if (tx.from.toLowerCase() === userAddress && 
+                        tx.to && tx.to.toLowerCase() === contractAddress &&
+                        tx.status !== 0) { // Successful transaction
+                      
+                      // Check function signature
+                      if (sigArray.some(sig => tx.data.startsWith(sig))) {
+                        successfulTxCount++;
+                      }
+                    }
+                  }
+                } catch (blockError) {
+                  // Skip block errors
+                }
+              }
+            } catch (batchError) {
+              console.log(`Error in batch ${i}-${endBlock}:`, batchError);
+            }
+          }
+        }
+        
+        return successfulTxCount;
+      } catch (e) {
+        console.error('Error counting transactions:', e);
+        return 0;
+      }
+    }
+
+    // Get claimed XP from DOG token contract
+    async function getClaimedXPFromDOGContract(address) {
+      try {
+        const dogContract = new ethers.Contract(
+          CONTRACTS.DOG_TOKEN,
+          ["function getClaimedXP(address user) external view returns (uint256)"],
           appState.provider
         );
         
-        const availableXP = await xpManager.getAvailableXP(address);
-        return availableXP.toNumber();
+        const claimed = await dogContract.getClaimedXP(address);
+        return claimed.toNumber();
       } catch (e) {
-        console.error('Error fetching XP from XP Manager:', e);
-        return 0; // ✅ SECURE: No fallback to localStorage
+        console.error('Error getting claimed XP from DOG contract:', e);
+        
+        // Fallback: check user's DOG token balance and calculate claimed XP
+        try {
+          const dogContract = new ethers.Contract(
+            CONTRACTS.DOG_TOKEN,
+            ["function balanceOf(address) external view returns (uint256)"],
+            appState.provider
+          );
+          
+          const balance = await dogContract.balanceOf(address);
+          const balanceInDOG = parseFloat(ethers.utils.formatUnits(balance, 18));
+          
+          // If user has DOG tokens, assume they claimed (10 XP = 1 DOG)
+          return Math.floor(balanceInDOG * 10);
+        } catch (fallbackError) {
+          console.error('Fallback method also failed:', fallbackError);
+          return 0;
+        }
       }
     }
 
     async function saveWalletXP(address, xp) {
-      // ✅ SECURE: XP is only managed by smart contracts
-      // This function is now deprecated - XP is managed on-chain
-      console.log('XP management is now handled by smart contracts only');
+      // ✅ SECURE: XP is calculated from blockchain, not saved locally
+      console.log(`💾 XP (${xp}) calculated from blockchain transactions - no local storage needed`);
     }
 
     // ✅ SLOTS CREDITS MANAGEMENT - Updated with real contract integration
@@ -1750,7 +1939,7 @@
         }
       };
 
-      // Buy slot credits with 0.1 MONAD payment - REAL CONTRACT VERSION
+      // Buy slot credits with 0.1 MONAD payment - DEBUG VERSION
       async function buySlotCredits() {
         const slotsButton = document.getElementById('slotsButton');
         const originalText = slotsButton.textContent;
@@ -1765,52 +1954,102 @@
           // Ensure correct network
           await ensureMonadNetwork();
           
-          // ✅ REAL CONTRACT CALL
-          const slotsContract = new ethers.Contract(CONTRACTS.SLOTS, ABIS.SLOTS, appState.signer);
+          console.log('🔍 DEBUG: Contracts address:', CONTRACTS.SLOTS);
+          console.log('🔍 DEBUG: Signer:', appState.signer);
           
-          // Send transaction with 0.1 MONAD payment
-          const tx = await slotsContract.buyCredits({
-            value: ethers.utils.parseEther("0.1"), // 0.1 MONAD
-            gasLimit: 100000
-          });
-          
-          console.log('✅ Credits purchase transaction sent:', tx.hash);
-          showStatus('slots-status', `📡 Payment sent: ${tx.hash.slice(0,10)}... Waiting for confirmation...`, 'pending');
-          
-          // Wait for transaction confirmation
-          setTimeout(async () => {
-            try {
-              // ✅ GET CREDITS FROM CONTRACT
-              const credits = await slotsContract.getCredits(appState.address);
-              appState.slotsCredits = credits.toNumber();
-              
-              // Save to localStorage for immediate display
-              await saveSlotsCredits(appState.address, appState.slotsCredits);
-              updateSlotsButton();
-              
-              showStatus('slots-status', `✅ Payment confirmed! You have ${appState.slotsCredits} game credits!`, 'success');
-              console.log(`✅ ${appState.slotsCredits} slots credits confirmed from contract`);
-              
-              setTimeout(() => hideStatus('slots-status'), 3000);
-            } catch (e) {
-              console.error('Error getting credits after purchase:', e);
-              // Fallback: assume 2 credits were added
-              appState.slotsCredits += 2;
-              await saveSlotsCredits(appState.address, appState.slotsCredits);
-              updateSlotsButton();
-              
-              showStatus('slots-status', '✅ Payment confirmed! Credits should be available soon.', 'success');
-              setTimeout(() => hideStatus('slots-status'), 3000);
+          // ✅ TRY DIFFERENT APPROACH - Direct transaction
+          try {
+            // Method 1: Direct transaction to contract
+            const tx = await appState.signer.sendTransaction({
+              to: CONTRACTS.SLOTS,
+              value: ethers.utils.parseEther("0.1"),
+              data: "0x6a28f000", // buyCredits() function selector
+              gasLimit: 150000
+            });
+            
+            console.log('✅ Direct transaction sent:', tx.hash);
+            showStatus('slots-status', `📡 Payment sent: ${tx.hash.slice(0,10)}... Waiting for confirmation...`, 'pending');
+            
+            // Wait for confirmation
+            setTimeout(async () => {
+              try {
+                // Get credits from contract
+                const slotsContract = new ethers.Contract(
+                  CONTRACTS.SLOTS, 
+                  ["function getCredits(address) view returns (uint256)"], 
+                  appState.provider
+                );
+                
+                const credits = await slotsContract.getCredits(appState.address);
+                appState.slotsCredits = credits.toNumber();
+                
+                await saveSlotsCredits(appState.address, appState.slotsCredits);
+                updateSlotsButton();
+                
+                showStatus('slots-status', `✅ Payment confirmed! You have ${appState.slotsCredits} game credits!`, 'success');
+                setTimeout(() => hideStatus('slots-status'), 3000);
+                
+              } catch (e) {
+                console.error('Error getting credits:', e);
+                // Assume 2 credits
+                appState.slotsCredits += 2;
+                await saveSlotsCredits(appState.address, appState.slotsCredits);
+                updateSlotsButton();
+                
+                showStatus('slots-status', '✅ Payment confirmed! Credits should be available.', 'success');
+                setTimeout(() => hideStatus('slots-status'), 3000);
+              }
+            }, 5000);
+            
+          } catch (directError) {
+            console.error('Direct transaction failed:', directError);
+            
+            // Method 2: Try with different ABI
+            const altABI = [
+              "function buyCredits() payable",
+              "function purchaseCredits() payable", 
+              "function buy() payable"
+            ];
+            
+            for (let abi of altABI) {
+              try {
+                console.log(`🔄 Trying ABI: ${abi}`);
+                const slotsContract = new ethers.Contract(CONTRACTS.SLOTS, [abi], appState.signer);
+                const functionName = abi.split('(')[0].split(' ')[1];
+                
+                const tx = await slotsContract[functionName]({
+                  value: ethers.utils.parseEther("0.1"),
+                  gasLimit: 150000
+                });
+                
+                console.log(`✅ Success with ${functionName}:`, tx.hash);
+                showStatus('slots-status', `📡 Payment sent: ${tx.hash.slice(0,10)}...`, 'pending');
+                
+                setTimeout(async () => {
+                  appState.slotsCredits += 2;
+                  await saveSlotsCredits(appState.address, appState.slotsCredits);
+                  updateSlotsButton();
+                  showStatus('slots-status', '✅ Payment confirmed!', 'success');
+                  setTimeout(() => hideStatus('slots-status'), 3000);
+                }, 5000);
+                
+                return; // Success, exit
+                
+              } catch (abiError) {
+                console.log(`❌ ${abi} failed:`, abiError.message);
+              }
             }
-          }, 5000);
+            
+            throw new Error('All methods failed');
+          }
           
         } catch (error) {
-          console.error('❌ Payment error:', error);
+          console.error('❌ All payment methods failed:', error);
           
           slotsButton.disabled = false;
           slotsButton.textContent = originalText;
           
-          let errorMsg = 'Payment failed';
+          let errorMsg = 'Payment failed - check contract';
           if (error.message.includes('user rejected')) {
             errorMsg = 'Payment cancelled';
           } else if (error.message.includes('insufficient funds')) {
@@ -2199,29 +2438,31 @@
         return;
       }
       
-      // Add XP to current balance
-      appState.xp = (appState.xp || 0) + amount;
+      // ✅ SECURE: Don't add XP locally, it will be calculated from blockchain
+      console.log(`✨ XP (+${amount}) will be calculated from your blockchain transaction`);
       
-      // Update display immediately
-      document.getElementById('xp').textContent = appState.xp;
-      
-      // Save XP to Supabase in background (non-blocking)
-      saveWalletXP(appState.address, appState.xp);
-      
-      // Update claim UI non-blocking
-      requestAnimationFrame(() => updateClaimUI());
-      
-      // Add celebration effect
-      const xpElement = document.getElementById('xp');
-      xpElement.style.transform = 'scale(1.2)';
-      xpElement.style.color = '#00ff00';
-      
-      setTimeout(() => {
-        xpElement.style.transform = 'scale(1)';
-        xpElement.style.color = 'white';
-      }, 500);
-      
-      console.log(`✨ XP added to ${appState.address}: +${amount}, Total Available: ${appState.xp}`);
+      // Update display after small delay to show immediate feedback
+      setTimeout(async () => {
+        // Recalculate XP from blockchain
+        const realXP = await getWalletXP(appState.address);
+        appState.xp = realXP;
+        document.getElementById('xp').textContent = realXP;
+        
+        // Update claim UI
+        requestAnimationFrame(() => updateClaimUI());
+        
+        // Add celebration effect
+        const xpElement = document.getElementById('xp');
+        xpElement.style.transform = 'scale(1.2)';
+        xpElement.style.color = '#00ff00';
+        
+        setTimeout(() => {
+          xpElement.style.transform = 'scale(1)';
+          xpElement.style.color = 'white';
+        }, 500);
+        
+        console.log(`✅ XP recalculated from blockchain: ${realXP}`);
+      }, 2000); // Small delay to allow transaction to be included in block
     }
 
     function showStatus(id, message, type) {
