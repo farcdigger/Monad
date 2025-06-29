@@ -1032,13 +1032,12 @@
       }, 500);
     }
 
-    // Contract addresses and ABIs - SECURE VERSION
+    // Contract addresses and ABIs
     const CONTRACTS = {
       PET: "0xc53abe4c593b9440407f8ac1b346f3f999e6d8ed",
       GREET: "0xbc8b78f3e2348d4b5e0390fe700ce54b59931da4",
       FLIP: "0xc5b2280d1e2f155f9a2be2af7e78190658874106",
-      SLOTS: "0x3b00dcb810990fae3c9dcd5fd030a146aa88be1e",
-      XP_MANAGER: "0x0000000000000000000000000000000000000000", // TODO: Deploy XP Manager
+      SLOTS: "0x6e9a2fcf69a16f6bbfae21261f6ccc023fbda549", // ✅ DEPLOYED SLOTS CONTRACT
       DOG_TOKEN: "0x1f6649d028c4c146c050a9b224115a01c92a02f3"
     };
 
@@ -1047,7 +1046,7 @@
       GREET: ["function gm() public", "function gn() public"],
       FLIP: ["function flip() public"],
       SLOTS: [
-        "function buyCredits() external payable", // ✅ PAYABLE EKLENDİ
+        "function buyCredits() external payable",
         "function playSlots() external returns (uint8[4])",
         "function getCredits(address player) external view returns (uint256)",
         "function getGameStats() external view returns (uint256, uint256, uint256)",
@@ -1055,21 +1054,15 @@
         "event GamePlayed(address indexed player, uint8[4] results, uint256 creditsRemaining)",
         "event Jackpot(address indexed player, uint8 symbol, uint256 prize)"
       ],
-      XP_MANAGER: [
-        "function getAvailableXP(address user) external view returns (uint256)",
-        "function getTotalEarnedXP(address user) external view returns (uint256)",
-        "function getTotalClaimedXP(address user) external view returns (uint256)",
-        "function getUserStats(address user) external view returns (uint256, uint256, uint256, uint256, uint256, uint256, uint256, uint256)",
-        "event XPEarned(address indexed user, uint256 amount, string activity)",
-        "event XPSpent(address indexed user, uint256 amount, string purpose)"
-      ],
       DOG_TOKEN: [
-        "function claimTokens(uint256 xpAmount) external",
+        "function claim(uint256 xpAmount) public",
         "function balanceOf(address account) public view returns (uint256)",
-        "function getClaimableTokens(address user) external view returns (uint256)",
-        "function getUserTotalClaimed(address user) external view returns (uint256)",
-        "function getTokenStats(address user) external view returns (uint256, uint256, uint256, uint256, uint256)",
-        "event TokensClaimed(address indexed user, uint256 xpSpent, uint256 tokensReceived)"
+        "function decimals() public view returns (uint8)",
+        "function symbol() public view returns (string)",
+        "function totalSupply() public view returns (uint256)",
+        "function getClaimedXP(address user) public view returns (uint256)",
+        "function totalMinted() public view returns (uint256)",
+        "event TokensClaimed(address indexed user, uint256 xpAmount, uint256 tokenAmount)"
       ]
     };
 
@@ -1090,30 +1083,63 @@
     // Initialize SDK
     let sdk = null;
     
-    // ✅ SECURE XP MANAGEMENT - Contract-based only
+    // Supabase Functions for XP Management - Simplified for reset-based system
     async function getWalletXP(address) {
-      if (!address || !appState.provider) return 0;
+      if (!address) return 0;
       
       try {
-        // ✅ SECURE: Only get XP from XP Manager contract
-        const xpManager = new ethers.Contract(
-          CONTRACTS.XP_MANAGER,
-          ABIS.XP_MANAGER,
-          appState.provider
-        );
+        // Check if Supabase is available
+        if (!supabaseClient) {
+          console.log('Supabase not available, using localStorage fallback');
+          return parseInt(localStorage.getItem(`wallet_xp_${address.toLowerCase()}`) || '0');
+        }
+
+        const { data, error } = await supabaseClient
+          .from('user_xp')
+          .select('xp')
+          .eq('wallet_address', address.toLowerCase())
+          .single();
         
-        const availableXP = await xpManager.getAvailableXP(address);
-        return availableXP.toNumber();
+        if (error) {
+          console.log('No XP record found, returning 0');
+          // Fallback to localStorage
+          return parseInt(localStorage.getItem(`wallet_xp_${address.toLowerCase()}`) || '0');
+        }
+        
+        return data.xp || 0;
       } catch (e) {
-        console.error('Error fetching XP from XP Manager:', e);
-        return 0; // ✅ SECURE: No fallback to localStorage
+        console.error('Error fetching XP:', e);
+        // Fallback to localStorage
+        return parseInt(localStorage.getItem(`wallet_xp_${address.toLowerCase()}`) || '0');
       }
     }
 
     async function saveWalletXP(address, xp) {
-      // ✅ SECURE: XP is only managed by smart contracts
-      // This function is now deprecated - XP is managed on-chain
-      console.log('XP management is now handled by smart contracts only');
+      if (!address) return;
+      
+      // Always save to localStorage first (immediate)
+      localStorage.setItem(`wallet_xp_${address.toLowerCase()}`, xp.toString());
+      
+      // Then try Supabase (async, non-blocking)
+      if (supabaseClient) {
+        supabaseClient
+          .from('user_xp')
+          .upsert({
+            wallet_address: address.toLowerCase(),
+            xp: xp,
+            updated_at: new Date().toISOString()
+          }, {
+            onConflict: 'wallet_address'
+          })
+          .then(({ error }) => {
+            if (!error) {
+              console.log(`💾 XP saved to Supabase for ${address}: ${xp}`);
+            }
+          })
+          .catch(e => {
+            console.error('Error saving XP to Supabase:', e);
+          });
+      }
     }
 
     // ✅ SLOTS CREDITS MANAGEMENT - Updated with real contract integration
@@ -1750,7 +1776,7 @@
         }
       };
 
-      // Buy slot credits with 0.1 MONAD payment - DEBUG VERSION
+      // Buy slot credits with 0.1 MONAD payment - REAL CONTRACT VERSION
       async function buySlotCredits() {
         const slotsButton = document.getElementById('slotsButton');
         const originalText = slotsButton.textContent;
@@ -1765,102 +1791,52 @@
           // Ensure correct network
           await ensureMonadNetwork();
           
-          console.log('🔍 DEBUG: Contracts address:', CONTRACTS.SLOTS);
-          console.log('🔍 DEBUG: Signer:', appState.signer);
+          // ✅ REAL CONTRACT CALL
+          const slotsContract = new ethers.Contract(CONTRACTS.SLOTS, ABIS.SLOTS, appState.signer);
           
-          // ✅ TRY DIFFERENT APPROACH - Direct transaction
-          try {
-            // Method 1: Direct transaction to contract
-            const tx = await appState.signer.sendTransaction({
-              to: CONTRACTS.SLOTS,
-              value: ethers.utils.parseEther("0.1"),
-              data: "0x6a28f000", // buyCredits() function selector
-              gasLimit: 150000
-            });
-            
-            console.log('✅ Direct transaction sent:', tx.hash);
-            showStatus('slots-status', `📡 Payment sent: ${tx.hash.slice(0,10)}... Waiting for confirmation...`, 'pending');
-            
-            // Wait for confirmation
-            setTimeout(async () => {
-              try {
-                // Get credits from contract
-                const slotsContract = new ethers.Contract(
-                  CONTRACTS.SLOTS, 
-                  ["function getCredits(address) view returns (uint256)"], 
-                  appState.provider
-                );
-                
-                const credits = await slotsContract.getCredits(appState.address);
-                appState.slotsCredits = credits.toNumber();
-                
-                await saveSlotsCredits(appState.address, appState.slotsCredits);
-                updateSlotsButton();
-                
-                showStatus('slots-status', `✅ Payment confirmed! You have ${appState.slotsCredits} game credits!`, 'success');
-                setTimeout(() => hideStatus('slots-status'), 3000);
-                
-              } catch (e) {
-                console.error('Error getting credits:', e);
-                // Assume 2 credits
-                appState.slotsCredits += 2;
-                await saveSlotsCredits(appState.address, appState.slotsCredits);
-                updateSlotsButton();
-                
-                showStatus('slots-status', '✅ Payment confirmed! Credits should be available.', 'success');
-                setTimeout(() => hideStatus('slots-status'), 3000);
-              }
-            }, 5000);
-            
-          } catch (directError) {
-            console.error('Direct transaction failed:', directError);
-            
-            // Method 2: Try with different ABI
-            const altABI = [
-              "function buyCredits() payable",
-              "function purchaseCredits() payable", 
-              "function buy() payable"
-            ];
-            
-            for (let abi of altABI) {
-              try {
-                console.log(`🔄 Trying ABI: ${abi}`);
-                const slotsContract = new ethers.Contract(CONTRACTS.SLOTS, [abi], appState.signer);
-                const functionName = abi.split('(')[0].split(' ')[1];
-                
-                const tx = await slotsContract[functionName]({
-                  value: ethers.utils.parseEther("0.1"),
-                  gasLimit: 150000
-                });
-                
-                console.log(`✅ Success with ${functionName}:`, tx.hash);
-                showStatus('slots-status', `📡 Payment sent: ${tx.hash.slice(0,10)}...`, 'pending');
-                
-                setTimeout(async () => {
-                  appState.slotsCredits += 2;
-                  await saveSlotsCredits(appState.address, appState.slotsCredits);
-                  updateSlotsButton();
-                  showStatus('slots-status', '✅ Payment confirmed!', 'success');
-                  setTimeout(() => hideStatus('slots-status'), 3000);
-                }, 5000);
-                
-                return; // Success, exit
-                
-              } catch (abiError) {
-                console.log(`❌ ${abi} failed:`, abiError.message);
-              }
+          // Send transaction with 0.1 MONAD payment
+          const tx = await slotsContract.buyCredits({
+            value: ethers.utils.parseEther("0.1"), // 0.1 MONAD
+            gasLimit: 100000
+          });
+          
+          console.log('✅ Credits purchase transaction sent:', tx.hash);
+          showStatus('slots-status', `📡 Payment sent: ${tx.hash.slice(0,10)}... Waiting for confirmation...`, 'pending');
+          
+          // Wait for transaction confirmation
+          setTimeout(async () => {
+            try {
+              // ✅ GET CREDITS FROM CONTRACT
+              const credits = await slotsContract.getCredits(appState.address);
+              appState.slotsCredits = credits.toNumber();
+              
+              // Save to localStorage for immediate display
+              await saveSlotsCredits(appState.address, appState.slotsCredits);
+              updateSlotsButton();
+              
+              showStatus('slots-status', `✅ Payment confirmed! You have ${appState.slotsCredits} game credits!`, 'success');
+              console.log(`✅ ${appState.slotsCredits} slots credits confirmed from contract`);
+              
+              setTimeout(() => hideStatus('slots-status'), 3000);
+            } catch (e) {
+              console.error('Error getting credits after purchase:', e);
+              // Fallback: assume 2 credits were added
+              appState.slotsCredits += 2;
+              await saveSlotsCredits(appState.address, appState.slotsCredits);
+              updateSlotsButton();
+              
+              showStatus('slots-status', '✅ Payment confirmed! Credits should be available soon.', 'success');
+              setTimeout(() => hideStatus('slots-status'), 3000);
             }
-            
-            throw new Error('All methods failed');
-          }
+          }, 5000);
           
         } catch (error) {
-          console.error('❌ All payment methods failed:', error);
+          console.error('❌ Payment error:', error);
           
           slotsButton.disabled = false;
           slotsButton.textContent = originalText;
           
-          let errorMsg = 'Payment failed - check contract';
+          let errorMsg = 'Payment failed';
           if (error.message.includes('user rejected')) {
             errorMsg = 'Payment cancelled';
           } else if (error.message.includes('insufficient funds')) {
