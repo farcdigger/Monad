@@ -562,190 +562,15 @@
       border-bottom: 1px solid rgba(255,255,255,0.1);
     }
 
-    /* Sloth Game Styles - Updated jump height */
-    .sloth-game-container {
-      position: relative;
-      width: 100%;
-      max-width: 350px;
-      height: 400px;
-      margin: 0 auto;
-      background: linear-gradient(180deg, #87CEEB 0%, #98D8C8 100%);
-      border-radius: 20px;
-      overflow: hidden;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-    }
-
-    .sloth-character {
-      position: absolute;
-      left: 50%;
-      bottom: 60px;
-      transform: translateX(-50%);
-      font-size: 60px;
-      transition: all 0.3s ease;
-      z-index: 10;
-    }
-
-    .sloth-character.jumping {
-      animation: jump 0.8s ease;
-    }
-
-    @keyframes jump {
-      0%, 100% { bottom: 60px; }
-      50% { bottom: 200px; }
-    }
-
-    .obstacle {
-      position: absolute;
-      right: -50px;
-      bottom: 60px;
-      font-size: 40px;
-      animation: moveObstacle 2s linear infinite;
-    }
-
-    @keyframes moveObstacle {
-      to { right: 100%; }
-    }
-
-    .sloth-ground {
-      position: absolute;
-      bottom: 0;
-      width: 100%;
-      height: 60px;
-      background: linear-gradient(180deg, #8B7355 0%, #654321 100%);
-      border-top: 3px solid #5D4E37;
-    }
-
-    .sloth-cloud {
-      position: absolute;
-      font-size: 30px;
-      opacity: 0.8;
-      animation: float 20s linear infinite;
-    }
-
-    .sloth-cloud:nth-child(1) { top: 20px; left: -50px; animation-duration: 15s; }
-    .sloth-cloud:nth-child(2) { top: 50px; left: -100px; animation-duration: 20s; animation-delay: 5s; }
-    .sloth-cloud:nth-child(3) { top: 80px; left: -80px; animation-duration: 25s; animation-delay: 10s; }
-
-    @keyframes float {
-      to { left: 100%; }
-    }
-
-    .sloth-score {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      font-size: 24px;
-      font-weight: bold;
-      color: #333;
-      background: rgba(255,255,255,0.9);
-      padding: 10px 20px;
-      border-radius: 15px;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.2);
-    }
-
-    .sloth-game-over {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(255,255,255,0.95);
-      padding: 30px;
-      border-radius: 20px;
-      text-align: center;
-      display: none;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-      z-index: 100;
-    }
-
-    .sloth-game-over h3 {
-      color: #333;
-      margin-bottom: 15px;
-      font-size: 24px;
-    }
-
-    .sloth-game-over p {
-      color: #666;
-      margin-bottom: 20px;
-      font-size: 18px;
-    }
-
-    .sloth-game-over button {
-      background: #6366f1;
-      color: white;
-      border: none;
-      padding: 12px 30px;
-      border-radius: 10px;
-      font-size: 16px;
-      cursor: pointer;
-      margin: 5px;
-    }
-
-    .sloth-controls {
-      margin-top: 20px;
-      display: flex;
-      gap: 10px;
-      justify-content: center;
-    }
-
-    .sloth-controls button {
-      padding: 10px 20px;
+    .xp-reset-warning {
+      background: rgba(255, 193, 7, 0.2);
+      border: 1px solid rgba(255, 193, 7, 0.5);
+      color: #ffc107;
+      padding: 12px;
+      border-radius: 8px;
+      margin: 15px 0;
       font-size: 14px;
-      width: auto;
-    }
-
-    .sloth-info {
-      background: rgba(255,255,255,0.1);
-      padding: 15px;
-      border-radius: 10px;
-      margin-bottom: 20px;
       text-align: center;
-    }
-
-    .sloth-info p {
-      margin: 5px 0;
-      font-size: 14px;
-      opacity: 0.9;
-    }
-
-    .sloth-multiplier {
-      position: absolute;
-      top: 20px;
-      left: 20px;
-      font-size: 18px;
-      font-weight: bold;
-      color: #333;
-      background: rgba(255,255,255,0.9);
-      padding: 8px 15px;
-      border-radius: 10px;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.2);
-    }
-
-    .sloth-powerup {
-      position: absolute;
-      right: -50px;
-      top: 150px;
-      font-size: 35px;
-      animation: movePowerup 4s linear infinite;
-    }
-
-    @keyframes movePowerup {
-      to { right: 100%; }
-    }
-
-    .sloth-effect {
-      position: absolute;
-      bottom: 100px;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: 30px;
-      animation: fadeUp 1s ease-out forwards;
-      pointer-events: none;
-      z-index: 50;
-    }
-
-    @keyframes fadeUp {
-      0% { opacity: 1; bottom: 100px; }
-      100% { opacity: 0; bottom: 200px; }
     }
   </style>
 </head>
@@ -753,7 +578,7 @@
   <div class="container app-content">
     <div class="header">
       <div class="title">🐕 Monad Dog</div>
-      <div class="xp">✨ XP: <span id="xp">0</span></div>
+      <div class="xp">✨ Available XP: <span id="xp">0</span></div>
       
       <a href="https://x.com/monaddogg" target="_blank" class="social-link" title="Follow us on Twitter">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -777,7 +602,6 @@
       <button class="tab active" onclick="showTab('pet')">🐕 Pet</button>
       <button class="tab" onclick="showTab('greet')">👋 Greet</button>
       <button class="tab" onclick="showTab('flip')">🪙 Flip</button>
-      <button class="tab" onclick="showTab('sloth')">🦥 Sloth</button>
       <button class="tab" onclick="showTab('claim')">💰 Claim</button>
     </div>
 
@@ -826,46 +650,6 @@
         </div>
       </div>
 
-      <!-- Sloth Game Tab -->
-      <div id="sloth" class="tab-content">
-        <h3>🦥 Sloth Runner</h3>
-        
-        <div class="sloth-info">
-          <p>🎮 Jump to avoid obstacles and collect power-ups!</p>
-          <p>📱 Tap screen or press Space/↑ to jump</p>
-          <p>⭐ Survive longer for higher XP multipliers!</p>
-        </div>
-
-        <div class="sloth-game-container" id="slothGameContainer">
-          <!-- Clouds -->
-          <div class="sloth-cloud">☁️</div>
-          <div class="sloth-cloud">☁️</div>
-          <div class="sloth-cloud">☁️</div>
-          
-          <!-- Game elements -->
-          <div class="sloth-multiplier" id="slothMultiplier">1x</div>
-          <div class="sloth-score" id="slothScore">0</div>
-          <div class="sloth-character" id="slothCharacter">🦥</div>
-          <div class="sloth-ground"></div>
-          
-          <!-- Game over screen -->
-          <div class="sloth-game-over" id="slothGameOver">
-            <h3>Game Over!</h3>
-            <p>Score: <span id="finalScore">0</span></p>
-            <p>XP Earned: <span id="xpEarned">0</span></p>
-            <button onclick="restartSlothGame()">🔄 Play Again</button>
-            <button onclick="shareSlothScore()">📢 Share Score</button>
-          </div>
-        </div>
-
-        <div class="sloth-controls">
-          <button id="startSlothBtn" onclick="startSlothGame()">🎮 Start Game</button>
-          <button onclick="jumpSloth()" style="display: none;">⬆️ Jump</button>
-        </div>
-
-        <div id="sloth-status" class="status"></div>
-      </div>
-
       <!-- Claim Tab -->
       <div id="claim" class="tab-content">
         <h3>Claim $DOG Tokens</h3>
@@ -886,13 +670,17 @@
               <div class="claim-info-value" id="claimableDOG">0</div>
             </div>
           </div>
+
+          <div class="xp-reset-warning">
+            ⚠️ After claiming, your XP will be reset to continue earning new tokens
+          </div>
           
           <button class="claim-button" id="claimButton" onclick="claimTokens()" disabled>
             💰 Claim $DOG Tokens
           </button>
           
           <div class="conversion-rate">
-            Conversion Rate: 10 XP = 1 $DOG
+            Conversion Rate: 10 XP = 1 $DOG Token (XP resets after claim)
           </div>
           
           <div id="claim-status" class="status"></div>
@@ -956,21 +744,17 @@
 
   <script>
     // Wait for Supabase to load
-    let supabaseClient = null; // Global supabase client
-    
     window.addEventListener('DOMContentLoaded', function() {
       // Supabase Configuration
       const SUPABASE_URL = 'https://uhqszfoekqrjtybrwqzt.supabase.co';
       const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVocXN6Zm9la3FyanR5YnJ3cXp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4MDMxNTAsImV4cCI6MjA2NjM3OTE1MH0.gGch8B6AlvGrZTDVjfd0xidVnh_Dsua4qRxbaixBqM0';
       
       // Initialize Supabase
+      let supabaseClient;
       if (window.supabase) {
         const { createClient } = window.supabase;
         supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         console.log('✅ Supabase initialized');
-        
-        // Make it globally available
-        window.supabaseClient = supabaseClient;
       } else {
         console.error('❌ Supabase not loaded');
       }
@@ -1009,28 +793,11 @@
       }
       
       console.log('🚀 Starting app...');
-    
+
     // Enhanced Loading Management
     let loadingProgress = 0;
     let isAppReady = false;
     let activeTab = 'pet';
-
-    // Sloth Game Variables
-    let slothGame = {
-      isPlaying: false,
-      score: 0,
-      multiplier: 1,
-      obstacles: [],
-      powerups: [],
-      gameLoop: null,
-      obstacleInterval: null,
-      powerupInterval: null,
-      speed: 2000,
-      jumpCooldown: false,
-      invincible: false,
-      lastObstacleTime: 0,
-      highScore: 0
-    };
 
     function updateLoadingProgress(progress, message) {
       const progressBar = document.getElementById('loadingProgressBar');
@@ -1078,116 +845,12 @@
       }, 500);
     }
 
-    // Simulate progressive loading with actual initialization steps
-    async function initializeAppWithProgress() {
-      try {
-        showLoadingState();
-        
-        // Step 1: Initialize SDK
-        updateLoadingProgress(20, 'Loading Farcaster SDK...<br>🔗 Connecting to Frame environment');
-        
-        try {
-          const module = await import('https://esm.sh/@farcaster/frame-sdk');
-          sdk = module.sdk;
-          console.log('SDK loaded:', !!sdk);
-          
-          if (sdk) {
-            updateLoadingProgress(40, 'Farcaster SDK loaded! ✅<br>📱 Setting up Mini App environment');
-            await sdk.actions.ready();
-            console.log('SDK ready');
-          }
-        } catch (e) {
-          console.log('SDK not available:', e.message);
-          updateLoadingProgress(40, 'Running in standalone mode<br>🌐 Browser environment detected');
-        }
-
-        // Step 2: Setup game functions
-        updateLoadingProgress(60, 'Setting up game functions...<br>🎮 Preparing blockchain interactions');
-        await new Promise(resolve => setTimeout(resolve, 300)); // Small delay for UX
-        
-        setupEventListeners();
-        setupGameFunctions();
-        
-        // Step 3: Initialize app
-        updateLoadingProgress(80, 'Initializing app...<br>🎮 Setting up game');
-        await new Promise(resolve => setTimeout(resolve, 300));
-        
-        // Step 4: Finalize
-        updateLoadingProgress(95, 'Almost ready...<br>✨ Final preparations');
-        await new Promise(resolve => setTimeout(resolve, 200));
-        
-        hideLoadingState();
-        console.log('✅ App initialized successfully with progress tracking');
-        
-      } catch (error) {
-        console.error('❌ Init error:', error);
-        updateLoadingProgress(100, 'Error occurred, but app will continue<br>⚠️ Some features may be limited');
-        
-        setTimeout(() => {
-          hideLoadingState();
-        }, 1000);
-      }
-    }
-
-    // Enhanced error handling for better loading experience
-    function handleLoadingError(error, step) {
-      console.error(`❌ Loading error at step "${step}":`, error);
-      
-      const errorMessages = {
-        sdk: 'SDK loading failed<br>🌐 Continuing in browser mode',
-        functions: 'Function setup error<br>⚠️ Some features may be limited',
-        leaderboard: 'Leaderboard loading failed<br>📊 Will retry automatically',
-        general: 'Loading error occurred<br>🔄 Attempting to continue'
-      };
-      
-      const message = errorMessages[step] || errorMessages.general;
-      updateLoadingProgress(loadingProgress, message);
-      
-      // Continue loading after brief delay
-      setTimeout(() => {
-        if (loadingProgress < 100) {
-          hideLoadingState();
-        }
-      }, 1500);
-    }
-
-    // Skeleton loading for leaderboard while data loads
-    function showLeaderboardSkeleton() {
-      const tbody = document.getElementById('leaderboardBody');
-      if (!tbody) return;
-      
-      const skeletonRows = Array.from({length: 5}, (_, i) => `
-        <tr>
-          <td class="rank-number skeleton skeleton-text" style="width: 30px;"></td>
-          <td class="address-cell">
-            <div class="skeleton skeleton-text" style="width: 120px;"></div>
-            <div class="skeleton skeleton-text" style="width: 80px; margin-top: 4px;"></div>
-          </td>
-          <td class="tx-count skeleton skeleton-text" style="width: 40px;"></td>
-        </tr>
-      `).join('');
-      
-      tbody.innerHTML = skeletonRows;
-    }
-
-    // Preload critical resources
-    function preloadResources() {
-      // Preload dog images for faster switching
-      const dogImages = [1, 7, 12, 15, 23, 28, 34, 42, 47, 53];
-      dogImages.forEach(id => {
-        const img = new Image();
-        img.src = `https://placedog.net/400/300?id=${id}`;
-      });
-      
-      console.log('🖼️ Preloaded dog images for better performance');
-    }
-
     // Contract addresses and ABIs
     const CONTRACTS = {
       PET: "0xc53abe4c593b9440407f8ac1b346f3f999e6d8ed",
       GREET: "0xbc8b78f3e2348d4b5e0390fe700ce54b59931da4",
       FLIP: "0xc5b2280d1e2f155f9a2be2af7e78190658874106",
-      DOG_TOKEN: "0x1f6649d028c4c146c050a9b224115a01c92a02f3" // Your deployed DOG token contract
+      DOG_TOKEN: "0x1f6649d028c4c146c050a9b224115a01c92a02f3"
     };
 
     const ABIS = {
@@ -1209,287 +872,101 @@
     // XP to DOG token conversion rate
     const XP_TO_DOG_RATE = 10; // 10 XP = 1 DOG token
 
-    // Track claimed XP to prevent double-spending
-    let claimedXP = {};
+    // Global state 
+    let appState = {
+      connected: false,
+      address: null,
+      xp: 0, // Available XP (can be used for claiming)
+      provider: null,
+      signer: null,
+      isTransactionPending: false
+    };
 
-    // Supabase Functions for XP Management - with error handling and fallback
+    // Initialize SDK
+    let sdk = null;
+    
+    // Supabase Functions for XP Management - Simplified for reset-based system
     async function getWalletXP(address) {
       if (!address) return 0;
       
       try {
-        // Always try Supabase first if available
-        if (supabaseClient) {
-          console.log('📊 Fetching XP from Supabase for:', address.toLowerCase());
-          
-          const { data, error } = await supabaseClient
-            .from('user_xp')
-            .select('xp')
-            .eq('wallet_address', address.toLowerCase())
-            .maybeSingle(); // Use maybeSingle instead of single to avoid error if no record
-          
-          if (error) {
-            console.error('Supabase XP fetch error:', error);
-            // Try localStorage fallback
-            const localXP = parseInt(localStorage.getItem(`wallet_xp_${address.toLowerCase()}`) || '0');
-            console.log('Using localStorage XP:', localXP);
-            return localXP;
-          }
-          
-          if (data && data.xp !== undefined) {
-            console.log('✅ Found XP in Supabase:', data.xp);
-            // Also update localStorage for faster future access
-            localStorage.setItem(`wallet_xp_${address.toLowerCase()}`, data.xp.toString());
-            return data.xp;
-          } else {
-            console.log('No XP record in Supabase, checking localStorage');
-            // No record in Supabase, check localStorage
-            const localXP = parseInt(localStorage.getItem(`wallet_xp_${address.toLowerCase()}`) || '0');
-            return localXP;
-          }
-        } else {
-          console.log('Supabase not available, using localStorage');
+        // Check if Supabase is available
+        if (!supabaseClient) {
+          console.log('Supabase not available, using localStorage fallback');
           return parseInt(localStorage.getItem(`wallet_xp_${address.toLowerCase()}`) || '0');
         }
+
+        const { data, error } = await supabaseClient
+          .from('user_xp')
+          .select('xp')
+          .eq('wallet_address', address.toLowerCase())
+          .single();
+        
+        if (error) {
+          console.log('No XP record found, returning 0');
+          // Fallback to localStorage
+          return parseInt(localStorage.getItem(`wallet_xp_${address.toLowerCase()}`) || '0');
+        }
+        
+        return data.xp || 0;
       } catch (e) {
         console.error('Error fetching XP:', e);
         // Fallback to localStorage
-        const localXP = parseInt(localStorage.getItem(`wallet_xp_${address.toLowerCase()}`) || '0');
-        console.log('Error fallback to localStorage XP:', localXP);
-        return localXP;
+        return parseInt(localStorage.getItem(`wallet_xp_${address.toLowerCase()}`) || '0');
       }
     }
 
     async function saveWalletXP(address, xp) {
       if (!address) return;
       
-      console.log(`💾 Saving XP for ${address}: ${xp}`);
-      
       // Always save to localStorage first (immediate)
       localStorage.setItem(`wallet_xp_${address.toLowerCase()}`, xp.toString());
       
-      // Then save to Supabase
-      if (supabaseClient) {
-        try {
-          const { data, error } = await supabaseClient
-            .from('user_xp')
-            .upsert({
-              wallet_address: address.toLowerCase(),
-              xp: xp,
-              updated_at: new Date().toISOString()
-            }, {
-              onConflict: 'wallet_address'
-            });
-          
-          if (error) {
-            console.error('Error saving XP to Supabase:', error);
-          } else {
-            console.log(`✅ XP saved to Supabase successfully`);
-          }
-        } catch (e) {
-          console.error('Exception saving XP to Supabase:', e);
-        }
-      }
-    }
-
-    // Get claimed XP amount to prevent double-spending
-    async function getClaimedXPAmount(address) {
-      if (!address) return 0;
-      
-      try {
-        // First check local cache
-        if (claimedXP[address.toLowerCase()] !== undefined) {
-          console.log('Using cached claimed XP:', claimedXP[address.toLowerCase()]);
-          return claimedXP[address.toLowerCase()];
-        }
-        
-        // Try Supabase first (more reliable than contract call in Farcaster)
-        if (supabaseClient) {
-          const { data, error } = await supabaseClient
-            .from('claimed_xp')
-            .select('total_claimed')
-            .eq('wallet_address', address.toLowerCase())
-            .maybeSingle();
-          
-          if (!error && data && data.total_claimed !== undefined) {
-            claimedXP[address.toLowerCase()] = data.total_claimed || 0;
-            console.log('Claimed XP from Supabase:', data.total_claimed || 0);
-            return data.total_claimed || 0;
-          } else {
-            console.log('No claimed XP record in Supabase');
-          }
-        }
-        
-        // Try contract as fallback (may fail in Farcaster)
-        if (appState.provider && !sdk?.wallet?.ethProvider) {
-          try {
-            const dogTokenContract = new ethers.Contract(
-              CONTRACTS.DOG_TOKEN,
-              ["function getClaimedXP(address user) public view returns (uint256)"],
-              appState.provider
-            );
-            
-            const claimed = await dogTokenContract.getClaimedXP(address);
-            const claimedAmount = claimed.toNumber();
-            
-            // Cache and save to Supabase
-            claimedXP[address.toLowerCase()] = claimedAmount;
-            if (supabaseClient && claimedAmount > 0) {
-              await saveClaimedXP(address, 0); // This will update the total
-            }
-            console.log('Claimed XP from contract:', claimedAmount);
-            
-            return claimedAmount;
-          } catch (e) {
-            console.log('Contract call failed (expected in Farcaster):', e.message);
-          }
-        }
-        
-        // Final fallback to localStorage
-        const localClaimed = parseInt(localStorage.getItem(`claimed_xp_${address.toLowerCase()}`) || '0');
-        claimedXP[address.toLowerCase()] = localClaimed;
-        console.log('Claimed XP from localStorage:', localClaimed);
-        return localClaimed;
-        
-      } catch (e) {
-        console.error('Error getting claimed XP:', e);
-        return 0;
-      }
-    }
-
-    // Save claimed XP to prevent double-spending
-    async function saveClaimedXP(address, amount) {
-      if (!address) return;
-      
-      const totalClaimed = (claimedXP[address.toLowerCase()] || 0) + amount;
-      claimedXP[address.toLowerCase()] = totalClaimed;
-      
-      // Save to localStorage immediately
-      localStorage.setItem(`claimed_xp_${address.toLowerCase()}`, totalClaimed.toString());
-      
-      // Save to Supabase (non-blocking)
+      // Then try Supabase (async, non-blocking)
       if (supabaseClient) {
         supabaseClient
-          .from('claimed_xp')
+          .from('user_xp')
           .upsert({
             wallet_address: address.toLowerCase(),
-            total_claimed: totalClaimed,
-            last_claim: new Date().toISOString()
+            xp: xp,
+            updated_at: new Date().toISOString()
           }, {
             onConflict: 'wallet_address'
           })
           .then(({ error }) => {
             if (!error) {
-              console.log(`💾 Claimed XP saved: ${totalClaimed} for ${address}`);
+              console.log(`💾 XP saved to Supabase for ${address}: ${xp}`);
             }
           })
           .catch(e => {
-            console.error('Error saving claimed XP:', e);
-          });
-      }
-    }
-
-    // Token claim history management with Supabase - optimized
-    async function getClaimHistory(address) {
-      if (!address) return [];
-      
-      // Use localStorage as immediate fallback
-      const localHistory = localStorage.getItem(`claim_history_${address.toLowerCase()}`);
-      if (!supabaseClient && localHistory) {
-        return JSON.parse(localHistory) || [];
-      }
-      
-      try {
-        const { data, error } = await supabaseClient
-          .from('claim_history')
-          .select('*')
-          .eq('wallet_address', address.toLowerCase())
-          .order('timestamp', { ascending: false })
-          .limit(10);
-        
-        if (error) {
-          console.error('Error fetching claim history:', error);
-          return localHistory ? JSON.parse(localHistory) || [] : [];
-        }
-        
-        return data || [];
-      } catch (e) {
-        console.error('Error fetching claim history:', e);
-        return localHistory ? JSON.parse(localHistory) || [] : [];
-      }
-    }
-
-    async function saveClaimHistory(address, claimData) {
-      if (!address) return;
-      
-      // Save to localStorage first
-      const key = `claim_history_${address.toLowerCase()}`;
-      const history = JSON.parse(localStorage.getItem(key) || '[]');
-      history.unshift(claimData);
-      if (history.length > 10) history.pop();
-      localStorage.setItem(key, JSON.stringify(history));
-      
-      // Then try Supabase (non-blocking)
-      if (supabaseClient) {
-        supabaseClient
-          .from('claim_history')
-          .insert({
-            wallet_address: address.toLowerCase(),
-            xp_amount: claimData.xpAmount,
-            token_amount: claimData.tokenAmount,
-            tx_hash: claimData.txHash,
-            timestamp: new Date().toISOString()
-          })
-          .then(({ error }) => {
-            if (error) {
-              console.error('Error saving claim history:', error);
-            }
-          })
-          .catch(e => {
-            console.error('Error saving claim history:', e);
+            console.error('Error saving XP to Supabase:', e);
           });
       }
     }
 
     async function updateXPDisplay() {
       if (appState.connected && appState.address) {
-        console.log('🔄 Updating XP display for:', appState.address);
+        // Show current value immediately
+        const currentDisplay = document.getElementById('xp').textContent;
         
-        try {
-          // Get XP from Supabase/localStorage
-          const walletXP = await getWalletXP(appState.address);
-          console.log('Total XP from storage:', walletXP);
-          
-          // Get claimed XP to calculate available XP
-          const claimedAmount = await getClaimedXPAmount(appState.address);
-          console.log('Claimed XP:', claimedAmount);
-          
-          const availableXP = Math.max(0, walletXP - claimedAmount);
-          console.log('Available XP:', availableXP);
-          
-          // Update display
-          document.getElementById('xp').textContent = availableXP;
-          appState.xp = availableXP;
-          appState.totalXP = walletXP;
-          appState.claimedXP = claimedAmount;
-          
-          console.log(`📊 XP Display Updated - Total: ${walletXP}, Claimed: ${claimedAmount}, Available: ${availableXP}`);
-          
-          // Update claim UI if on claim tab
-          if (activeTab === 'claim') {
-            requestAnimationFrame(() => updateClaimUI());
-          }
-        } catch (error) {
-          console.error('Error updating XP display:', error);
-          document.getElementById('xp').textContent = '0';
-          appState.xp = 0;
-          appState.totalXP = 0;
-          appState.claimedXP = 0;
+        // Get XP (with timeout to prevent hanging)
+        const xpPromise = getWalletXP(appState.address);
+        const timeoutPromise = new Promise((resolve) => setTimeout(() => resolve(parseInt(currentDisplay) || 0), 1000));
+        
+        const walletXP = await Promise.race([xpPromise, timeoutPromise]);
+        
+        document.getElementById('xp').textContent = walletXP;
+        appState.xp = walletXP;
+        
+        console.log(`📊 XP Display - Available: ${walletXP}`);
+        
+        // Update claim UI non-blocking
+        if (activeTab === 'claim') {
+          requestAnimationFrame(() => updateClaimUI());
         }
       } else {
         document.getElementById('xp').textContent = '0';
         appState.xp = 0;
-        appState.totalXP = 0;
-        appState.claimedXP = 0;
         updateClaimUI();
       }
     }
@@ -1505,7 +982,7 @@
       const claimButton = document.getElementById('claimButton');
       if (claimableXP >= XP_TO_DOG_RATE && appState.connected) {
         claimButton.disabled = false;
-        claimButton.textContent = `💰 Claim ${claimableDOG} $DOG Tokens`;
+        claimButton.textContent = `💰 Claim ${claimableDOG} $DOG Tokens (XP will reset)`;
       } else {
         claimButton.disabled = true;
         if (!appState.connected) {
@@ -1517,11 +994,9 @@
       
       // Update token balance
       await updateTokenBalance();
-      
-      // Removed claim history display
     }
 
-    // Update token balance display - Farcaster wallet compatible version
+    // Update token balance display
     async function updateTokenBalance() {
       if (!appState.connected || !appState.provider || !appState.address) {
         console.log('❌ Not connected, cannot fetch balance');
@@ -1538,15 +1013,6 @@
         if (isFarcasterWallet) {
           console.log('🟣 Using Farcaster wallet - trying direct RPC call');
           
-          // For Farcaster, try a direct eth_getBalance first to test connection
-          try {
-            const ethBalance = await appState.provider.getBalance(appState.address);
-            console.log('ETH Balance:', ethers.utils.formatEther(ethBalance));
-          } catch (e) {
-            console.log('Basic balance check failed:', e);
-          }
-          
-          // Try to get token balance using eth_call directly
           try {
             // Encode the balanceOf function call
             const iface = new ethers.utils.Interface([
@@ -1638,13 +1104,7 @@
       }
     }
 
-    // Display claim history - Removed
-    async function displayClaimHistory() {
-      // Function removed - no longer needed
-      return;
-    }
-
-    // Claim tokens function with double-spend protection
+    // ✅ FIXED CLAIM FUNCTION - XP resets after user confirms transaction
     window.claimTokens = async function() {
       if (!appState.connected || !appState.signer) {
         showError('Please connect your wallet first');
@@ -1680,560 +1140,27 @@
         
         // Execute claim transaction with proper gas limit
         const tx = await dogTokenContract.claim(xpToClaim, {
-          gasLimit: 100000 // Reduced gas limit
+          gasLimit: 100000
         });
         
-        showStatus('claim-status', `📡 Transaction sent: ${tx.hash.slice(0,10)}...`, 'pending');
-        console.log('Transaction hash:', tx.hash);
+        // ✅ USER CONFIRMED TRANSACTION - NOW RESET XP IMMEDIATELY
+        console.log('🎯 Transaction confirmed by user - resetting XP to 0');
         
-        // Immediately update claimed XP to prevent double-spending
-        await saveClaimedXP(appState.address, xpToClaim);
+        // Reset XP to 0 in state and display immediately
+        appState.xp = 0;
+        document.getElementById('xp').textContent = '0';
         
-        // Update local XP immediately
-        const remainingXP = availableXP - xpToClaim;
-        appState.xp = remainingXP;
-        appState.claimedXP = (appState.claimedXP || 0) + xpToClaim;
+        // ✅ Save XP as 0 to Supabase immediately
+        await saveWalletXP(appState.address, 0);
         
-        // Update display immediately
-        document.getElementById('xp').textContent = remainingXP;
+        // Update claim UI immediately
         await updateClaimUI();
         
-        // Wait for confirmation (but don't wait too long for Farcaster wallet)
-        setTimeout(async () => {
-          try {
-            // Try to get updated balance with multiple retries
-            const updateBalanceWithRetry = async (retries = 3) => {
-              for (let i = 0; i < retries; i++) {
-                try {
-                  await new Promise(resolve => setTimeout(resolve, 2000 * (i + 1)));
-                  
-                  const newBalance = await dogTokenContract.balanceOf(appState.address);
-                  const decimals = await dogTokenContract.decimals();
-                  const formattedBalance = ethers.utils.formatUnits(newBalance, decimals);
-                  
-                  const numBalance = parseFloat(formattedBalance);
-                  const displayBalance = numBalance >= 1 ? numBalance.toFixed(2) : numBalance.toFixed(6);
-                  
-                  document.getElementById('walletDogDisplay').textContent = displayBalance;
-                  
-                  // Cache the balance for Farcaster wallet
-                  localStorage.setItem(`dog_balance_${appState.address.toLowerCase()}`, displayBalance);
-                  
-                  console.log(`✅ Balance updated after claim (attempt ${i + 1}): ${displayBalance} DOG`);
-                  break;
-                } catch (e) {
-                  console.log(`Balance update attempt ${i + 1} failed, retrying...`);
-                }
-              }
-            };
-            
-            updateBalanceWithRetry();
-            
-            // Save claim history
-            await saveClaimHistory(appState.address, {
-              xpAmount: xpToClaim,
-              tokenAmount: claimableDOG,
-              txHash: tx.hash
-            });
-            
-            // Update UI
-            await updateXPDisplay();
-            showStatus('claim-status', `✅ Successfully claimed ${claimableDOG} $DOG tokens!`, 'success');
-            
-            // Show achievement with auto-close fallback
-            showAchievementModal({
-              icon: '💰',
-              title: 'Tokens Claimed!',
-              description: `You've successfully claimed ${claimableDOG} $DOG tokens! They are now in your wallet.`,
-              type: 'claim',
-              data: { amount: claimableDOG }
-            });
-            
-            // Auto-close after 10 seconds if user doesn't interact
-            setTimeout(() => {
-              const modal = document.getElementById('achievementModal');
-              if (modal && modal.style.display === 'flex') {
-                console.log('Auto-closing achievement modal');
-                closeAchievementModal();
-              }
-            }, 10000);
-            
-            setTimeout(() => hideStatus('claim-status'), 5000);
-            
-          } catch (e) {
-            console.log('Post-claim update error:', e);
-            // Still show success since transaction was sent
-            await updateXPDisplay();
-            showStatus('claim-status', `✅ Claim transaction sent! Tokens will arrive soon.`, 'success');
-            setTimeout(() => hideStatus('claim-status'), 5000);
-          }
-        }, 5000);
-        
-      } catch (error) {
-        console.error('❌ Claim error:', error);
-        let errorMsg = 'Failed to claim tokens';
-        
-        if (error.message.includes('user rejected')) {
-          errorMsg = 'Transaction cancelled';
-        } else if (error.message.includes('insufficient funds')) {
-          errorMsg = 'Insufficient gas funds';
-        } else if (error.message.includes('XP already claimed')) {
-          errorMsg = 'This XP has already been claimed';
-          // Update claimed XP from contract
-          const claimed = await getClaimedXPAmount(appState.address);
-          appState.claimedXP = claimed;
-          await updateXPDisplay();
-        } else if (error.message.includes('Invalid XP amount')) {
-          errorMsg = 'Invalid XP amount. Must be multiple of 10';
-        }
-        
-        showStatus('claim-status', errorMsg, 'error');
-        setTimeout(() => hideStatus('claim-status'), 5000);
-      }
-    };
-    
-    // Update claimed stats - Simplified version without complex stats
-    async function updateClaimedStats() {
-      // This function is no longer needed since we removed the stats
-      return;
-    }
-
-    // Contract interaction tracking with Supabase - optimized
-    async function getContractInteractions(address) {
-      const defaultData = {
-        pet: 0,
-        gm: 0,
-        gn: 0,
-        flip: 0,
-        total: 0,
-        firstInteraction: null,
-        lastInteraction: null
-      };
-      
-      if (!address) return defaultData;
-      
-      // Get from localStorage first (immediate)
-      const localData = localStorage.getItem(`contract_interactions_${address.toLowerCase()}`);
-      if (!supabaseClient && localData) {
-        return JSON.parse(localData) || defaultData;
-      }
-      
-      try {
-        const { data, error } = await supabaseClient
-          .from('contract_interactions')
-          .select('*')
-          .eq('wallet_address', address.toLowerCase())
-          .single();
-        
-        if (error || !data) {
-          return localData ? JSON.parse(localData) || defaultData : defaultData;
-        }
-        
-        return {
-          pet: data.pet_count || 0,
-          gm: data.gm_count || 0,
-          gn: data.gn_count || 0,
-          flip: data.flip_count || 0,
-          total: data.total_interactions || 0,
-          firstInteraction: data.first_interaction,
-          lastInteraction: data.last_interaction
-        };
-      } catch (e) {
-        console.error('Error fetching interactions:', e);
-        return localData ? JSON.parse(localData) || defaultData : defaultData;
-      }
-    }
-
-    async function saveContractInteraction(address, contractType) {
-      try {
-        // Get current data
-        const currentData = await getContractInteractions(address);
-        
-        // Increment the specific interaction
-        const updates = {
-          wallet_address: address.toLowerCase(),
-          pet_count: currentData.pet + (contractType === 'pet' ? 1 : 0),
-          gm_count: currentData.gm + (contractType === 'gm' ? 1 : 0),
-          gn_count: currentData.gn + (contractType === 'gn' ? 1 : 0),
-          flip_count: currentData.flip + (contractType === 'flip' ? 1 : 0),
-          last_interaction: new Date().toISOString()
-        };
-        
-        updates.total_interactions = updates.pet_count + updates.gm_count + updates.gn_count + updates.flip_count;
-        
-        if (!currentData.firstInteraction) {
-          updates.first_interaction = new Date().toISOString();
-        }
-        
-        // Save to localStorage first (immediate)
-        const localData = {
-          pet: updates.pet_count,
-          gm: updates.gm_count,
-          gn: updates.gn_count,
-          flip: updates.flip_count,
-          total: updates.total_interactions,
-          lastInteraction: updates.last_interaction,
-          firstInteraction: updates.first_interaction || currentData.firstInteraction
-        };
-        localStorage.setItem(`contract_interactions_${address.toLowerCase()}`, JSON.stringify(localData));
-        
-        // Then try Supabase (non-blocking)
-        if (supabaseClient) {
-          supabaseClient
-            .from('contract_interactions')
-            .upsert(updates, {
-              onConflict: 'wallet_address'
-            })
-            .then(({ error }) => {
-              if (!error) {
-                console.log(`📊 Contract interaction saved: ${contractType} for ${address}`);
-                // Don't await - refresh leaderboard in background
-                populateLeaderboard();
-              }
-            })
-            .catch(e => {
-              console.error('Error saving interaction:', e);
-            });
-        }
-        
-        return localData;
-      } catch (e) {
-        console.error('Error saving interaction:', e);
-        return currentData;
-      }
-    }
-
-    async function getAllContractInteractions() {
-      // First check localStorage for immediate response
-      const allUsers = [];
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && key.startsWith('contract_interactions_')) {
-          const address = key.replace('contract_interactions_', '');
-          const data = JSON.parse(localStorage.getItem(key));
-          if (data && data.total > 0) {
-            allUsers.push({
-              address: address,
-              ...data
-            });
-          }
-        }
-      }
-      
-      // If Supabase is available, fetch from there too
-      if (supabaseClient) {
-        try {
-          const { data, error } = await supabaseClient
-            .from('contract_interactions')
-            .select('*')
-            .order('total_interactions', { ascending: false })
-            .limit(50);
-          
-          if (!error && data) {
-            return data.map(user => ({
-              address: user.wallet_address,
-              pet: user.pet_count || 0,
-              gm: user.gm_count || 0,
-              gn: user.gn_count || 0,
-              flip: user.flip_count || 0,
-              total: user.total_interactions || 0,
-              firstInteraction: user.first_interaction,
-              lastInteraction: user.last_interaction
-            }));
-          }
-        } catch (e) {
-          console.error('Error fetching all interactions:', e);
-        }
-      }
-      
-      // Return localStorage data if Supabase fails
-      allUsers.sort((a, b) => b.total - a.total);
-      return allUsers;
-    }
-
-    function getBadgeForInteractions(interactions) {
-      const { total } = interactions;
-      
-      if (total >= 100) return "Legend";
-      if (total >= 50) return "Master";
-      if (total >= 25) return "Expert"; 
-      if (total >= 10) return "Active";
-      if (total >= 5) return "Regular";
-      if (total >= 1) return "Newbie";
-      return "";
-    }
-
-    function getActivityBadge(interactions) {
-      const { pet, gm, gn, flip } = interactions;
-      
-      if (pet >= 20) return "Dog Lover 🐕";
-      if (gm + gn >= 30) return "Community Spirit 👋";
-      if (flip >= 25) return "Lucky Gambler 🎰";
-      if (pet >= 10 && gm + gn >= 10 && flip >= 10) return "All-Rounder ⭐";
-      
-      return "";
-    }
-
-    function getContractType(contractAddress, methodName) {
-      if (contractAddress === CONTRACTS.PET && methodName === 'pet') return 'pet';
-      if (contractAddress === CONTRACTS.GREET && methodName === 'gm') return 'gm';
-      if (contractAddress === CONTRACTS.GREET && methodName === 'gn') return 'gn';
-      if (contractAddress === CONTRACTS.FLIP && methodName === 'flip') return 'flip';
-      return 'unknown';
-    }
-
-    // Global claim state management
-    let claimState = {
-      isProcessing: false,
-      lastClaimTimestamp: 0,
-      processingTxHash: null
-    };
-
-    // Check if claim is in progress across tabs/devices
-    async function isClaimInProgress(address) {
-      if (!address) return false;
-      
-      const claimKey = `claim_processing_${address.toLowerCase()}`;
-      
-      // Check localStorage for cross-tab sync
-      const localClaimData = localStorage.getItem(claimKey);
-      if (localClaimData) {
-        try {
-          const data = JSON.parse(localClaimData);
-          const now = Date.now();
-          // If claim was started less than 60 seconds ago, it's still processing
-          if (data.timestamp && (now - data.timestamp) < 60000) {
-            console.log('⏳ Claim in progress detected:', data);
-            return true;
-          }
-        } catch (e) {
-          console.error('Error parsing claim data:', e);
-        }
-      }
-      
-      // Check Supabase for cross-device sync
-      if (supabaseClient) {
-        try {
-          const { data, error } = await supabaseClient
-            .from('claim_locks')
-            .select('*')
-            .eq('wallet_address', address.toLowerCase())
-            .single();
-          
-          if (data && !error) {
-            const now = Date.now();
-            const lockTime = new Date(data.locked_at).getTime();
-            // If locked less than 60 seconds ago, claim is in progress
-            if ((now - lockTime) < 60000) {
-              console.log('⏳ Claim lock found in Supabase:', data);
-              return true;
-            }
-          }
-        } catch (e) {
-          console.error('Error checking Supabase claim lock:', e);
-        }
-      }
-      
-      return false;
-    }
-
-    // Set claim lock across tabs/devices
-    async function setClaimLock(address, txHash) {
-      if (!address) return;
-      
-      const claimKey = `claim_processing_${address.toLowerCase()}`;
-      const lockData = {
-        timestamp: Date.now(),
-        txHash: txHash,
-        address: address.toLowerCase()
-      };
-      
-      // Set in localStorage for immediate cross-tab sync
-      localStorage.setItem(claimKey, JSON.stringify(lockData));
-      
-      // Set in Supabase for cross-device sync
-      if (supabaseClient) {
-        try {
-          await supabaseClient
-            .from('claim_locks')
-            .upsert({
-              wallet_address: address.toLowerCase(),
-              tx_hash: txHash,
-              locked_at: new Date().toISOString()
-            }, {
-              onConflict: 'wallet_address'
-            });
-          console.log('🔒 Claim lock set in Supabase');
-        } catch (e) {
-          console.error('Error setting Supabase claim lock:', e);
-        }
-      }
-      
-      // Broadcast to other tabs
-      if (window.BroadcastChannel) {
-        const channel = new BroadcastChannel('monad_dog_claim');
-        channel.postMessage({
-          type: 'claim_started',
-          address: address.toLowerCase(),
-          timestamp: Date.now()
-        });
-        channel.close();
-      }
-    }
-
-    // Clear claim lock
-    async function clearClaimLock(address) {
-      if (!address) return;
-      
-      const claimKey = `claim_processing_${address.toLowerCase()}`;
-      
-      // Clear from localStorage
-      localStorage.removeItem(claimKey);
-      
-      // Clear from Supabase
-      if (supabaseClient) {
-        try {
-          await supabaseClient
-            .from('claim_locks')
-            .delete()
-            .eq('wallet_address', address.toLowerCase());
-          console.log('🔓 Claim lock cleared from Supabase');
-        } catch (e) {
-          console.error('Error clearing Supabase claim lock:', e);
-        }
-      }
-      
-      // Broadcast to other tabs
-      if (window.BroadcastChannel) {
-        const channel = new BroadcastChannel('monad_dog_claim');
-        channel.postMessage({
-          type: 'claim_completed',
-          address: address.toLowerCase(),
-          timestamp: Date.now()
-        });
-        channel.close();
-      }
-    }
-
-    // Listen for claim events from other tabs
-    if (window.BroadcastChannel) {
-      const channel = new BroadcastChannel('monad_dog_claim');
-      channel.onmessage = (event) => {
-        console.log('📡 Received broadcast:', event.data);
-        
-        if (appState.connected && appState.address) {
-          const currentAddress = appState.address.toLowerCase();
-          const eventAddress = event.data.address;
-          
-          if (currentAddress === eventAddress) {
-            if (event.data.type === 'claim_started') {
-              // Disable claim button immediately
-              const claimButton = document.getElementById('claimButton');
-              if (claimButton) {
-                claimButton.disabled = true;
-                claimButton.textContent = '⏳ Claim in progress...';
-              }
-            } else if (event.data.type === 'claim_completed') {
-              // Re-enable and update UI
-              updateXPDisplay();
-              updateClaimUI();
-            }
-          }
-        }
-      };
-    }
-
-    // Enhanced claim tokens function with double-spend protection
-    window.claimTokens = async function() {
-      if (!appState.connected || !appState.signer) {
-        showError('Please connect your wallet first');
-        return;
-      }
-      
-      // Check if claim is already in progress
-      if (claimState.isProcessing) {
-        showError('Claim already in progress. Please wait...');
-        return;
-      }
-      
-      // Check cross-tab/device claim lock
-      const isLocked = await isClaimInProgress(appState.address);
-      if (isLocked) {
-        showError('A claim is already being processed for this wallet. Please wait 60 seconds.');
-        return;
-      }
-      
-      const claimableXP = appState.xp;
-      const claimableDOG = Math.floor(claimableXP / XP_TO_DOG_RATE);
-      
-      if (claimableXP < XP_TO_DOG_RATE) {
-        showError(`Need at least ${XP_TO_DOG_RATE} XP to claim tokens`);
-        return;
-      }
-      
-      try {
-        // Set processing state
-        claimState.isProcessing = true;
-        claimState.lastClaimTimestamp = Date.now();
-        
-        // Disable claim button immediately
-        const claimButton = document.getElementById('claimButton');
-        claimButton.disabled = true;
-        claimButton.textContent = '⏳ Processing claim...';
-        
-        console.log('💰 Starting token claim...');
-        showStatus('claim-status', '🔐 Please confirm transaction in your wallet...', 'pending');
-        
-        // Ensure correct network
-        await ensureMonadNetwork();
-        
-        // Call the actual DOG token contract
-        const dogTokenContract = new ethers.Contract(
-          CONTRACTS.DOG_TOKEN,
-          ABIS.DOG_TOKEN,
-          appState.signer
-        );
-        
-        // Calculate XP to claim (must be multiple of 10)
-        const xpToClaim = claimableDOG * XP_TO_DOG_RATE;
-        
-        console.log(`Claiming ${xpToClaim} XP for ${claimableDOG} DOG tokens`);
-        
-        // Immediately deduct XP locally to prevent double-spend
-        const remainingXP = claimableXP - xpToClaim;
-        appState.xp = remainingXP;
-        document.getElementById('xp').textContent = remainingXP;
-        document.getElementById('claimableXP').textContent = remainingXP;
-        document.getElementById('claimableDOG').textContent = Math.floor(remainingXP / XP_TO_DOG_RATE);
-        
-        // Save reduced XP immediately
-        await saveWalletXP(appState.address, appState.totalXP);
-        await saveClaimedXP(appState.address, xpToClaim);
-        
-        // Execute claim transaction with proper gas limit
-        const tx = await dogTokenContract.claim(xpToClaim, {
-          gasLimit: 90000
-        });
-        
-        // Set claim lock with transaction hash
-        await setClaimLock(appState.address, tx.hash);
-        claimState.processingTxHash = tx.hash;
-        
-        showStatus('claim-status', `📡 Transaction sent: ${tx.hash.slice(0,10)}...`, 'pending');
+        showStatus('claim-status', `📡 Transaction sent: ${tx.hash.slice(0,10)}... XP reset to 0`, 'pending');
         console.log('Transaction hash:', tx.hash);
+        console.log('✅ XP successfully reset to 0 - user can continue earning');
         
-        // Keep button disabled for 60 seconds
-        let countdown = 60;
-        const countdownInterval = setInterval(() => {
-          countdown--;
-          if (countdown > 0) {
-            claimButton.textContent = `⏳ Please wait ${countdown}s...`;
-          } else {
-            clearInterval(countdownInterval);
-          }
-        }, 1000);
-        
-        // Wait for confirmation
+        // Wait for confirmation and update balance
         setTimeout(async () => {
           try {
             // Try to get updated balance with multiple retries
@@ -2264,128 +1191,103 @@
             
             updateBalanceWithRetry();
             
-            // Save claim history
-            await saveClaimHistory(appState.address, {
-              xpAmount: xpToClaim,
-              tokenAmount: claimableDOG,
-              txHash: tx.hash
-            });
-            
-            // Update UI
-            await updateXPDisplay();
-            showStatus('claim-status', `✅ Successfully claimed ${claimableDOG} $DOG tokens!`, 'success');
+            showStatus('claim-status', `✅ Successfully claimed ${claimableDOG} $DOG tokens! XP reset - start earning again!`, 'success');
             
             // Show achievement
             showAchievementModal({
               icon: '💰',
               title: 'Tokens Claimed!',
-              description: `You've successfully claimed ${claimableDOG} $DOG tokens! They are now in your wallet.`,
+              description: `You've successfully claimed ${claimableDOG} $DOG tokens! Your XP has been reset - start earning again!`,
               type: 'claim',
               data: { amount: claimableDOG }
             });
             
-            setTimeout(() => hideStatus('claim-status'), 5000);
+            setTimeout(() => hideStatus('claim-status'), 8000);
             
           } catch (e) {
             console.log('Post-claim update error:', e);
-            showStatus('claim-status', `✅ Claim transaction sent! Tokens will arrive soon.`, 'success');
-            setTimeout(() => hideStatus('claim-status'), 5000);
-          } finally {
-            // Clear processing state and lock after 60 seconds
-            setTimeout(async () => {
-              claimState.isProcessing = false;
-              claimState.processingTxHash = null;
-              await clearClaimLock(appState.address);
-              
-              // Re-enable button and update UI
-              await updateClaimUI();
-              console.log('🔓 Claim process completed, button re-enabled');
-            }, 60000);
+            showStatus('claim-status', `✅ Claim transaction sent! Tokens will arrive soon. XP reset successfully.`, 'success');
+            setTimeout(() => hideStatus('claim-status'), 8000);
           }
         }, 5000);
         
       } catch (error) {
         console.error('❌ Claim error:', error);
         
-        // Revert XP if transaction failed
-        appState.xp = claimableXP;
-        await saveWalletXP(appState.address, appState.totalXP);
-        await updateXPDisplay();
-        
-        // Clear processing state
-        claimState.isProcessing = false;
-        claimState.processingTxHash = null;
-        await clearClaimLock(appState.address);
-        
         let errorMsg = 'Failed to claim tokens';
         
         if (error.message.includes('user rejected')) {
-          errorMsg = 'Transaction cancelled';
+          errorMsg = 'Transaction cancelled - XP not affected';
+          // Don't reset XP if user cancelled
+          console.log('🚫 Transaction cancelled - XP remains unchanged');
         } else if (error.message.includes('insufficient funds')) {
           errorMsg = 'Insufficient gas funds';
         } else if (error.message.includes('XP already claimed')) {
           errorMsg = 'This XP has already been claimed';
+          // Reset XP if already claimed on contract
+          appState.xp = 0;
+          await saveWalletXP(appState.address, 0);
+          await updateXPDisplay();
         } else if (error.message.includes('Invalid XP amount')) {
           errorMsg = 'Invalid XP amount. Must be multiple of 10';
         }
         
         showStatus('claim-status', errorMsg, 'error');
-        setTimeout(() => {
-          hideStatus('claim-status');
-          updateClaimUI();
-        }, 5000);
+        setTimeout(() => hideStatus('claim-status'), 5000);
       }
     };
 
-    // Update claim UI based on current XP with lock check
-    async function updateClaimUI() {
-      const claimableXP = appState.xp || 0;
-      const claimableDOG = Math.floor(claimableXP / XP_TO_DOG_RATE);
-      
-      document.getElementById('claimableXP').textContent = claimableXP;
-      document.getElementById('claimableDOG').textContent = claimableDOG;
-      
-      const claimButton = document.getElementById('claimButton');
-      
-      // Check if claim is in progress
-      const isLocked = await isClaimInProgress(appState.address);
-      
-      if (isLocked) {
-        claimButton.disabled = true;
-        claimButton.textContent = '⏳ Claim in progress...';
-      } else if (claimableXP >= XP_TO_DOG_RATE && appState.connected) {
-        claimButton.disabled = false;
-        claimButton.textContent = `💰 Claim ${claimableDOG} $DOG Tokens`;
-      } else {
-        claimButton.disabled = true;
-        if (!appState.connected) {
-          claimButton.textContent = '🔒 Connect Wallet First';
-        } else if (claimableXP < XP_TO_DOG_RATE) {
-          claimButton.textContent = `📈 Need ${XP_TO_DOG_RATE - claimableXP} more XP`;
+    async function initializeAppWithProgress() {
+      try {
+        showLoadingState();
+        
+        // Step 1: Initialize SDK
+        updateLoadingProgress(20, 'Loading Farcaster SDK...<br>🔗 Connecting to Frame environment');
+        
+        try {
+          const module = await import('https://esm.sh/@farcaster/frame-sdk');
+          sdk = module.sdk;
+          console.log('SDK loaded:', !!sdk);
+          
+          if (sdk) {
+            updateLoadingProgress(40, 'Farcaster SDK loaded! ✅<br>📱 Setting up Mini App environment');
+            await sdk.actions.ready();
+            console.log('SDK ready');
+          }
+        } catch (e) {
+          console.log('SDK not available:', e.message);
+          updateLoadingProgress(40, 'Running in standalone mode<br>🌐 Browser environment detected');
         }
+
+        // Step 2: Setup game functions
+        updateLoadingProgress(60, 'Setting up game functions...<br>🎮 Preparing blockchain interactions');
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        setupEventListeners();
+        setupGameFunctions();
+        
+        // Step 3: Initialize app
+        updateLoadingProgress(80, 'Initializing app...<br>🎮 Setting up game');
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        // Step 4: Finalize
+        updateLoadingProgress(95, 'Almost ready...<br>✨ Final preparations');
+        await new Promise(resolve => setTimeout(resolve, 200));
+        
+        hideLoadingState();
+        console.log('✅ App initialized successfully with progress tracking');
+        
+      } catch (error) {
+        console.error('❌ Init error:', error);
+        updateLoadingProgress(100, 'Error occurred, but app will continue<br>⚠️ Some features may be limited');
+        
+        setTimeout(() => {
+          hideLoadingState();
+        }, 1000);
       }
-      
-      // Update token balance
-      await updateTokenBalance();
     }
 
-    // Global state 
-    let appState = {
-      connected: false,
-      address: null,
-      xp: 0,
-      totalXP: 0,
-      claimedXP: 0,
-      provider: null,
-      signer: null,
-      isTransactionPending: false
-    };
-
-    // Initialize SDK
-    let sdk = null;
-    
     async function initApp() {
-      // Use the enhanced initialization with progress
       await initializeAppWithProgress();
     }
 
@@ -2561,308 +1463,6 @@
         }, 3000);
       };
 
-      // Sloth Game Functions
-      window.startSlothGame = function() {
-        if (!appState.connected) {
-          showError('Connect wallet first to play');
-          return;
-        }
-
-        if (slothGame.isPlaying) {
-          showError('Game already in progress');
-          return;
-        }
-
-        console.log('🦥 Starting Sloth Runner...');
-        
-        // Reset game state
-        slothGame.score = 0;
-        slothGame.multiplier = 1;
-        slothGame.obstacles = [];
-        slothGame.powerups = [];
-        slothGame.isPlaying = true;
-        slothGame.speed = 2000;
-        slothGame.lastObstacleTime = Date.now();
-        
-        // Update UI
-        document.getElementById('slothScore').textContent = '0';
-        document.getElementById('slothMultiplier').textContent = '1x';
-        document.getElementById('slothGameOver').style.display = 'none';
-        document.getElementById('startSlothBtn').disabled = true;
-        document.getElementById('startSlothBtn').textContent = '🎮 Playing...';
-        
-        // Clear any existing obstacles/powerups
-        document.querySelectorAll('.obstacle, .sloth-powerup').forEach(el => el.remove());
-        
-        // Start game loops
-        startGameLoops();
-        
-        showStatus('sloth-status', '🎮 Game started! Jump to avoid obstacles!', 'success');
-        setTimeout(() => hideStatus('sloth-status'), 3000);
-      };
-
-      window.jumpSloth = function() {
-        if (!slothGame.isPlaying) {
-          showError('Start the game first!');
-          return;
-        }
-
-        if (slothGame.jumpCooldown) {
-          return;
-        }
-
-        const sloth = document.getElementById('slothCharacter');
-        if (!sloth.classList.contains('jumping')) {
-          sloth.classList.add('jumping');
-          slothGame.jumpCooldown = true;
-          
-          // Remove jump class after animation (increased to 800ms)
-          setTimeout(() => {
-            sloth.classList.remove('jumping');
-            slothGame.jumpCooldown = false;
-          }, 800);
-          
-          console.log('🦥 Sloth jumped!');
-        }
-      };
-
-      window.restartSlothGame = function() {
-        document.getElementById('slothGameOver').style.display = 'none';
-        startSlothGame();
-      };
-
-      window.shareSlothScore = function() {
-        const score = slothGame.score;
-        const xpEarned = calculateSlothXP(score);
-        
-        const achievement = {
-          icon: '🦥',
-          title: 'Sloth Runner Score!',
-          description: `Score: ${score} points! Earned ${xpEarned} XP!`,
-          type: 'sloth',
-          data: { score: score, xp: xpEarned }
-        };
-        
-        showAchievementModal(achievement);
-      };
-
-      // Sloth game mechanics
-      function startGameLoops() {
-        // Score increment
-        slothGame.gameLoop = setInterval(() => {
-          if (slothGame.isPlaying) {
-            slothGame.score += slothGame.multiplier;
-            document.getElementById('slothScore').textContent = slothGame.score;
-            
-            // Increase difficulty over time
-            if (slothGame.score % 50 === 0 && slothGame.speed > 1000) {
-              slothGame.speed -= 100;
-              console.log(`🎮 Difficulty increased! Speed: ${slothGame.speed}`);
-            }
-            
-            // Update multiplier
-            if (slothGame.score % 100 === 0 && slothGame.multiplier < 5) {
-              slothGame.multiplier++;
-              document.getElementById('slothMultiplier').textContent = `${slothGame.multiplier}x`;
-              showSlothEffect(`${slothGame.multiplier}x!`);
-            }
-          }
-        }, 100);
-        
-        // Spawn obstacles
-        slothGame.obstacleInterval = setInterval(() => {
-          if (slothGame.isPlaying) {
-            spawnObstacle();
-          }
-        }, slothGame.speed);
-        
-        // Spawn power-ups
-        slothGame.powerupInterval = setInterval(() => {
-          if (slothGame.isPlaying && Math.random() < 0.3) {
-            spawnPowerup();
-          }
-        }, 3000);
-        
-        // Collision detection
-        setInterval(() => {
-          if (slothGame.isPlaying) {
-            checkCollisions();
-          }
-        }, 50);
-      }
-
-      function spawnObstacle() {
-        const container = document.getElementById('slothGameContainer');
-        const obstacle = document.createElement('div');
-        obstacle.className = 'obstacle';
-        obstacle.textContent = ['🌳', '🪨', '🌵', '🪵'][Math.floor(Math.random() * 4)];
-        obstacle.style.animationDuration = `${slothGame.speed}ms`;
-        container.appendChild(obstacle);
-        
-        // Remove obstacle after animation
-        setTimeout(() => {
-          obstacle.remove();
-        }, slothGame.speed);
-      }
-
-      function spawnPowerup() {
-        const container = document.getElementById('slothGameContainer');
-        const powerup = document.createElement('div');
-        powerup.className = 'sloth-powerup';
-        powerup.textContent = ['⭐', '💎', '🍀', '✨'][Math.floor(Math.random() * 4)];
-        container.appendChild(powerup);
-        
-        // Remove powerup after animation
-        setTimeout(() => {
-          powerup.remove();
-        }, 4000);
-      }
-
-      function checkCollisions() {
-        const sloth = document.getElementById('slothCharacter');
-        const slothRect = sloth.getBoundingClientRect();
-        const isJumping = sloth.classList.contains('jumping');
-        
-        // Check obstacle collisions
-        document.querySelectorAll('.obstacle').forEach(obstacle => {
-          const obstacleRect = obstacle.getBoundingClientRect();
-          
-          if (!isJumping && !slothGame.invincible &&
-              slothRect.left < obstacleRect.right &&
-              slothRect.right > obstacleRect.left &&
-              slothRect.bottom > obstacleRect.top) {
-            // Collision detected
-            endSlothGame();
-          }
-        });
-        
-        // Check powerup collisions
-        document.querySelectorAll('.sloth-powerup').forEach(powerup => {
-          const powerupRect = powerup.getBoundingClientRect();
-          
-          if (slothRect.left < powerupRect.right &&
-              slothRect.right > powerupRect.left &&
-              slothRect.bottom > powerupRect.top &&
-              slothRect.top < powerupRect.bottom) {
-            // Powerup collected
-            collectPowerup(powerup);
-          }
-        });
-      }
-
-      function collectPowerup(powerup) {
-        const type = powerup.textContent;
-        powerup.remove();
-        
-        switch(type) {
-          case '⭐':
-            slothGame.score += 10;
-            showSlothEffect('+10');
-            break;
-          case '💎':
-            slothGame.score += 20;
-            showSlothEffect('+20');
-            break;
-          case '🍀':
-            slothGame.invincible = true;
-            showSlothEffect('Shield!');
-            setTimeout(() => {
-              slothGame.invincible = false;
-            }, 3000);
-            break;
-          case '✨':
-            slothGame.multiplier = Math.min(slothGame.multiplier + 1, 5);
-            document.getElementById('slothMultiplier').textContent = `${slothGame.multiplier}x`;
-            showSlothEffect('Multiplier!');
-            break;
-        }
-        
-        document.getElementById('slothScore').textContent = slothGame.score;
-      }
-
-      function showSlothEffect(text) {
-        const container = document.getElementById('slothGameContainer');
-        const effect = document.createElement('div');
-        effect.className = 'sloth-effect';
-        effect.textContent = text;
-        container.appendChild(effect);
-        
-        setTimeout(() => {
-          effect.remove();
-        }, 1000);
-      }
-
-      function endSlothGame() {
-        slothGame.isPlaying = false;
-        
-        // Clear intervals
-        clearInterval(slothGame.gameLoop);
-        clearInterval(slothGame.obstacleInterval);
-        clearInterval(slothGame.powerupInterval);
-        
-        // Calculate XP earned
-        const xpEarned = calculateSlothXP(slothGame.score);
-        
-        // Update high score
-        if (slothGame.score > slothGame.highScore) {
-          slothGame.highScore = slothGame.score;
-          localStorage.setItem(`sloth_highscore_${appState.address}`, slothGame.highScore);
-        }
-        
-        // Show game over screen
-        document.getElementById('finalScore').textContent = slothGame.score;
-        document.getElementById('xpEarned').textContent = xpEarned;
-        document.getElementById('slothGameOver').style.display = 'block';
-        
-        // Add XP to player
-        if (xpEarned > 0) {
-          addXP(xpEarned);
-          showStatus('sloth-status', `🎮 Game Over! You earned ${xpEarned} XP!`, 'success');
-        }
-        
-        // Reset button
-        document.getElementById('startSlothBtn').disabled = false;
-        document.getElementById('startSlothBtn').textContent = '🎮 Start Game';
-        
-        console.log(`🦥 Game ended! Score: ${slothGame.score}, XP: ${xpEarned}`);
-      }
-
-      function calculateSlothXP(score) {
-        // XP calculation based on score
-        if (score < 50) return 1;
-        if (score < 100) return 2;
-        if (score < 200) return 3;
-        if (score < 300) return 5;
-        if (score < 500) return 8;
-        return 10;
-      }
-
-      // Keyboard controls for sloth game
-      document.addEventListener('keydown', (e) => {
-        if (activeTab === 'sloth' && slothGame.isPlaying) {
-          if (e.code === 'Space' || e.code === 'ArrowUp') {
-            e.preventDefault();
-            jumpSloth();
-          }
-        }
-      });
-
-      // Touch controls for mobile
-      document.getElementById('slothGameContainer').addEventListener('touchstart', (e) => {
-        if (slothGame.isPlaying) {
-          e.preventDefault();
-          jumpSloth();
-        }
-      });
-
-      // Click controls for desktop
-      document.getElementById('slothGameContainer').addEventListener('click', (e) => {
-        if (slothGame.isPlaying && e.target.id !== 'slothGameOver' && !e.target.closest('#slothGameOver')) {
-          e.preventDefault();
-          jumpSloth();
-        }
-      });
-
       window.showTab = function(tabName) {
         console.log('📑 Switching to tab:', tabName);
         activeTab = tabName;
@@ -2887,45 +1487,9 @@
             updateTokenBalance();
           }, 500);
         }
-        
-        // End sloth game if switching away
-        if (activeTab !== 'sloth' && slothGame.isPlaying) {
-          endSlothGame();
-        }
       };
-
-      // Preload critical resources
-      preloadResources();
-      
-      // Setup periodic claim lock cleanup (every 5 minutes)
-      setInterval(async () => {
-        if (appState.connected && appState.address) {
-          const claimKey = `claim_processing_${appState.address.toLowerCase()}`;
-          const localClaimData = localStorage.getItem(claimKey);
-          
-          if (localClaimData) {
-            try {
-              const data = JSON.parse(localClaimData);
-              const now = Date.now();
-              // If claim lock is older than 60 seconds, clear it
-              if (data.timestamp && (now - data.timestamp) > 60000) {
-                localStorage.removeItem(claimKey);
-                console.log('🧹 Cleaned up expired claim lock');
-                updateClaimUI();
-              }
-            } catch (e) {
-              console.error('Error cleaning claim lock:', e);
-            }
-          }
-        }
-      }, 300000); // 5 minutes
       
       console.log('🎮 Game functions setup complete');
-    }
-
-    function hideLoading() {
-      // Legacy function - now uses enhanced loading state
-      hideLoadingState();
     }
 
     async function connectWallet() {
@@ -2974,25 +1538,8 @@
         // Update UI and load wallet-specific data
         updateWalletUI();
         
-        // Load data asynchronously with retry
-        const loadUserData = async () => {
-          try {
-            await updateXPDisplay();
-            console.log('✅ User data loaded successfully');
-          } catch (error) {
-            console.error('Error loading user data:', error);
-            // Retry after 2 seconds
-            setTimeout(async () => {
-              try {
-                await updateXPDisplay();
-              } catch (e) {
-                console.error('Retry failed:', e);
-              }
-            }, 2000);
-          }
-        };
-        
-        loadUserData();
+        // Load data asynchronously
+        updateXPDisplay().catch(console.error);
         
         // Ensure network is correct before fetching balance
         await ensureMonadNetwork();
@@ -3012,12 +1559,6 @@
         
         fetchBalance();
 
-        // Load sloth high score
-        const highScore = localStorage.getItem(`sloth_highscore_${accounts[0]}`);
-        if (highScore) {
-          slothGame.highScore = parseInt(highScore);
-        }
-
       } catch (error) {
         console.error('Connection error:', error);
         showError(error.message);
@@ -3034,19 +1575,11 @@
         connected: false,
         address: null,
         xp: 0,
-        totalXP: 0,
-        claimedXP: 0,
         provider: null,
         signer: null
       };
       updateWalletUI();
       await updateXPDisplay();
-      
-      // End sloth game if playing
-      if (slothGame.isPlaying) {
-        endSlothGame();
-      }
-      
       console.log('🔌 Wallet disconnected, XP reset to 0');
     }
 
@@ -3071,22 +1604,17 @@
         return;
       }
       
-      console.log(`➕ Adding ${amount} XP to wallet ${appState.address}`);
-      
-      // Add XP to total wallet XP
-      appState.totalXP = (appState.totalXP || 0) + amount;
-      appState.xp = Math.max(0, appState.totalXP - (appState.claimedXP || 0));
+      // Add XP to current balance
+      appState.xp = (appState.xp || 0) + amount;
       
       // Update display immediately
       document.getElementById('xp').textContent = appState.xp;
       
-      // Save total XP to Supabase (wait for completion to ensure it's saved)
-      await saveWalletXP(appState.address, appState.totalXP);
+      // Save XP to Supabase in background (non-blocking)
+      saveWalletXP(appState.address, appState.xp);
       
-      // Update claim UI
-      if (activeTab === 'claim') {
-        requestAnimationFrame(() => updateClaimUI());
-      }
+      // Update claim UI non-blocking
+      requestAnimationFrame(() => updateClaimUI());
       
       // Add celebration effect
       const xpElement = document.getElementById('xp');
@@ -3098,7 +1626,7 @@
         xpElement.style.color = 'white';
       }, 500);
       
-      console.log(`✨ XP added successfully - Total: ${appState.totalXP}, Available: ${appState.xp}`);
+      console.log(`✨ XP added to ${appState.address}: +${amount}, Total Available: ${appState.xp}`);
     }
 
     function showStatus(id, message, type) {
@@ -3149,35 +1677,18 @@
 
         // Send transaction
         const tx = await contract[methodName]({
-          gasLimit: 100000 // Reduced gas limit
+          gasLimit: 100000
         });
 
         console.log('✅ Transaction sent:', tx.hash);
         showStatus(statusId, `✅ Transaction sent: ${tx.hash.slice(0,10)}...`, 'pending');
 
         // Since Farcaster wallet doesn't support eth_getTransactionReceipt,
-        // we'll assume success after a delay and track the interaction
+        // we'll assume success after a delay
         setTimeout(async () => {
           console.log('✅ Transaction assumed successful');
           showStatus(statusId, successMsg, 'success');
-          
-          // Add XP - wait for completion
-          try {
-            await addXP(xpAmount);
-            console.log(`✅ XP added successfully: +${xpAmount}`);
-          } catch (error) {
-            console.error('❌ Error adding XP:', error);
-          }
-          
-          // Track contract interaction
-          if (appState.connected && appState.address) {
-            const contractType = getContractType(contractAddress, methodName);
-            const interactionData = await saveContractInteraction(appState.address, contractType);
-            console.log(`🎯 Contract interaction tracked: ${contractType}`);
-            
-            // Check for achievements
-            checkAndShowAchievements(contractType, interactionData);
-          }
+          await addXP(xpAmount);
           
           // Enable all buttons
           enableAllActionButtons();
@@ -3258,136 +1769,34 @@
       }
     }
 
-    async function populateLeaderboard() {
-      const tbody = document.getElementById('leaderboardBody');
-      if (!tbody) return;
-
-      // Show loading state
-      tbody.innerHTML = `
-        <tr>
-          <td colspan="3" style="text-align: center; padding: 20px; color: rgba(255,255,255,0.7);">
-            Loading contract interactions...
-          </td>
-        </tr>
-      `;
-
-      try {
-        // Get all contract interactions from Supabase
-        const contractUsers = await getAllContractInteractions();
-        
-        console.log('📊 Found', contractUsers.length, 'users with contract interactions');
-        
-        if (contractUsers.length === 0) {
-          tbody.innerHTML = `
-            <tr>
-              <td colspan="3" style="text-align: center; padding: 40px; color: rgba(255,255,255,0.7);">
-                <div>🌟 Be the first to interact!</div>
-                <div style="font-size: 11px; opacity: 0.7; margin-top: 8px;">
-                  Pet the dog, say GM/GN, or flip coins to appear here
-                </div>
-              </td>
-            </tr>
-          `;
-          return;
-        }
-        
-        // Create leaderboard with contract interaction data
-        const leaderboardData = contractUsers.map((user, index) => ({
-          rank: index + 1,
-          address: user.address,
-          txCount: user.total,
-          interactions: {
-            pet: user.pet,
-            gm: user.gm,
-            gn: user.gn,
-            flip: user.flip
-          },
-          badge: getBadgeForInteractions(user),
-          activityBadge: getActivityBadge(user)
-        }));
-        
-        // Populate table
-        tbody.innerHTML = leaderboardData.map((item) => {
-          const isCurrentUser = appState.connected && 
-            item.address.toLowerCase() === appState.address?.toLowerCase();
-          
-          const interactionDetails = `🐕${item.interactions.pet} 👋${item.interactions.gm + item.interactions.gn} 🪙${item.interactions.flip}`;
-          
-          return `
-            <tr style="${isCurrentUser ? 'background: rgba(99, 102, 241, 0.2); border: 1px solid rgba(99, 102, 241, 0.5);' : ''}" 
-                title="Pet: ${item.interactions.pet}, GM/GN: ${item.interactions.gm + item.interactions.gn}, Flip: ${item.interactions.flip}">
-              <td class="rank-number">#${item.rank}</td>
-              <td class="address-cell">
-                <div>${item.address.slice(0,6)}...${item.address.slice(-4)}</div>
-                <div style="font-size: 10px; opacity: 0.7; margin-top: 2px;">${interactionDetails}</div>
-                ${item.activityBadge ? `<span class="badge" style="background: #ff6b9d;">${item.activityBadge}</span>` : ''}
-                ${isCurrentUser ? '<span class="badge" style="background: #10b981;">You</span>' : ''}
-              </td>
-              <td class="tx-count">${item.txCount}</td>
-            </tr>
-          `;
-        }).join('');
-
-        console.log('✅ Leaderboard populated with contract interaction data');
-
-      } catch (error) {
-        console.error('❌ Error populating leaderboard:', error);
-        
-        tbody.innerHTML = `
-          <tr>
-            <td colspan="3" style="text-align: center; padding: 20px; color: #ff6b6b;">
-              ⚠️ Failed to load leaderboard data
-            </td>
-          </tr>
-        `;
-      }
-    }
-
-    window.refreshLeaderboard = async function() {
-      console.log('🔄 Refreshing Monad Dog leaderboard...');
-      await populateLeaderboard();
-      console.log('✅ Leaderboard refreshed with latest contract interactions');
-    };
-
     // Farcaster Sharing Functions
     function generateShareableContent(type, data = {}) {
       const baseUrl = window.location.origin;
-      const userStats = appState.connected ? getContractInteractions(appState.address) : null;
       const tokenBalance = document.getElementById('walletDogDisplay')?.textContent || '0';
       
       const shareTemplates = {
         pet: {
-          text: `Just petted the Monad Dog! 🐕✨\n\nTotal pets: ${userStats?.pet || 0}\nXP earned: ${appState.xp}\n$DOG Balance: ${tokenBalance}\n\nJoin me on Monad Testnet!`,
+          text: `Just petted the Monad Dog! 🐕✨\n\nXP earned: ${appState.xp}\n$DOG Balance: ${tokenBalance}\n\nJoin me on Monad Testnet!`,
           url: `${baseUrl}?ref=pet&xp=${appState.xp}`,
           image: "🐕"
         },
         greet: {
-          text: `GM Monad community! ☀️👋\n\nTotal greetings: ${(userStats?.gm || 0) + (userStats?.gn || 0)}\nCommunity XP: ${appState.xp}\n$DOG Tokens: ${tokenBalance}\n\nSpread the love on Monad!`,
+          text: `GM Monad community! ☀️👋\n\nCommunity XP: ${appState.xp}\n$DOG Tokens: ${tokenBalance}\n\nSpread the love on Monad!`,
           url: `${baseUrl}?ref=greet&xp=${appState.xp}`,
           image: "👋"
         },
         flip: {
-          text: `Just flipped a coin on Monad! 🪙\n\nResult: ${data.result || 'Lucky'}\nTotal flips: ${userStats?.flip || 0}\nXP: ${appState.xp}\n$DOG: ${tokenBalance}`,
+          text: `Just flipped a coin on Monad! 🪙\n\nResult: ${data.result || 'Lucky'}\nXP: ${appState.xp}\n$DOG: ${tokenBalance}`,
           url: `${baseUrl}?ref=flip&result=${data.result}&xp=${appState.xp}`,
           image: "🪙"
         },
         claim: {
-          text: `Just claimed ${data.amount || 0} $DOG tokens! 💰\n\nTotal $DOG Balance: ${tokenBalance}\nXP remaining: ${appState.xp}\n\nEarn XP and claim your $DOG tokens too!`,
+          text: `Just claimed ${data.amount || 0} $DOG tokens! 💰\n\nTotal $DOG Balance: ${tokenBalance}\nXP reset - earning again!\n\nEarn XP and claim your $DOG tokens too!`,
           url: `${baseUrl}?ref=claim&tokens=${data.amount}`,
           image: "💰"
         },
-        sloth: {
-          text: `Just scored ${data.score || 0} points in Sloth Runner! 🦥\n\nEarned ${data.xp || 0} XP!\nTotal XP: ${appState.xp}\n$DOG Balance: ${tokenBalance}\n\nCan you beat my score?`,
-          url: `${baseUrl}?ref=sloth&score=${data.score}&xp=${data.xp}`,
-          image: "🦥"
-        },
-        leaderboard: {
-          text: `Check out my Monad Dog stats! 🏆\n\nRank: ${data.rank || '?'}\nTotal interactions: ${userStats?.total || 0}\nXP: ${appState.xp}\n$DOG Tokens: ${tokenBalance}\n\nCan you beat me?`,
-          url: `${baseUrl}?ref=leaderboard&rank=${data.rank}&xp=${appState.xp}`,
-          image: "🏆"
-        },
         invite: {
-          text: `Playing Monad Dog - the cutest way to explore Monad Testnet! 🐕⛓️\n\n✨ Pet dogs, flip coins, say GM/GN\n🦥 Play Sloth Runner mini-game\n🎯 Earn XP and claim $DOG tokens\n💰 Convert XP to tokens (10:1 rate)\n🚀 Real blockchain interactions\n\nJoin me!`,
+          text: `Playing Monad Dog - the cutest way to explore Monad Testnet! 🐕⛓️\n\n✨ Pet dogs, flip coins, say GM/GN\n🎯 Earn XP and claim $DOG tokens\n💰 Convert XP to tokens (10:1 rate)\n🚀 Real blockchain interactions\n\nJoin me!`,
           url: `https://monad-snowy.vercel.app?ref=invite&inviter=${appState.address?.slice(0,6)}`,
           image: "🚀"
         }
@@ -3419,7 +1828,7 @@
       }
     }
 
-    // Achievement Modal Functions - Fixed with proper event handling
+    // Achievement Modal Functions
     window.showAchievementModal = function(achievement) {
       const modal = document.getElementById('achievementModal');
       const icon = document.getElementById('achievementIcon');
@@ -3451,97 +1860,57 @@
       console.log('🎉 Achievement modal shown:', achievement);
     }
 
-    window.closeAchievementModal = function() {
-      const modal = document.getElementById('achievementModal');
-      if (modal) {
-        modal.style.display = 'none';
-      }
-      window.currentAchievement = null;
-      
-      // Remove escape key listener
-      if (window.achievementEscapeHandler) {
-        document.removeEventListener('keydown', window.achievementEscapeHandler);
-      }
-      
-      console.log('Modal closed');
-    }
-
-    window.shareCurrentAchievement = function() {
-      if (window.currentAchievement) {
-        try {
-          const content = generateShareableContent(window.currentAchievement.type, window.currentAchievement.data);
-          shareOnFarcaster(content);
-          
-          // Close modal after sharing
-          setTimeout(() => {
-            closeAchievementModal();
-          }, 500);
-        } catch (error) {
-          console.error('Error sharing achievement:', error);
-          closeAchievementModal();
-        }
-      }
-    }
-
     // Individual Share Functions
-    window.sharePetAchievement = async function() {
+    window.sharePetAchievement = function() {
       if (!appState.connected) {
         showError('Connect wallet to share achievements');
         return;
       }
       
-      const userStats = await getContractInteractions(appState.address);
       const achievement = {
         icon: '🐕',
         title: 'Dog Lover Achievement!',
-        description: `You've petted the dog ${userStats.pet} times and earned ${appState.xp} XP!`,
+        description: `You've been petting dogs and earned ${appState.xp} XP!`,
         type: 'pet',
-        data: { pets: userStats.pet }
+        data: {}
       };
       
       showAchievementModal(achievement);
     };
 
-    window.shareGreetAchievement = async function() {
+    window.shareGreetAchievement = function() {
       if (!appState.connected) {
         showError('Connect wallet to share achievements');
         return;
       }
       
-      const userStats = await getContractInteractions(appState.address);
-      const totalGreets = userStats.gm + userStats.gn;
       const achievement = {
         icon: '👋',
         title: 'Community Spirit!',
-        description: `You've greeted the community ${totalGreets} times! Spreading love on Monad.`,
+        description: `You've been greeting the community! Spreading love on Monad with ${appState.xp} XP.`,
         type: 'greet',
-        data: { greets: totalGreets }
+        data: {}
       };
       
       showAchievementModal(achievement);
     };
 
-    window.shareFlipAchievement = async function() {
+    window.shareFlipAchievement = function() {
       if (!appState.connected) {
         showError('Connect wallet to share achievements');
         return;
       }
       
-      const userStats = await getContractInteractions(appState.address);
       const lastResult = document.getElementById('flip-result').textContent;
       const achievement = {
         icon: '🪙',
         title: 'Lucky Flipper!',
-        description: `${lastResult} You've flipped ${userStats.flip} coins on Monad!`,
+        description: `${lastResult} You've been flipping coins on Monad with ${appState.xp} XP!`,
         type: 'flip',
-        data: { flips: userStats.flip, result: lastResult }
+        data: { result: lastResult }
       };
       
       showAchievementModal(achievement);
-    };
-
-    window.shareLeaderboardPosition = async function() {
-      showError('Leaderboard feature has been removed');
     };
 
     window.shareAppWithFriends = function() {
@@ -3556,103 +1925,10 @@
       showAchievementModal(achievement);
     };
 
-    // Auto-show achievements after major milestones
-    function checkAndShowAchievements(interactionType, userStats) {
-      const achievements = [];
-      
-      // Pet milestones
-      if (interactionType === 'pet') {
-        if (userStats.pet === 1) {
-          achievements.push({
-            icon: '🐕',
-            title: 'First Pet!',
-            description: 'You petted your first Monad Dog! Welcome to the pack!',
-            type: 'pet'
-          });
-        } else if (userStats.pet === 10) {
-          achievements.push({
-            icon: '🐕',
-            title: 'Dog Whisperer!',
-            description: '10 pets! The dogs love you!',
-            type: 'pet'
-          });
-        } else if (userStats.pet === 50) {
-          achievements.push({
-            icon: '🐕',
-            title: 'Dog Master!',
-            description: '50 pets! You are a true dog lover!',
-            type: 'pet'
-          });
-        }
-      }
-      
-      // Community milestones
-      if (interactionType === 'gm' || interactionType === 'gn') {
-        const totalGreets = userStats.gm + userStats.gn;
-        if (totalGreets === 1) {
-          achievements.push({
-            icon: '👋',
-            title: 'First Greeting!',
-            description: 'Welcome to the Monad community!',
-            type: 'greet'
-          });
-        } else if (totalGreets === 25) {
-          achievements.push({
-            icon: '👋',
-            title: 'Community Champion!',
-            description: '25 greetings! You spread so much positivity!',
-            type: 'greet'
-          });
-        }
-      }
-      
-      // Flip milestones
-      if (interactionType === 'flip') {
-        if (userStats.flip === 1) {
-          achievements.push({
-            icon: '🪙',
-            title: 'First Flip!',
-            description: 'Your first coin flip on Monad! Feeling lucky?',
-            type: 'flip'
-          });
-        } else if (userStats.flip === 20) {
-          achievements.push({
-            icon: '🪙',
-            title: 'High Roller!',
-            description: '20 flips! Lady luck is on your side!',
-            type: 'flip'
-          });
-        }
-      }
-      
-      // XP milestones
-      const totalXP = appState.totalXP;
-      if (totalXP >= 100 && !localStorage.getItem(`xp_milestone_100_${appState.address}`)) {
-        achievements.push({
-          icon: '✨',
-          title: 'XP Milestone!',
-          description: '100 XP earned! You can now claim 10 $DOG tokens!',
-          type: 'xp'
-        });
-        localStorage.setItem(`xp_milestone_100_${appState.address}`, 'true');
-      }
-      
-      // Show first achievement if any
-      if (achievements.length > 0) {
-        setTimeout(() => {
-          showAchievementModal(achievements[0]);
-        }, 2000); // Show after transaction success message
-      }
-    }
-
-    // Start app when DOM is ready with preloading
+    // Start app when DOM is ready
     if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', () => {
-        preloadResources();
-        initApp();
-      });
+      document.addEventListener('DOMContentLoaded', initApp);
     } else {
-      preloadResources();
       initApp();
     }
 
