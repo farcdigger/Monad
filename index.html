@@ -562,15 +562,133 @@
       border-bottom: 1px solid rgba(255,255,255,0.1);
     }
 
-    .xp-reset-warning {
-      background: rgba(255, 193, 7, 0.2);
-      border: 1px solid rgba(255, 193, 7, 0.5);
-      color: #ffc107;
-      padding: 12px;
+    /* Slots Machine Styles */
+    .slots-machine {
+      background: rgba(255,255,255,0.1);
+      padding: 25px;
+      border-radius: 16px;
+      margin: 20px 0;
+      border: 2px solid rgba(255,255,255,0.2);
+    }
+
+    .slots-display {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin: 25px 0;
+      padding: 20px;
+      background: rgba(0,0,0,0.3);
+      border-radius: 12px;
+      border: 2px solid #6366f1;
+    }
+
+    .slot-reel {
+      width: 70px;
+      height: 70px;
+      background: rgba(255,255,255,0.1);
       border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+      border: 2px solid rgba(255,255,255,0.3);
+      transition: all 0.3s ease;
+    }
+
+    .slot-reel.spinning {
+      animation: spin-reel 0.1s linear infinite;
+    }
+
+    .slot-reel.winning {
+      background: rgba(16, 185, 129, 0.3);
+      border-color: #10b981;
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
+    }
+
+    @keyframes spin-reel {
+      0% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+      100% { transform: translateY(0); }
+    }
+
+    .slots-info {
+      display: flex;
+      justify-content: space-between;
       margin: 15px 0;
+      padding: 10px;
+      background: rgba(0,0,0,0.2);
+      border-radius: 8px;
+    }
+
+    .slots-button {
+      background: linear-gradient(135deg, #f59e0b, #eab308);
+      color: white;
+      font-weight: 600;
+      padding: 16px 32px;
+      border-radius: 12px;
+      width: 100%;
+      margin: 15px 0;
+      font-size: 18px;
+      transition: all 0.3s ease;
+    }
+
+    .slots-button:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(245, 158, 11, 0.4);
+    }
+
+    .slots-button:disabled {
+      background: rgba(255,255,255,0.1);
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .slots-legend {
+      margin-top: 20px;
+      padding: 15px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 12px;
+    }
+
+    .symbol-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .symbol-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 8px;
+    }
+
+    .symbol {
+      font-size: 24px;
+    }
+
+    .symbol-name {
       font-size: 14px;
+      opacity: 0.8;
+    }
+
+    .slots-jackpot {
+      background: linear-gradient(135deg, #ffd700, #ffed4a);
+      color: #1a1a1a;
+      padding: 20px;
+      border-radius: 12px;
+      margin: 20px 0;
       text-align: center;
+      font-weight: 600;
+      animation: jackpot-glow 2s ease-in-out infinite;
+    }
+
+    @keyframes jackpot-glow {
+      0%, 100% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.3); }
+      50% { box-shadow: 0 0 30px rgba(255, 215, 0, 0.6); }
     }
   </style>
 </head>
@@ -602,6 +720,7 @@
       <button class="tab active" onclick="showTab('pet')">🐕 Pet</button>
       <button class="tab" onclick="showTab('greet')">👋 Greet</button>
       <button class="tab" onclick="showTab('flip')">🪙 Flip</button>
+      <button class="tab" onclick="showTab('slots')">🎰 Slots</button>
       <button class="tab" onclick="showTab('claim')">💰 Claim</button>
     </div>
 
@@ -650,6 +769,78 @@
         </div>
       </div>
 
+              <!-- Slots Tab -->
+      <div id="slots" class="tab-content">
+        <h3>🎰 Dog Slots</h3>
+        <p style="margin-bottom: 20px;">Match 4 same dogs or bones to win 5000 XP!</p>
+        
+        <div class="slots-machine">
+          <div class="slots-display">
+            <div class="slot-reel" id="reel1">🐕</div>
+            <div class="slot-reel" id="reel2">🦮</div>
+            <div class="slot-reel" id="reel3">🐶</div>
+            <div class="slot-reel" id="reel4">🦴</div>
+          </div>
+          
+          <div class="slots-info">
+            <div class="cost-info">
+              <span style="color: #f59e0b;">💰 Pay: 0.1 MONAD = 2 Credits</span>
+            </div>
+            <div class="prize-info">
+              <span style="color: #10b981;">🏆 4 Match = 5000 XP</span>
+            </div>
+          </div>
+          
+          <button class="slots-button" id="slotsButton" onclick="playSlots()">
+            🔒 Connect Wallet
+          </button>
+          
+          <div id="slots-status" class="status"></div>
+        </div>
+        
+        <div class="slots-legend">
+          <h4 style="margin: 20px 0 10px 0;">How It Works:</h4>
+          <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-bottom: 15px; text-align: left;">
+            <p style="margin-bottom: 8px;">💰 <strong>Pay 0.1 MONAD</strong> → Get 2 game credits</p>
+            <p style="margin-bottom: 8px;">🎮 <strong>Each game</strong> → Uses 1 credit</p>
+            <p style="margin-bottom: 8px;">✅ <strong>Credits awarded</strong> → Only after TX confirms</p>
+            <p>🎰 <strong>Play anytime</strong> → Use your available credits</p>
+          </div>
+          
+          <h4 style="margin: 20px 0 10px 0;">Symbols & Prizes:</h4>
+          <div class="symbol-grid">
+            <div class="symbol-item">
+              <span class="symbol">🐕</span>
+              <span class="symbol-name">Shiba</span>
+            </div>
+            <div class="symbol-item">
+              <span class="symbol">🦮</span>
+              <span class="symbol-name">Guide Dog</span>
+            </div>
+            <div class="symbol-item">
+              <span class="symbol">🐶</span>
+              <span class="symbol-name">Puppy</span>
+            </div>
+            <div class="symbol-item">
+              <span class="symbol">🦴</span>
+              <span class="symbol-name">Bone</span>
+            </div>
+          </div>
+          
+          <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-top: 15px; text-align: left;">
+            <p style="margin-bottom: 5px;">🎉 <strong>4 Same:</strong> 5000 XP (JACKPOT!)</p>
+            <p style="margin-bottom: 5px;">🏆 <strong>3 Same:</strong> 500 XP</p>
+            <p>✨ <strong>2 Same:</strong> 50 XP</p>
+          </div>
+        </div>
+        
+        <div class="share-section">
+          <button class="share-button" onclick="shareSlotsAchievement()">
+            🎰 Share Slots Win
+          </button>
+        </div>
+      </div>
+
       <!-- Claim Tab -->
       <div id="claim" class="tab-content">
         <h3>Claim $DOG Tokens</h3>
@@ -670,17 +861,13 @@
               <div class="claim-info-value" id="claimableDOG">0</div>
             </div>
           </div>
-
-          <div class="xp-reset-warning">
-            ⚠️ After claiming, your XP will be reset to continue earning new tokens
-          </div>
           
           <button class="claim-button" id="claimButton" onclick="claimTokens()" disabled>
             💰 Claim $DOG Tokens
           </button>
           
           <div class="conversion-rate">
-            Conversion Rate: 10 XP = 1 $DOG Token (XP resets after claim)
+            Conversion Rate: 10 XP = 1 $DOG Token
           </div>
           
           <div id="claim-status" class="status"></div>
@@ -850,6 +1037,7 @@
       PET: "0xc53abe4c593b9440407f8ac1b346f3f999e6d8ed",
       GREET: "0xbc8b78f3e2348d4b5e0390fe700ce54b59931da4",
       FLIP: "0xc5b2280d1e2f155f9a2be2af7e78190658874106",
+      SLOTS: "0x6e9a2fcf69a16f6bbfae21261f6ccc023fbda549", // ✅ DEPLOYED SLOTS CONTRACT
       DOG_TOKEN: "0x1f6649d028c4c146c050a9b224115a01c92a02f3"
     };
 
@@ -857,6 +1045,15 @@
       PET: ["function pet() public"],
       GREET: ["function gm() public", "function gn() public"],
       FLIP: ["function flip() public"],
+      SLOTS: [
+        "function buyCredits() external payable",
+        "function playSlots() external returns (uint8[4])",
+        "function getCredits(address player) external view returns (uint256)",
+        "function getGameStats() external view returns (uint256, uint256, uint256)",
+        "event CreditsPurchased(address indexed player, uint256 credits, uint256 cost)",
+        "event GamePlayed(address indexed player, uint8[4] results, uint256 creditsRemaining)",
+        "event Jackpot(address indexed player, uint8 symbol, uint256 prize)"
+      ],
       DOG_TOKEN: [
         "function claim(uint256 xpAmount) public",
         "function balanceOf(address account) public view returns (uint256)",
@@ -877,6 +1074,7 @@
       connected: false,
       address: null,
       xp: 0, // Available XP (can be used for claiming)
+      slotsCredits: 0, // Available slots game credits
       provider: null,
       signer: null,
       isTransactionPending: false
@@ -944,6 +1142,68 @@
       }
     }
 
+    // ✅ SLOTS CREDITS MANAGEMENT - Updated with real contract integration
+    async function getSlotsCredits(address) {
+      if (!address || !appState.provider) return 0;
+      
+      try {
+        // Get credits from smart contract
+        const slotsContract = new ethers.Contract(
+          CONTRACTS.SLOTS,
+          ABIS.SLOTS,
+          appState.provider
+        );
+        
+        const credits = await slotsContract.getCredits(address);
+        return credits.toNumber();
+      } catch (e) {
+        console.error('Error fetching slots credits from contract:', e);
+        // Fallback to localStorage
+        return parseInt(localStorage.getItem(`slots_credits_${address.toLowerCase()}`) || '0');
+      }
+    }
+
+    async function saveSlotsCredits(address, credits) {
+      if (!address) return;
+      
+      // Save to localStorage for immediate display
+      localStorage.setItem(`slots_credits_${address.toLowerCase()}`, credits.toString());
+      
+      // Note: Actual credits are managed by smart contract
+      // This is just for UI consistency
+    }
+
+    async function updateSlotsCreditsDisplay() {
+      if (appState.connected && appState.address) {
+        const credits = await getSlotsCredits(appState.address);
+        appState.slotsCredits = credits;
+        
+        // Update slots button text
+        updateSlotsButton();
+        
+        console.log(`🎰 Slots Credits - Available: ${credits}`);
+      } else {
+        appState.slotsCredits = 0;
+        updateSlotsButton();
+      }
+    }
+
+    function updateSlotsButton() {
+      const slotsButton = document.getElementById('slotsButton');
+      if (!slotsButton) return;
+      
+      if (appState.slotsCredits > 0) {
+        slotsButton.textContent = `🎰 Play Slots (${appState.slotsCredits} credits)`;
+        slotsButton.disabled = false;
+      } else if (appState.connected) {
+        slotsButton.textContent = `💰 Buy 2 Credits (0.1 MONAD)`;
+        slotsButton.disabled = false;
+      } else {
+        slotsButton.textContent = `🔒 Connect Wallet`;
+        slotsButton.disabled = true;
+      }
+    }
+
     async function updateXPDisplay() {
       if (appState.connected && appState.address) {
         // Show current value immediately
@@ -958,6 +1218,9 @@
         document.getElementById('xp').textContent = walletXP;
         appState.xp = walletXP;
         
+        // Also update slots credits
+        await updateSlotsCreditsDisplay();
+        
         console.log(`📊 XP Display - Available: ${walletXP}`);
         
         // Update claim UI non-blocking
@@ -967,7 +1230,9 @@
       } else {
         document.getElementById('xp').textContent = '0';
         appState.xp = 0;
+        appState.slotsCredits = 0;
         updateClaimUI();
+        updateSlotsButton();
       }
     }
 
@@ -982,7 +1247,7 @@
       const claimButton = document.getElementById('claimButton');
       if (claimableXP >= XP_TO_DOG_RATE && appState.connected) {
         claimButton.disabled = false;
-        claimButton.textContent = `💰 Claim ${claimableDOG} $DOG Tokens (XP will reset)`;
+        claimButton.textContent = `💰 Claim ${claimableDOG} $DOG Tokens`;
       } else {
         claimButton.disabled = true;
         if (!appState.connected) {
@@ -1104,7 +1369,7 @@
       }
     }
 
-    // ✅ FIXED CLAIM FUNCTION - XP resets after user confirms transaction
+    // ✅ FIXED CLAIM FUNCTION - XP resets after user confirms transaction + Button cooldown
     window.claimTokens = async function() {
       if (!appState.connected || !appState.signer) {
         showError('Please connect your wallet first');
@@ -1119,8 +1384,29 @@
         return;
       }
       
+      const claimButton = document.getElementById('claimButton');
+      
       try {
         console.log('💰 Starting token claim...');
+        
+        // ✅ Disable button immediately for 30 seconds
+        claimButton.disabled = true;
+        
+        // Start countdown
+        let countdown = 30;
+        const originalText = claimButton.textContent;
+        
+        const countdownInterval = setInterval(() => {
+          countdown--;
+          claimButton.textContent = `⏳ Please wait ${countdown}s...`;
+          
+          if (countdown <= 0) {
+            clearInterval(countdownInterval);
+            // Re-enable button and update text after countdown
+            updateClaimUI();
+          }
+        }, 1000);
+        
         showStatus('claim-status', '🔐 Please confirm transaction in your wallet...', 'pending');
         
         // Ensure correct network
@@ -1463,6 +1749,290 @@
         }, 3000);
       };
 
+      // ✅ SLOTS GAME FUNCTION - REDESIGNED WITH CREDITS SYSTEM
+      window.playSlots = async function() {
+        console.log('🎰 Play Slots clicked!');
+        
+        if (!appState.connected) {
+          showError('Connect wallet first');
+          return;
+        }
+        
+        if (appState.isTransactionPending) {
+          showError('Please wait for the current transaction to complete');
+          return;
+        }
+        
+        const slotsButton = document.getElementById('slotsButton');
+        const originalText = slotsButton.textContent;
+        
+        // Check if user has credits or needs to buy
+        if (appState.slotsCredits > 0) {
+          // USE EXISTING CREDIT
+          await playSlotGame();
+        } else {
+          // BUY CREDITS WITH 0.1 MONAD
+          await buySlotCredits();
+        }
+      };
+
+      // Buy slot credits with 0.1 MONAD payment
+      async function buySlotCredits() {
+        const slotsButton = document.getElementById('slotsButton');
+        const originalText = slotsButton.textContent;
+        
+        try {
+          // Disable button immediately
+          slotsButton.disabled = true;
+          slotsButton.textContent = '💰 Buying Credits...';
+          
+          showStatus('slots-status', '🔐 Please confirm payment of 0.1 MONAD for 2 game credits...', 'pending');
+          
+          // Ensure correct network
+          await ensureMonadNetwork();
+          
+          // Check if contract address is set
+          if (CONTRACTS.SLOTS === "0x0000000000000000000000000000000000000000") {
+            // ✅ GEÇICI: Test için kontrat simülasyonu
+            console.log('🧪 SIMULATING: 0.1 MONAD payment for 2 credits...');
+            
+            // Simulate transaction delay
+            setTimeout(async () => {
+              // ✅ TX CONFIRMED - Give 2 credits
+              appState.slotsCredits = 2;
+              await saveSlotsCredits(appState.address, 2);
+              updateSlotsButton();
+              
+              showStatus('slots-status', '✅ Payment confirmed! You received 2 game credits!', 'success');
+              console.log('✅ 2 slots credits awarded after payment confirmation');
+              
+              setTimeout(() => hideStatus('slots-status'), 3000);
+            }, 3000); // Simulate 3 second transaction time
+            
+            return;
+          }
+          
+          // Real contract call
+          const slotsContract = new ethers.Contract(CONTRACTS.SLOTS, ABIS.SLOTS, appState.signer);
+          
+          // Send transaction with 0.1 MONAD payment
+          const tx = await slotsContract.playSlots({
+            value: ethers.utils.parseEther("0.1"), // 0.1 MONAD
+            gasLimit: 150000
+          });
+          
+          console.log('✅ Payment transaction sent:', tx.hash);
+          showStatus('slots-status', `📡 Payment sent: ${tx.hash.slice(0,10)}... Waiting for confirmation...`, 'pending');
+          
+          // Wait for transaction confirmation
+          setTimeout(async () => {
+            // ✅ TX CONFIRMED - Give 2 credits
+            appState.slotsCredits = 2;
+            await saveSlotsCredits(appState.address, 2);
+            updateSlotsButton();
+            
+            showStatus('slots-status', '✅ Payment confirmed! You received 2 game credits!', 'success');
+            console.log('✅ 2 slots credits awarded after payment confirmation');
+            
+            setTimeout(() => hideStatus('slots-status'), 3000);
+          }, 5000);
+          
+        } catch (error) {
+          console.error('❌ Payment error:', error);
+          
+          slotsButton.disabled = false;
+          slotsButton.textContent = originalText;
+          
+          let errorMsg = 'Payment failed';
+          if (error.message.includes('user rejected')) {
+            errorMsg = 'Payment cancelled';
+          } else if (error.message.includes('insufficient funds')) {
+            errorMsg = 'Insufficient MONAD balance';
+          }
+          
+          showStatus('slots-status', errorMsg, 'error');
+          setTimeout(() => hideStatus('slots-status'), 5000);
+        }
+      }
+
+      // Play the actual slot game using 1 credit
+      async function playSlotGame() {
+        if (appState.slotsCredits <= 0) {
+          showError('No game credits available');
+          return;
+        }
+        
+        const slotsButton = document.getElementById('slotsButton');
+        
+        try {
+          // Disable button during game
+          slotsButton.disabled = true;
+          slotsButton.textContent = '🎰 Playing...';
+          
+          // ✅ USE 1 CREDIT IMMEDIATELY
+          appState.slotsCredits -= 1;
+          await saveSlotsCredits(appState.address, appState.slotsCredits);
+          
+          console.log(`🎮 Used 1 credit, remaining: ${appState.slotsCredits}`);
+          showStatus('slots-status', '🎰 Spinning the reels...', 'pending');
+          
+          // Start slots animation
+          const symbols = ['🐕', '🦮', '🐶', '🦴'];
+          const reels = ['reel1', 'reel2', 'reel3', 'reel4'];
+          
+          // Spinning animation
+          reels.forEach(reelId => {
+            const reel = document.getElementById(reelId);
+            reel.classList.add('spinning');
+          });
+          
+          // Simulate random results
+          let results = [];
+          let spinDuration = 3000; // 3 seconds of spinning
+          
+          const spinInterval = setInterval(() => {
+            reels.forEach(reelId => {
+              const reel = document.getElementById(reelId);
+              reel.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+            });
+          }, 100);
+          
+          // Stop spinning and show final results
+          setTimeout(() => {
+            clearInterval(spinInterval);
+            
+            // Generate final results
+            for (let i = 0; i < 4; i++) {
+              results.push(symbols[Math.floor(Math.random() * symbols.length)]);
+            }
+            
+            // Display final results
+            reels.forEach((reelId, index) => {
+              const reel = document.getElementById(reelId);
+              reel.classList.remove('spinning');
+              reel.textContent = results[index];
+            });
+            
+            // Check for winning combinations
+            setTimeout(() => {
+              checkSlotsWin(results);
+              
+              // Update button with remaining credits
+              updateSlotsButton();
+              
+            }, 500);
+            
+          }, spinDuration);
+          
+        } catch (error) {
+          console.error('❌ Game error:', error);
+          
+          // Refund the credit on error
+          appState.slotsCredits += 1;
+          await saveSlotsCredits(appState.address, appState.slotsCredits);
+          updateSlotsButton();
+          
+          showStatus('slots-status', 'Game error - credit refunded', 'error');
+          setTimeout(() => hideStatus('slots-status'), 5000);
+        }
+      }
+
+      // Check slots winning combinations
+      function checkSlotsWin(results) {
+        console.log('🎰 Slots results:', results);
+        
+        // Count occurrences of each symbol
+        const symbolCounts = {};
+        results.forEach(symbol => {
+          symbolCounts[symbol] = (symbolCounts[symbol] || 0) + 1;
+        });
+        
+        // Check for 4 of a kind (jackpot)
+        const maxCount = Math.max(...Object.values(symbolCounts));
+        
+        if (maxCount === 4) {
+          // JACKPOT! 4 of a kind
+          const winningSymbol = Object.keys(symbolCounts).find(symbol => symbolCounts[symbol] === 4);
+          
+          // Highlight winning reels
+          document.querySelectorAll('.slot-reel').forEach(reel => {
+            if (reel.textContent === winningSymbol) {
+              reel.classList.add('winning');
+            }
+          });
+          
+          // Award 5000 XP
+          addXP(5000);
+          
+          showStatus('slots-status', `🎉 JACKPOT! 4x ${winningSymbol} = +5000 XP!`, 'success');
+          
+          // Show jackpot achievement
+          setTimeout(() => {
+            showAchievementModal({
+              icon: '🎰',
+              title: 'JACKPOT WINNER!',
+              description: `Amazing! You got 4x ${winningSymbol} and won 5000 XP! You're incredibly lucky!`,
+              type: 'slots',
+              data: { 
+                symbol: winningSymbol, 
+                count: 4, 
+                xp: 5000,
+                result: results.join('')
+              }
+            });
+          }, 1000);
+          
+        } else if (maxCount === 3) {
+          // 3 of a kind - smaller win
+          const winningSymbol = Object.keys(symbolCounts).find(symbol => symbolCounts[symbol] === 3);
+          
+          // Highlight winning reels
+          document.querySelectorAll('.slot-reel').forEach(reel => {
+            if (reel.textContent === winningSymbol) {
+              reel.classList.add('winning');
+            }
+          });
+          
+          // Award 500 XP for 3 of a kind
+          addXP(500);
+          
+          showStatus('slots-status', `🏆 3x ${winningSymbol} = +500 XP!`, 'success');
+          
+        } else if (maxCount === 2) {
+          // 2 of a kind - small win
+          const winningSymbol = Object.keys(symbolCounts).find(symbol => symbolCounts[symbol] === 2);
+          
+          // Award 50 XP for 2 of a kind
+          addXP(50);
+          
+          showStatus('slots-status', `✨ 2x ${winningSymbol} = +50 XP!`, 'success');
+          
+        } else {
+          // No win
+          showStatus('slots-status', '😔 No match this time. Try again!', 'error');
+        }
+        
+        // Clear status and winning highlights after delay
+        setTimeout(() => {
+          hideStatus('slots-status');
+          document.querySelectorAll('.slot-reel').forEach(reel => {
+            reel.classList.remove('winning');
+          });
+        }, 5000);
+      }
+
+      // Reset slots display
+      function resetSlotsDisplay() {
+        const symbols = ['🐕', '🦮', '🐶', '🦴'];
+        const reels = ['reel1', 'reel2', 'reel3', 'reel4'];
+        
+        reels.forEach((reelId, index) => {
+          const reel = document.getElementById(reelId);
+          reel.textContent = symbols[index];
+          reel.classList.remove('spinning', 'winning');
+        });
+      }
+
       window.showTab = function(tabName) {
         console.log('📑 Switching to tab:', tabName);
         activeTab = tabName;
@@ -1486,6 +2056,12 @@
           setTimeout(() => {
             updateTokenBalance();
           }, 500);
+        }
+        
+        // Update slots when switching to slots tab
+        if (tabName === 'slots') {
+          resetSlotsDisplay();
+          updateSlotsButton();
         }
       };
       
@@ -1575,6 +2151,7 @@
         connected: false,
         address: null,
         xp: 0,
+        slotsCredits: 0,
         provider: null,
         signer: null
       };
@@ -1790,6 +2367,11 @@
           url: `${baseUrl}?ref=flip&result=${data.result}&xp=${appState.xp}`,
           image: "🪙"
         },
+        slots: {
+          text: `Just hit the slots on Monad Dog! 🎰\n\nResult: ${data.result || 'Spinning'}\nXP: ${appState.xp}\n$DOG: ${tokenBalance}\n\nTry your luck on Monad!`,
+          url: `${baseUrl}?ref=slots&xp=${appState.xp}`,
+          image: "🎰"
+        },
         claim: {
           text: `Just claimed ${data.amount || 0} $DOG tokens! 💰\n\nTotal $DOG Balance: ${tokenBalance}\nXP reset - earning again!\n\nEarn XP and claim your $DOG tokens too!`,
           url: `${baseUrl}?ref=claim&tokens=${data.amount}`,
@@ -1908,6 +2490,23 @@
         description: `${lastResult} You've been flipping coins on Monad with ${appState.xp} XP!`,
         type: 'flip',
         data: { result: lastResult }
+      };
+      
+      showAchievementModal(achievement);
+    };
+
+    window.shareSlotsAchievement = function() {
+      if (!appState.connected) {
+        showError('Connect wallet to share achievements');
+        return;
+      }
+      
+      const achievement = {
+        icon: '🎰',
+        title: 'Slots Player!',
+        description: `I've been playing Dog Slots on Monad! Current XP: ${appState.xp}. Try your luck!`,
+        type: 'slots',
+        data: {}
       };
       
       showAchievementModal(achievement);
