@@ -26,7 +26,7 @@
         "splashBackgroundColor": "#1e003e"
       }
     }
-  }'
+  }' />
 
   <!-- Open Graph for better sharing -->
   <meta property="og:title" content="Monad Dog - Pet, Greet, Flip on Monad Testnet" />
@@ -159,12 +159,10 @@
       border-radius: 8px;
       margin-bottom: 20px;
       overflow: hidden;
-      flex-wrap: wrap;
     }
     
     .tab {
       flex: 1;
-      min-width: 80px;
       padding: 12px;
       background: none;
       border: none;
@@ -692,151 +690,6 @@
       0%, 100% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.3); }
       50% { box-shadow: 0 0 30px rgba(255, 215, 0, 0.6); }
     }
-
-    /* Dog Fortune Wheel Styles */
-    .wheel-container {
-      position: relative;
-      width: 350px;
-      height: 350px;
-      margin: 20px auto;
-    }
-
-    .wheel-center {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 80px;
-      height: 80px;
-      background: white;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 10;
-      box-shadow: 0 0 20px rgba(0,0,0,0.3);
-    }
-
-    .dog-logo {
-      font-size: 40px;
-      animation: wag 2s ease-in-out infinite;
-    }
-
-    @keyframes wag {
-      0%, 100% { transform: rotate(-5deg); }
-      50% { transform: rotate(5deg); }
-    }
-
-    .wheel-pointer {
-      position: absolute;
-      top: -10px;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: 30px;
-      color: #ff6b6b;
-      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-      z-index: 11;
-    }
-
-    #wheelCanvas {
-      animation: subtle-float 3s ease-in-out infinite;
-    }
-
-    @keyframes subtle-float {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-5px); }
-    }
-
-    .wheel-button {
-      background: linear-gradient(135deg, #ff6b6b, #ff8e53);
-      font-size: 20px;
-      padding: 18px 36px;
-      animation: pulse-glow 2s ease-in-out infinite;
-      width: 100%;
-      margin: 15px 0;
-    }
-
-    @keyframes pulse-glow {
-      0%, 100% { box-shadow: 0 0 20px rgba(255, 107, 107, 0.3); }
-      50% { box-shadow: 0 0 30px rgba(255, 107, 107, 0.6); }
-    }
-
-    .wheel-info {
-      display: flex;
-      justify-content: center;
-      margin: 15px 0;
-      padding: 10px;
-      background: rgba(0,0,0,0.2);
-      border-radius: 8px;
-    }
-
-    .spin-cost {
-      font-size: 16px;
-      color: #f59e0b;
-      font-weight: 600;
-    }
-
-    .recent-wins {
-      margin-top: 30px;
-      padding: 20px;
-      background: rgba(255,255,255,0.05);
-      border-radius: 12px;
-    }
-
-    .win-item {
-      display: flex;
-      justify-content: space-between;
-      padding: 10px;
-      margin: 5px 0;
-      background: rgba(255,255,255,0.1);
-      border-radius: 8px;
-      animation: slideIn 0.5s ease;
-      font-size: 14px;
-    }
-
-    @keyframes slideIn {
-      from { 
-        opacity: 0;
-        transform: translateX(-20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateX(0);
-      }
-    }
-
-    .prize-legend {
-      margin-top: 20px;
-      padding: 15px;
-      background: rgba(255,255,255,0.05);
-      border-radius: 12px;
-    }
-
-    .prize-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
-      margin-top: 10px;
-    }
-
-    .prize-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 10px;
-      background: rgba(255,255,255,0.1);
-      border-radius: 8px;
-      font-size: 14px;
-    }
-
-    .prize-emoji {
-      font-size: 24px;
-    }
-
-    .prize-xp {
-      font-weight: 600;
-      color: #f59e0b;
-    }
   </style>
 </head>
 <body>
@@ -868,7 +721,6 @@
       <button class="tab" onclick="showTab('greet')">👋 Greet</button>
       <button class="tab" onclick="showTab('flip')">🪙 Flip</button>
       <button class="tab" onclick="showTab('slots')">🎰 Slots</button>
-      <button class="tab" onclick="showTab('wheel')">🎯 Wheel</button>
       <button class="tab" onclick="showTab('claim')">💰 Claim</button>
     </div>
 
@@ -881,13 +733,43 @@
         <div id="pet-status" class="status"></div>
         
         <div class="share-section">
+          <button class="share-button" onclick="sharePetAchievement()">
+            🐕 Share Pet Achievement
+          </button>
+        </div>
+      </div>
+
+      <!-- Greet Tab -->
+      <div id="greet" class="tab-content">
+        <h3>Greet Community</h3>
+        <p>Say GM or GN to the community!</p>
+        <button onclick="sayGM()">☀️ Good Morning (+5 XP)</button>
+        <button onclick="sayGN()">🌙 Good Night (+5 XP)</button>
+        <div id="greet-status" class="status"></div>
+        
+        <div class="share-section">
+          <button class="share-button" onclick="shareGreetAchievement()">
+            👋 Share Community Spirit
+          </button>
+        </div>
+      </div>
+
+      <!-- Flip Tab -->
+      <div id="flip" class="tab-content">
+        <h3>Flip Coin</h3>
+        <div class="coin" id="coin">🪙</div>
+        <button onclick="flipCoin()">🎲 Flip Coin (+3 XP)</button>
+        <div id="flip-result">Result will appear here</div>
+        <div id="flip-status" class="status"></div>
+        
+        <div class="share-section">
           <button class="share-button" onclick="shareFlipAchievement()">
             🪙 Share Lucky Moment
           </button>
         </div>
       </div>
 
-      <!-- Slots Tab -->
+              <!-- Slots Tab -->
       <div id="slots" class="tab-content">
         <h3>🎰 Dog Slots</h3>
         <p style="margin-bottom: 20px;">Match 4 same dogs or bones to win 5000 XP!</p>
@@ -955,80 +837,6 @@
         <div class="share-section">
           <button class="share-button" onclick="shareSlotsAchievement()">
             🎰 Share Slots Win
-          </button>
-        </div>
-      </div>
-
-      <!-- Dog Fortune Wheel Tab -->
-      <div id="wheel" class="tab-content">
-        <h3>🎯 Dog Fortune Wheel</h3>
-        <p style="margin-bottom: 20px;">Spin the wheel and win tasty rewards!</p>
-        
-        <div class="wheel-container">
-          <!-- Çarkın merkezi - Köpek logosu -->
-          <div class="wheel-center">
-            <div class="dog-logo">🐕</div>
-          </div>
-          
-          <!-- Dönen çark -->
-          <canvas id="wheelCanvas" width="350" height="350"></canvas>
-          
-          <!-- Ok işareti -->
-          <div class="wheel-pointer">▼</div>
-        </div>
-        
-        <div class="wheel-info">
-          <div class="spin-cost">
-            <span>🎫 1 Spin = 0.05 MONAD</span>
-          </div>
-        </div>
-        
-        <button class="wheel-button" id="spinButton" onclick="spinWheel()">
-          🎯 Spin the Wheel
-        </button>
-        
-        <div id="wheel-status" class="status"></div>
-        
-        <!-- Prize Legend -->
-        <div class="prize-legend">
-          <h4 style="margin-bottom: 10px;">🏆 Prize Pool</h4>
-          <div class="prize-grid">
-            <div class="prize-item">
-              <span class="prize-emoji">🦴 Golden Bone</span>
-              <span class="prize-xp">10000 XP</span>
-            </div>
-            <div class="prize-item">
-              <span class="prize-emoji">🥩 Juicy Steak</span>
-              <span class="prize-xp">2000 XP</span>
-            </div>
-            <div class="prize-item">
-              <span class="prize-emoji">🍖 Big Meat</span>
-              <span class="prize-xp">500 XP</span>
-            </div>
-            <div class="prize-item">
-              <span class="prize-emoji">🦴 Lucky Bone</span>
-              <span class="prize-xp">100 XP</span>
-            </div>
-            <div class="prize-item">
-              <span class="prize-emoji">🍪 Dog Treat</span>
-              <span class="prize-xp">50 XP</span>
-            </div>
-            <div class="prize-item">
-              <span class="prize-emoji">💤 Nap Time</span>
-              <span class="prize-xp">10 XP</span>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Recent Big Wins -->
-        <div class="recent-wins">
-          <h4>🏆 Recent Big Wins</h4>
-          <div id="recentWinsList"></div>
-        </div>
-        
-        <div class="share-section">
-          <button class="share-button" onclick="shareWheelAchievement()">
-            🎯 Share Fortune Win
           </button>
         </div>
       </div>
@@ -1134,20 +942,6 @@
         const { createClient } = window.supabase;
         supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         console.log('✅ Supabase initialized');
-        
-        // Test connection after initialization
-        setTimeout(async () => {
-          console.log('🔍 Testing Supabase connection...');
-          const isConnected = await testSupabaseConnection();
-          
-          if (!isConnected) {
-            console.warn('⚠️ Supabase connection failed, will use localStorage only');
-          }
-          
-          // Make test and debug functions available globally
-          window.testSupabaseConnection = testSupabaseConnection;
-          window.debugSupabase = debugSupabase;
-        }, 1000);
       } else {
         console.error('❌ Supabase not loaded');
       }
@@ -1243,8 +1037,7 @@
       PET: "0xc53abe4c593b9440407f8ac1b346f3f999e6d8ed",
       GREET: "0xbc8b78f3e2348d4b5e0390fe700ce54b59931da4",
       FLIP: "0xc5b2280d1e2f155f9a2be2af7e78190658874106",
-      SLOTS: "0xc7011f245aa51fa488783d5b0cfc6e0cba86f6cb",
-      WHEEL: "0x0000000000000000000000000000000000000000", // TODO: Deploy wheel contract
+      SLOTS: "0xc7011f245aa51fa488783d5b0cfc6e0cba86f6cb", // ✅ DEPLOYED SLOTS CONTRACT
       DOG_TOKEN: "0x1f6649d028c4c146c050a9b224115a01c92a02f3"
     };
 
@@ -1261,10 +1054,6 @@
         "event GamePlayed(address indexed player, uint8[4] results, uint256 creditsRemaining)",
         "event Jackpot(address indexed player, uint8 symbol, uint256 prize)"
       ],
-      WHEEL: [
-        "function spin() external payable returns (uint8)",
-        "event WheelSpun(address indexed player, uint8 result, uint256 prize)"
-      ],
       DOG_TOKEN: [
         "function claim(uint256 xpAmount) public",
         "function balanceOf(address account) public view returns (uint256)",
@@ -1280,23 +1069,6 @@
     // XP to DOG token conversion rate
     const XP_TO_DOG_RATE = 10; // 10 XP = 1 DOG token
 
-    // Wheel game configuration
-    const wheelSegments = [
-      { emoji: '🦴', name: 'Golden Bone', chance: 1, xp: 10000, color: '#FFD700' },     // JACKPOT %1
-      { emoji: '🥩', name: 'Juicy Steak', chance: 5, xp: 2000, color: '#8B4513' },      // Mega Win %5
-      { emoji: '🍖', name: 'Big Meat', chance: 10, xp: 500, color: '#D2691E' },         // Big Win %10
-      { emoji: '🦴', name: 'Lucky Bone', chance: 20, xp: 100, color: '#F4A460' },       // Win %20
-      { emoji: '🍪', name: 'Dog Treat', chance: 30, xp: 50, color: '#DEB887' },         // Small Win %30
-      { emoji: '💤', name: 'Nap Time', chance: 34, xp: 10, color: '#708090' }           // Try Again %34
-    ];
-
-    // Wheel state
-    let wheelState = {
-      isSpinning: false,
-      currentRotation: 0,
-      segments: wheelSegments
-    };
-
     // Global state 
     let appState = {
       connected: false,
@@ -1311,168 +1083,62 @@
     // Initialize SDK
     let sdk = null;
     
-    // Supabase Functions for XP Management - FIXED VERSION
+    // Supabase Functions for XP Management - Simplified for reset-based system
     async function getWalletXP(address) {
       if (!address) return 0;
       
       try {
         // Check if Supabase is available
         if (!supabaseClient) {
-          console.error('❌ Supabase client not initialized');
-          const localXP = parseInt(localStorage.getItem(`wallet_xp_${address.toLowerCase()}`) || '0');
-          console.log(`📦 Using localStorage XP: ${localXP}`);
-          return localXP;
+          console.log('Supabase not available, using localStorage fallback');
+          return parseInt(localStorage.getItem(`wallet_xp_${address.toLowerCase()}`) || '0');
         }
 
-        // Try to get from Supabase
         const { data, error } = await supabaseClient
           .from('user_xp')
           .select('xp')
           .eq('wallet_address', address.toLowerCase())
-          .maybeSingle(); // Use maybeSingle instead of single to avoid error when no record
-
-        if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
-          console.error('❌ Supabase fetch error:', error);
+          .single();
+        
+        if (error) {
+          console.log('No XP record found, returning 0');
           // Fallback to localStorage
-          const localXP = parseInt(localStorage.getItem(`wallet_xp_${address.toLowerCase()}`) || '0');
-          console.log(`📦 Error occurred, using localStorage XP: ${localXP}`);
-          return localXP;
+          return parseInt(localStorage.getItem(`wallet_xp_${address.toLowerCase()}`) || '0');
         }
-        
-        if (!data) {
-          console.log('📝 No XP record in Supabase, returning 0');
-          return 0;
-        }
-        
-        console.log(`✅ Fetched XP from Supabase: ${data.xp}`);
-        // Also update localStorage for consistency
-        localStorage.setItem(`wallet_xp_${address.toLowerCase()}`, data.xp.toString());
         
         return data.xp || 0;
       } catch (e) {
-        console.error('❌ Error fetching XP:', e);
+        console.error('Error fetching XP:', e);
         // Fallback to localStorage
-        const localXP = parseInt(localStorage.getItem(`wallet_xp_${address.toLowerCase()}`) || '0');
-        console.log(`📦 Exception occurred, using localStorage XP: ${localXP}`);
-        return localXP;
+        return parseInt(localStorage.getItem(`wallet_xp_${address.toLowerCase()}`) || '0');
       }
     }
 
     async function saveWalletXP(address, xp) {
-      if (!address) {
-        console.error('❌ No address provided for saving XP');
-        return;
-      }
+      if (!address) return;
       
       // Always save to localStorage first (immediate)
       localStorage.setItem(`wallet_xp_${address.toLowerCase()}`, xp.toString());
-      console.log(`💾 XP saved to localStorage: ${xp}`);
       
-      // Check if Supabase is available
-      if (!supabaseClient) {
-        console.error('❌ Supabase client not initialized, only saved to localStorage');
-        return;
-      }
-      
-      try {
-        // Try to save to Supabase
-        const { data, error } = await supabaseClient
+      // Then try Supabase (async, non-blocking)
+      if (supabaseClient) {
+        supabaseClient
           .from('user_xp')
-          .upsert(
-            {
-              wallet_address: address.toLowerCase(),
-              xp: xp,
-              updated_at: new Date().toISOString()
-            },
-            {
-              onConflict: 'wallet_address', // Specify the unique column
-              ignoreDuplicates: false // Ensure update happens
+          .upsert({
+            wallet_address: address.toLowerCase(),
+            xp: xp,
+            updated_at: new Date().toISOString()
+          }, {
+            onConflict: 'wallet_address'
+          })
+          .then(({ error }) => {
+            if (!error) {
+              console.log(`💾 XP saved to Supabase for ${address}: ${xp}`);
             }
-          )
-          .select(); // Return the data to verify
-        
-        if (error) {
-          console.error('❌ Supabase save error:', error);
-          console.error('Error details:', {
-            code: error.code,
-            message: error.message,
-            details: error.details,
-            hint: error.hint
+          })
+          .catch(e => {
+            console.error('Error saving XP to Supabase:', e);
           });
-        } else {
-          console.log(`✅ XP saved to Supabase successfully:`, data);
-        }
-      } catch (e) {
-        console.error('❌ Exception saving XP to Supabase:', e);
-      }
-    }
-
-    // Test function to verify Supabase connection
-    async function testSupabaseConnection() {
-      if (!supabaseClient) {
-        console.error('❌ Supabase client not initialized');
-        return false;
-      }
-      
-      try {
-        // Try a simple query
-        const { data, error } = await supabaseClient
-          .from('user_xp')
-          .select('count')
-          .limit(1);
-        
-        if (error) {
-          console.error('❌ Supabase connection test failed:', error);
-          return false;
-        }
-        
-        console.log('✅ Supabase connection test successful');
-        return true;
-      } catch (e) {
-        console.error('❌ Supabase connection test exception:', e);
-        return false;
-      }
-    }
-
-    // Debug function to check Supabase data
-    async function debugSupabase(address) {
-      if (!supabaseClient) {
-        console.error('❌ Supabase not initialized');
-        return;
-      }
-      
-      console.log('🔍 Debugging Supabase for address:', address);
-      
-      try {
-        // Check if table exists and is accessible
-        const { data: tableData, error: tableError } = await supabaseClient
-          .from('user_xp')
-          .select('*')
-          .limit(5);
-        
-        if (tableError) {
-          console.error('❌ Cannot access user_xp table:', tableError);
-          return;
-        }
-        
-        console.log('✅ Table accessible, sample data:', tableData);
-        
-        // Check specific user
-        if (address) {
-          const { data: userData, error: userError } = await supabaseClient
-            .from('user_xp')
-            .select('*')
-            .eq('wallet_address', address.toLowerCase());
-          
-          if (userError) {
-            console.error('❌ Error fetching user data:', userError);
-          } else {
-            console.log('👤 User data:', userData);
-          }
-        }
-        
-      } catch (e) {
-        console.error('❌ Debug exception:', e);
       }
     }
 
@@ -1538,20 +1204,6 @@
       }
     }
 
-    // Update wheel button based on connection state
-    function updateWheelButton() {
-      const spinButton = document.getElementById('spinButton');
-      if (!spinButton) return;
-      
-      if (appState.connected) {
-        spinButton.textContent = '🎯 Spin the Wheel';
-        spinButton.disabled = false;
-      } else {
-        spinButton.textContent = '🔒 Connect Wallet';
-        spinButton.disabled = true;
-      }
-    }
-
     async function updateXPDisplay() {
       if (appState.connected && appState.address) {
         // Show current value immediately
@@ -1581,7 +1233,6 @@
         appState.slotsCredits = 0;
         updateClaimUI();
         updateSlotsButton();
-        updateWheelButton();
       }
     }
 
@@ -1872,246 +1523,6 @@
       }
     };
 
-    // Draw the fortune wheel
-    function drawWheel() {
-      const canvas = document.getElementById('wheelCanvas');
-      if (!canvas) return;
-      
-      const ctx = canvas.getContext('2d');
-      const centerX = canvas.width / 2;
-      const centerY = canvas.height / 2;
-      const radius = 160;
-      
-      // Clear canvas
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
-      // Calculate segment angle
-      const totalSegments = wheelState.segments.length;
-      const anglePerSegment = (2 * Math.PI) / totalSegments;
-      
-      wheelState.segments.forEach((segment, index) => {
-        // Draw segment
-        ctx.beginPath();
-        ctx.moveTo(centerX, centerY);
-        ctx.arc(
-          centerX, 
-          centerY, 
-          radius, 
-          index * anglePerSegment + wheelState.currentRotation,
-          (index + 1) * anglePerSegment + wheelState.currentRotation
-        );
-        ctx.closePath();
-        ctx.fillStyle = segment.color;
-        ctx.fill();
-        
-        // Draw border
-        ctx.strokeStyle = '#fff';
-        ctx.lineWidth = 3;
-        ctx.stroke();
-        
-        // Draw emoji and text
-        ctx.save();
-        ctx.translate(centerX, centerY);
-        ctx.rotate((index + 0.5) * anglePerSegment + wheelState.currentRotation);
-        
-        // Emoji
-        ctx.font = '30px Arial';
-        ctx.fillStyle = '#fff';
-        ctx.textAlign = 'center';
-        ctx.fillText(segment.emoji, radius * 0.7, 10);
-        
-        // XP text
-        ctx.font = '16px Arial';
-        ctx.fillText(`${segment.xp} XP`, radius * 0.7, 35);
-        
-        ctx.restore();
-      });
-    }
-
-    // Spin the wheel function
-    window.spinWheel = async function() {
-      if (!appState.connected) {
-        showError('Connect wallet first');
-        return;
-      }
-      
-      if (wheelState.isSpinning) {
-        return;
-      }
-      
-      const spinButton = document.getElementById('spinButton');
-      
-      try {
-        wheelState.isSpinning = true;
-        spinButton.disabled = true;
-        spinButton.textContent = '🎯 Spinning...';
-        
-        showStatus('wheel-status', '🔐 Please confirm 0.05 MONAD payment...', 'pending');
-        
-        // Ensure correct network
-        await ensureMonadNetwork();
-        
-        // For now, simulate the transaction (replace with actual contract call when deployed)
-        if (CONTRACTS.WHEEL === "0x0000000000000000000000000000000000000000") {
-          // Simulate payment
-          console.log('⚠️ Wheel contract not deployed yet, simulating...');
-          
-          // Simulate transaction delay
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          
-          showStatus('wheel-status', '🎯 Wheel is spinning...', 'pending');
-          
-          // Calculate result based on chances
-          const resultIndex = calculateWheelResult();
-          startWheelAnimation(resultIndex);
-          
-        } else {
-          // Real contract interaction
-          const wheelContract = new ethers.Contract(
-            CONTRACTS.WHEEL,
-            ABIS.WHEEL,
-            appState.signer
-          );
-          
-          const tx = await wheelContract.spin({
-            value: ethers.utils.parseEther("0.05"),
-            gasLimit: 150000
-          });
-          
-          showStatus('wheel-status', '🎯 Wheel is spinning...', 'pending');
-          
-          // Start spinning animation
-          const resultIndex = calculateWheelResult(); // In real implementation, get from contract event
-          startWheelAnimation(resultIndex);
-        }
-        
-      } catch (error) {
-        console.error('Spin error:', error);
-        wheelState.isSpinning = false;
-        spinButton.disabled = false;
-        spinButton.textContent = '🎯 Spin the Wheel';
-        
-        let errorMsg = 'Spin failed';
-        if (error.message.includes('user rejected')) {
-          errorMsg = 'Payment cancelled';
-        } else if (error.message.includes('insufficient funds')) {
-          errorMsg = 'Insufficient MONAD balance';
-        }
-        
-        showStatus('wheel-status', errorMsg, 'error');
-        setTimeout(() => hideStatus('wheel-status'), 5000);
-      }
-    }
-
-    // Calculate wheel result based on chances
-    function calculateWheelResult() {
-      const random = Math.random() * 100;
-      let cumulative = 0;
-      
-      for (let i = 0; i < wheelState.segments.length; i++) {
-        cumulative += wheelState.segments[i].chance;
-        if (random <= cumulative) {
-          return i;
-        }
-      }
-      
-      return wheelState.segments.length - 1; // Default to last segment
-    }
-
-    // Start wheel spinning animation
-    function startWheelAnimation(resultIndex) {
-      const spins = 5 + Math.random() * 5; // 5-10 full rotations
-      const duration = 4000; // 4 seconds
-      const startTime = Date.now();
-      const startRotation = wheelState.currentRotation;
-      
-      // Calculate target rotation to land on result
-      const segmentAngle = (2 * Math.PI) / wheelState.segments.length;
-      const targetRotation = startRotation + (spins * 2 * Math.PI) - (resultIndex * segmentAngle) - (segmentAngle / 2);
-      
-      // Animation loop
-      function animate() {
-        const now = Date.now();
-        const elapsed = now - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-        
-        // Easing function for realistic spin
-        const easeOut = 1 - Math.pow(1 - progress, 3);
-        
-        wheelState.currentRotation = startRotation + (targetRotation - startRotation) * easeOut;
-        drawWheel();
-        
-        if (progress < 1) {
-          requestAnimationFrame(animate);
-        } else {
-          // Spin complete
-          onWheelSpinComplete(resultIndex);
-        }
-      }
-      
-      animate();
-    }
-
-    // Handle wheel spin completion
-    function onWheelSpinComplete(resultIndex) {
-      const result = wheelState.segments[resultIndex];
-      
-      // Award XP
-      addXP(result.xp);
-      
-      // Update UI
-      wheelState.isSpinning = false;
-      const spinButton = document.getElementById('spinButton');
-      spinButton.disabled = false;
-      spinButton.textContent = '🎯 Spin Again';
-      
-      // Show result
-      if (result.xp >= 2000) {
-        // Big win animation
-        showStatus('wheel-status', `🎉 ${result.name}! You won ${result.xp} XP!`, 'success');
-        
-        // Show achievement modal for big wins
-        showAchievementModal({
-          icon: result.emoji,
-          title: 'BIG WIN!',
-          description: `Amazing! You got the ${result.name} and won ${result.xp} XP!`,
-          type: 'wheel',
-          data: { prize: result.name, xp: result.xp }
-        });
-        
-        // Add to recent wins
-        addToRecentWins(appState.address, result);
-        
-      } else if (result.xp >= 100) {
-        showStatus('wheel-status', `✨ ${result.name}! +${result.xp} XP`, 'success');
-      } else {
-        showStatus('wheel-status', `💤 ${result.name}... +${result.xp} XP. Try again!`, 'error');
-      }
-      
-      setTimeout(() => hideStatus('wheel-status'), 5000);
-    }
-
-    // Add to recent wins display
-    function addToRecentWins(address, result) {
-      if (result.xp < 500) return; // Only show big wins
-      
-      const winsList = document.getElementById('recentWinsList');
-      const winItem = document.createElement('div');
-      winItem.className = 'win-item';
-      winItem.innerHTML = `
-        <span>${address.slice(0,6)}...${address.slice(-4)}</span>
-        <span>${result.emoji} ${result.name}</span>
-        <span>${result.xp} XP</span>
-      `;
-      
-      winsList.insertBefore(winItem, winsList.firstChild);
-      
-      // Keep only last 5 wins
-      while (winsList.children.length > 5) {
-        winsList.removeChild(winsList.lastChild);
-      }
-    }
-
     async function initializeAppWithProgress() {
       try {
         showLoadingState();
@@ -2141,15 +1552,11 @@
         setupEventListeners();
         setupGameFunctions();
         
-        // Step 3: Initialize wheel
-        updateLoadingProgress(70, 'Initializing Fortune Wheel...<br>🎯 Drawing wheel segments');
-        drawWheel();
-        
-        // Step 4: Initialize app
-        updateLoadingProgress(80, 'Initializing app...<br>🎮 Setting up games');
+        // Step 3: Initialize app
+        updateLoadingProgress(80, 'Initializing app...<br>🎮 Setting up game');
         await new Promise(resolve => setTimeout(resolve, 300));
         
-        // Step 5: Finalize
+        // Step 4: Finalize
         updateLoadingProgress(95, 'Almost ready...<br>✨ Final preparations');
         await new Promise(resolve => setTimeout(resolve, 200));
         
@@ -2700,12 +2107,6 @@
           resetSlotsDisplay();
           updateSlotsButton();
         }
-        
-        // Update wheel when switching to wheel tab
-        if (tabName === 'wheel') {
-          drawWheel();
-          updateWheelButton();
-        }
       };
       
       console.log('🎮 Game functions setup complete');
@@ -2824,23 +2225,14 @@
         return;
       }
       
-      console.log(`➕ Adding ${amount} XP to ${appState.address}`);
-      
       // Add XP to current balance
-      const previousXP = appState.xp || 0;
-      appState.xp = previousXP + amount;
+      appState.xp = (appState.xp || 0) + amount;
       
       // Update display immediately
       document.getElementById('xp').textContent = appState.xp;
       
-      // Save XP with await to ensure it completes
-      try {
-        await saveWalletXP(appState.address, appState.xp);
-        console.log(`✨ XP successfully updated: ${previousXP} → ${appState.xp} (+${amount})`);
-      } catch (error) {
-        console.error('❌ Error saving XP:', error);
-        // Even if save fails, the XP is already in localStorage
-      }
+      // Save XP to Supabase in background (non-blocking)
+      saveWalletXP(appState.address, appState.xp);
       
       // Update claim UI non-blocking
       requestAnimationFrame(() => updateClaimUI());
@@ -2854,6 +2246,8 @@
         xpElement.style.transform = 'scale(1)';
         xpElement.style.color = 'white';
       }, 500);
+      
+      console.log(`✨ XP added to ${appState.address}: +${amount}, Total Available: ${appState.xp}`);
     }
 
     function showStatus(id, message, type) {
@@ -3022,18 +2416,13 @@
           url: `${baseUrl}?ref=slots&xp=${appState.xp}`,
           image: "🎰"
         },
-        wheel: {
-          text: `Just spun the Fortune Wheel on Monad Dog! 🎯\n\nWon: ${data.prize || 'Spinning'} (${data.xp || 0} XP)\nTotal XP: ${appState.xp}\n$DOG: ${tokenBalance}\n\nSpin to win on Monad!`,
-          url: `${baseUrl}?ref=wheel&xp=${appState.xp}`,
-          image: "🎯"
-        },
         claim: {
           text: `Just claimed ${data.amount || 0} $DOG tokens! 💰\n\nTotal $DOG Balance: ${tokenBalance}\nXP reset - earning again!\n\nEarn XP and claim your $DOG tokens too!`,
           url: `${baseUrl}?ref=claim&tokens=${data.amount}`,
           image: "💰"
         },
         invite: {
-          text: `Playing Monad Dog - the cutest way to explore Monad Testnet! 🐕⛓️\n\n✨ Pet dogs, flip coins, say GM/GN\n🎯 Spin the Fortune Wheel\n🎰 Play Dog Slots\n💰 Convert XP to $DOG tokens\n🚀 Real blockchain interactions\n\nJoin me!`,
+          text: `Playing Monad Dog - the cutest way to explore Monad Testnet! 🐕⛓️\n\n✨ Pet dogs, flip coins, say GM/GN\n🎯 Earn XP and claim $DOG tokens\n💰 Convert XP to tokens (10:1 rate)\n🚀 Real blockchain interactions\n\nJoin me!`,
           url: `https://monad-snowy.vercel.app?ref=invite&inviter=${appState.address?.slice(0,6)}`,
           image: "🚀"
         }
@@ -3167,23 +2556,6 @@
       showAchievementModal(achievement);
     };
 
-    window.shareWheelAchievement = function() {
-      if (!appState.connected) {
-        showError('Connect wallet to share achievements');
-        return;
-      }
-      
-      const achievement = {
-        icon: '🎯',
-        title: 'Fortune Seeker!',
-        description: `I've been spinning the Dog Fortune Wheel on Monad! Current XP: ${appState.xp}. Test your luck!`,
-        type: 'wheel',
-        data: {}
-      };
-      
-      showAchievementModal(achievement);
-    };
-
     window.shareAppWithFriends = function() {
       const achievement = {
         icon: '🚀',
@@ -3208,34 +2580,3 @@
   </script>
 </body>
 </html>
-            -button" onclick="sharePetAchievement()">
-            🐕 Share Pet Achievement
-          </button>
-        </div>
-      </div>
-
-      <!-- Greet Tab -->
-      <div id="greet" class="tab-content">
-        <h3>Greet Community</h3>
-        <p>Say GM or GN to the community!</p>
-        <button onclick="sayGM()">☀️ Good Morning (+5 XP)</button>
-        <button onclick="sayGN()">🌙 Good Night (+5 XP)</button>
-        <div id="greet-status" class="status"></div>
-        
-        <div class="share-section">
-          <button class="share-button" onclick="shareGreetAchievement()">
-            👋 Share Community Spirit
-          </button>
-        </div>
-      </div>
-
-      <!-- Flip Tab -->
-      <div id="flip" class="tab-content">
-        <h3>Flip Coin</h3>
-        <div class="coin" id="coin">🪙</div>
-        <button onclick="flipCoin()">🎲 Flip Coin (+3 XP)</button>
-        <div id="flip-result">Result will appear here</div>
-        <div id="flip-status" class="status"></div>
-        
-        <div class="share-section">
-          <button class="share
