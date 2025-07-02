@@ -5,60 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Monad Dog</title>
 
-<!-- Supabase Client -->
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <!-- Supabase Client -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   
-  <!-- Farcaster Manifest Link -->
-  <link rel="manifest" href="/farcaster.json">
-  <link rel="icon" type="image/png" href="https://monad-snowy.vercel.app/.well-known/icon.png">
-  
-  <!-- Farcaster Meta with Dynamic Content -->
-  <meta name="fc:frame" content='{
-    "version": "next",
-    "imageUrl": "https://monad-snowy.vercel.app/.well-known/share.png",
-    "button": {
-      "title": "🐕 Play Monad Dog",
-      "action": {
-        "type": "launch_frame",
-        "url": "https://monad-snowy.vercel.app",
-        "name": "Monad Dog",
-        "splashImageUrl": "https://monad-snowy.vercel.app/.well-known/icon.png",
-        "splashBackgroundColor": "#1e003e"
-      }
-    }
-  }' />
-
-  <!-- Open Graph for better sharing -->
-  <meta property="og:title" content="Monad Dog - Pet, Greet, Flip on Monad Testnet" />
-  <meta property="og:description" content="Interactive Farcaster Mini App on Monad Testnet. Pet the dog, say GM/GN, flip coins and earn XP!" />
-  <meta property="og:image" content="https://monad-snowy.vercel.app/.well-known/share.png" />
-  <meta property="og:url" content="https://monad-snowy.vercel.app" />
-  <meta property="og:type" content="website" />
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Monad Dog - Pet, Greet, Flip on Monad Testnet" />
-  <meta name="twitter:description" content="Interactive Farcaster Mini App on Monad Testnet. Pet the dog, say GM/GN, flip coins and earn XP!" />
-  <meta name="twitter:image" content="https://monad-snowy.vercel.app/.well-known/share.png" />
-
-  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
-  
-  <!-- Farcaster Mini App SDK -->
-  <script type="module">
-    import { sdk } from 'https://esm.sh/@farcaster/frame-sdk';
-    
-    // Mini App ready when loaded
-    window.addEventListener('load', async () => {
-      try {
-        await sdk.actions.ready();
-        console.log('Farcaster Mini App ready!');
-        
-        // Make SDK available globally
-        window.farcasterSDK = sdk;
-      } catch (error) {
-        console.log('Not running in Farcaster client:', error);
-      }
-    });
-  </script>
-
+  <!-- Ethers.js -->
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
   
   <style>
@@ -69,16 +19,23 @@
     }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
       background: linear-gradient(135deg, #1e003e 0%, #330066 100%);
       color: white;
       min-height: 100vh;
       padding: 20px;
+      margin: 0;
     }
     
     .container {
       max-width: 400px;
       margin: 0 auto;
+      backdrop-filter: blur(10px);
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 24px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     }
     
     .header {
@@ -92,44 +49,108 @@
       margin-bottom: 10px;
     }
     
-    .social-link {
-      background: rgba(255,255,255,0.1);
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      display: inline-flex;
+    .xp-claim-section {
+      display: flex;
+      flex-direction: column;
       align-items: center;
-      justify-content: center;
-      text-decoration: none;
-      transition: all 0.3s ease;
-      margin-top: 15px;
-    }
-    
-    .social-link:hover {
-      background: rgba(255,255,255,0.2);
-      transform: scale(1.1);
-    }
-    
-    .social-link svg {
-      width: 20px;
-      height: 20px;
-      fill: white;
+      gap: 15px;
+      margin-bottom: 20px;
     }
     
     .xp {
       background: rgba(255,255,255,0.1);
-      padding: 10px 20px;
-      border-radius: 20px;
+      backdrop-filter: blur(10px);
+      padding: 12px 24px;
+      border-radius: 25px;
       display: inline-block;
-      margin-bottom: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      font-weight: 500;
+    }
+
+    .claim-header-button {
+      background: linear-gradient(135deg, #f59e0b, #eab308);
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 25px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+      min-width: 140px;
+      backdrop-filter: blur(10px);
+    }
+
+    .claim-header-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+    }
+
+    .claim-header-button.ready {
+      background: linear-gradient(135deg, #10b981, #059669);
+      animation: claim-pulse 2s ease-in-out infinite;
+      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+    }
+
+    .claim-header-button.active {
+      background: linear-gradient(135deg, #dc2626, #b91c1c);
+      box-shadow: 0 4px 15px rgba(220, 38, 38, 0.4);
+    }
+
+    .claim-header-button:disabled {
+      background: rgba(255,255,255,0.1);
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+      animation: none;
+    }
+
+    /* Leaderboard Styles */
+    .leaderboard-container {
+      background: rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 20px;
+    }
+
+    .leaderboard-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 15px;
+      margin: 10px 0;
+      background: rgba(255,255,255,0.05);
+      border-radius: 8px;
+      border-left: 4px solid #6366f1;
+    }
+
+    .rank {
+      font-size: 24px;
+      width: 40px;
+    }
+
+    .player {
+      font-family: monospace;
+      font-size: 14px;
+      flex: 1;
+      margin: 0 15px;
+      opacity: 0.8;
+    }
+
+    .score {
+      font-weight: 600;
+      color: #f59e0b;
     }
     
     .wallet-section {
-      background: rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.05);
+      backdrop-filter: blur(20px);
       padding: 20px;
-      border-radius: 12px;
-      margin-bottom: 20px;
+      border-radius: 16px;
+      margin-bottom: 24px;
       text-align: center;
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
     
     button {
@@ -137,50 +158,126 @@
       color: white;
       border: none;
       padding: 12px 24px;
-      border-radius: 8px;
+      border-radius: 12px;
       font-size: 16px;
       cursor: pointer;
       width: 100%;
       margin: 10px 0;
+      transition: all 0.3s ease;
+      font-weight: 500;
+      box-shadow: 0 4px 15px rgba(99, 102, 241, 0.2);
     }
     
     button:hover {
       background: #5855e8;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(99, 102, 241, 0.3);
     }
     
     button:disabled {
       opacity: 0.5;
       cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
     }
     
-    .tabs {
+    .tabs-container {
+      background: rgba(255,255,255,0.05);
+      backdrop-filter: blur(20px);
+      border-radius: 16px;
+      margin-bottom: 24px;
+      padding: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .tabs-row {
       display: flex;
-      background: rgba(255,255,255,0.1);
-      border-radius: 8px;
-      margin-bottom: 20px;
-      overflow: hidden;
+      margin-bottom: 8px;
+      gap: 8px;
+    }
+
+    .tabs-row:last-child {
+      margin-bottom: 0;
     }
     
     .tab {
       flex: 1;
-      padding: 12px;
-      background: none;
+      padding: 12px 8px;
+      background: rgba(255,255,255,0.05);
       border: none;
       color: white;
       cursor: pointer;
-      font-size: 14px;
+      font-size: 13px;
+      white-space: nowrap;
+      transition: all 0.3s ease;
+      border-radius: 10px;
+      font-weight: 500;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .tab:hover {
+      background: rgba(255,255,255,0.1);
+      transform: translateY(-1px);
     }
     
     .tab.active {
       background: #6366f1;
+      box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+      transform: translateY(-1px);
+    }
+
+    /* Special styling for claim tab */
+    .claim-tab {
+      background: linear-gradient(135deg, #f59e0b, #eab308);
+      font-weight: 600;
+      flex: 1.2; /* Make it slightly wider */
+    }
+
+    .claim-tab:hover {
+      background: linear-gradient(135deg, #f59e0b, #eab308);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+    }
+
+    .claim-tab.active {
+      background: linear-gradient(135deg, #10b981, #059669);
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+    }
+
+    .claim-badge {
+      font-size: 10px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 10px;
+      padding: 2px 6px;
+      margin-top: 2px;
+      display: inline-block;
+      font-weight: 400;
+    }
+
+    .claim-tab.ready {
+      animation: claim-pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes claim-pulse {
+      0%, 100% { 
+        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+        transform: scale(1);
+      }
+      50% { 
+        box-shadow: 0 6px 20px rgba(245, 158, 11, 0.6);
+        transform: scale(1.05);
+      }
     }
     
     .content {
-      background: rgba(255,255,255,0.1);
-      padding: 20px;
-      border-radius: 12px;
+      background: rgba(255,255,255,0.03);
+      backdrop-filter: blur(20px);
+      padding: 24px;
+      border-radius: 16px;
       text-align: center;
       min-height: 200px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
     
     .tab-content {
@@ -260,74 +357,12 @@
       font-size: 18px;
       font-weight: 600;
       margin-bottom: 8px;
-      animation: pulse 2s ease-in-out infinite;
-    }
-
-    .loading-subtitle {
-      font-size: 14px;
-      opacity: 0.7;
-      text-align: center;
-      max-width: 280px;
-      line-height: 1.4;
-    }
-
-    .loading-progress {
-      width: 200px;
-      height: 4px;
-      background: rgba(255,255,255,0.2);
-      border-radius: 2px;
-      margin-top: 20px;
-      overflow: hidden;
-    }
-
-    .loading-progress-bar {
-      height: 100%;
-      background: linear-gradient(90deg, #6366f1, #8b5cf6);
-      border-radius: 2px;
-      width: 0%;
-      transition: width 0.3s ease;
     }
 
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
 
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.6; }
-    }
-
-    /* Skeleton Loading States */
-    .skeleton {
-      background: linear-gradient(90deg, rgba(255,255,255,0.1) 25%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0.1) 75%);
-      background-size: 200% 100%;
-      animation: skeleton-loading 1.5s infinite;
-    }
-
-    @keyframes skeleton-loading {
-      0% { background-position: 200% 0; }
-      100% { background-position: -200% 0; }
-    }
-
-    .skeleton-text {
-      height: 16px;
-      border-radius: 4px;
-      margin: 8px 0;
-    }
-
-    .skeleton-avatar {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-    }
-
-    .skeleton-button {
-      height: 44px;
-      border-radius: 8px;
-      margin: 10px 0;
-    }
-
-    /* Hide content initially to prevent layout shift */
     .app-content {
       opacity: 0;
       transition: opacity 0.5s ease;
@@ -336,233 +371,7 @@
     .app-content.loaded {
       opacity: 1;
     }
-    
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-    }
-    
-    th, td {
-      padding: 8px;
-      text-align: left;
-      border-bottom: 1px solid rgba(255,255,255,0.2);
-    }
-    
-    th {
-      background: rgba(255,255,255,0.1);
-    }
-    
-    .address {
-      font-family: monospace;
-      font-size: 12px;
-    }
 
-    .badge {
-      background: #ff6b9d;
-      color: white;
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-size: 10px;
-      font-weight: 500;
-      margin-left: 8px;
-    }
-
-    .rank-number {
-      font-weight: 600;
-      color: #6366f1;
-      width: 40px;
-    }
-
-    .address-cell {
-      font-family: monospace;
-      font-size: 12px;
-    }
-
-    .share-button {
-      background: linear-gradient(45deg, #6366f1, #8b5cf6);
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 20px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      margin: 10px 5px;
-      width: auto;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      transition: all 0.3s ease;
-    }
-
-    .share-button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(99, 102, 241, 0.4);
-    }
-
-    .share-section {
-      text-align: center;
-      margin-top: 20px;
-      padding: 15px;
-      background: rgba(255,255,255,0.05);
-      border-radius: 12px;
-      border: 1px solid rgba(255,255,255,0.1);
-    }
-
-    .achievement-modal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0,0,0,0.8);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-      animation: fadeIn 0.3s ease;
-    }
-
-    .achievement-content {
-      background: linear-gradient(135deg, #1e003e 0%, #330066 100%);
-      padding: 30px;
-      border-radius: 20px;
-      text-align: center;
-      max-width: 350px;
-      border: 2px solid #6366f1;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-    }
-
-    .achievement-icon {
-      font-size: 60px;
-      margin-bottom: 15px;
-      animation: bounce 0.6s ease;
-    }
-
-    @keyframes bounce {
-      0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-      40% { transform: translateY(-10px); }
-      60% { transform: translateY(-5px); }
-    }
-
-    .close-modal {
-      position: absolute;
-      top: 10px;
-      right: 15px;
-      background: none;
-      border: none;
-      color: white;
-      font-size: 24px;
-      cursor: pointer;
-      width: auto;
-      padding: 5px;
-      opacity: 0.8;
-      transition: opacity 0.2s;
-    }
-    
-    .close-modal:hover {
-      opacity: 1;
-    }
-
-    /* Token Claim Styles */
-    .token-stats {
-      background: linear-gradient(135deg, #f59e0b, #eab308);
-      padding: 8px 16px;
-      border-radius: 20px;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      margin-left: 10px;
-      font-size: 14px;
-      font-weight: 600;
-    }
-
-    .claim-section {
-      background: rgba(255,255,255,0.1);
-      padding: 20px;
-      border-radius: 12px;
-      margin-top: 20px;
-      border: 1px solid rgba(255,255,255,0.2);
-    }
-
-    .claim-info {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 15px;
-    }
-
-    .claim-info-item {
-      text-align: center;
-    }
-
-    .claim-info-label {
-      font-size: 12px;
-      opacity: 0.7;
-      margin-bottom: 5px;
-    }
-
-    .claim-info-value {
-      font-size: 20px;
-      font-weight: 600;
-      color: #f59e0b;
-    }
-
-    .claim-button {
-      background: linear-gradient(135deg, #f59e0b, #eab308);
-      color: white;
-      font-weight: 600;
-      padding: 14px 28px;
-      border-radius: 12px;
-      width: 100%;
-      margin-top: 10px;
-      transition: all 0.3s ease;
-    }
-
-    .claim-button:hover:not(:disabled) {
-      transform: translateY(-2px);
-      box-shadow: 0 5px 20px rgba(245, 158, 11, 0.4);
-    }
-
-    .claim-button:disabled {
-      background: rgba(255,255,255,0.1);
-      cursor: not-allowed;
-    }
-
-    .token-balance {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      margin-top: 15px;
-      padding: 10px;
-      background: rgba(245, 158, 11, 0.1);
-      border-radius: 8px;
-      font-size: 14px;
-    }
-
-    .conversion-rate {
-      text-align: center;
-      font-size: 12px;
-      opacity: 0.7;
-      margin-top: 8px;
-    }
-
-    .claim-history {
-      margin-top: 20px;
-      font-size: 12px;
-      opacity: 0.7;
-    }
-
-    .claim-history-item {
-      display: flex;
-      justify-content: space-between;
-      padding: 8px 0;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
-    }
-
-    /* Slots Machine Styles */
     .slots-machine {
       background: rgba(255,255,255,0.1);
       padding: 25px;
@@ -611,84 +420,348 @@
       100% { transform: translateY(0); }
     }
 
-    .slots-info {
+    .claim-section {
+      background: rgba(255,255,255,0.1);
+      padding: 20px;
+      border-radius: 12px;
+      margin-top: 20px;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .claim-info {
       display: flex;
       justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .claim-info-item {
+      text-align: center;
+    }
+
+    .claim-info-label {
+      font-size: 12px;
+      opacity: 0.7;
+      margin-bottom: 5px;
+    }
+
+    .share-button {
+      background: linear-gradient(45deg, #6366f1, #8b5cf6);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      margin: 10px 5px;
+      width: auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .share-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(99, 102, 241, 0.4);
+    }
+
+    .share-section {
+      text-align: center;
+      margin-top: 20px;
+      padding: 15px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    /* Dog Fortune Wheel Styles - Fixed positioning and improved */
+    .wheel-container {
+      position: relative;
+      width: 300px;
+      height: 300px;
+      margin: 20px auto;
+      max-width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .wheel-center {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 60px;
+      height: 60px;
+      background: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      box-shadow: 0 0 20px rgba(0,0,0,0.3);
+    }
+
+    .dog-logo {
+      font-size: 30px;
+      animation: wag 2s ease-in-out infinite;
+    }
+
+    @keyframes wag {
+      0%, 100% { transform: rotate(-5deg); }
+      50% { transform: rotate(5deg); }
+    }
+
+    .wheel-pointer {
+      position: absolute;
+      top: -15px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 25px;
+      color: #ff6b6b;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      z-index: 11;
+    }
+
+    #wheelCanvas {
+      display: block;
+      margin: 0 auto;
+      border-radius: 50%;
+      box-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
+      background: transparent;
+    }
+
+    .wheel-button {
+      background: linear-gradient(135deg, #ff6b6b, #ff8e53);
+      font-size: 20px;
+      padding: 18px 36px;
+      animation: pulse-glow 2s ease-in-out infinite;
+      width: 100%;
+      margin: 15px 0;
+    }
+
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 20px rgba(255, 107, 107, 0.3); }
+      50% { box-shadow: 0 0 30px rgba(255, 107, 107, 0.6); }
+    }
+
+    .wheel-info {
+      display: flex;
+      justify-content: center;
       margin: 15px 0;
       padding: 10px;
       background: rgba(0,0,0,0.2);
       border-radius: 8px;
     }
 
-    .slots-button {
-      background: linear-gradient(135deg, #f59e0b, #eab308);
-      color: white;
+    .spin-cost {
+      font-size: 16px;
+      color: #f59e0b;
       font-weight: 600;
-      padding: 16px 32px;
+    }
+
+    .recent-wins {
+      margin-top: 30px;
+      padding: 20px;
+      background: rgba(255,255,255,0.05);
       border-radius: 12px;
-      width: 100%;
-      margin: 15px 0;
-      font-size: 18px;
-      transition: all 0.3s ease;
     }
 
-    .slots-button:hover:not(:disabled) {
-      transform: translateY(-2px);
-      box-shadow: 0 5px 20px rgba(245, 158, 11, 0.4);
-    }
-
-    .slots-button:disabled {
+    .win-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px;
+      margin: 5px 0;
       background: rgba(255,255,255,0.1);
-      cursor: not-allowed;
-      transform: none;
+      border-radius: 8px;
+      animation: slideIn 0.5s ease;
+      font-size: 14px;
     }
 
-    .slots-legend {
+    @keyframes slideIn {
+      from { 
+        opacity: 0;
+        transform: translateX(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .prize-legend {
       margin-top: 20px;
       padding: 15px;
       background: rgba(255,255,255,0.05);
       border-radius: 12px;
     }
 
-    .symbol-grid {
+    .prize-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       gap: 10px;
       margin-top: 10px;
     }
 
-    .symbol-item {
+    .prize-item {
       display: flex;
       align-items: center;
-      gap: 10px;
-      padding: 8px;
+      justify-content: space-between;
+      padding: 10px;
       background: rgba(255,255,255,0.1);
       border-radius: 8px;
+      font-size: 14px;
     }
 
-    .symbol {
+    .prize-emoji {
       font-size: 24px;
     }
 
-    .symbol-name {
-      font-size: 14px;
-      opacity: 0.8;
-    }
-
-    .slots-jackpot {
-      background: linear-gradient(135deg, #ffd700, #ffed4a);
-      color: #1a1a1a;
-      padding: 20px;
-      border-radius: 12px;
-      margin: 20px 0;
-      text-align: center;
+    .prize-xp {
       font-weight: 600;
-      animation: jackpot-glow 2s ease-in-out infinite;
+      color: #f59e0b;
     }
 
-    @keyframes jackpot-glow {
-      0%, 100% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.3); }
-      50% { box-shadow: 0 0 30px rgba(255, 215, 0, 0.6); }
+    /* Achievement Modal */
+    .achievement-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.8);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      animation: fadeIn 0.3s ease;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .achievement-content {
+      background: linear-gradient(135deg, #1e003e 0%, #330066 100%);
+      padding: 30px;
+      border-radius: 20px;
+      text-align: center;
+      max-width: 350px;
+      border: 2px solid #6366f1;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+    }
+
+    .achievement-icon {
+      font-size: 60px;
+      margin-bottom: 15px;
+      animation: bounce 0.6s ease;
+    }
+
+    @keyframes bounce {
+      0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+      40% { transform: translateY(-10px); }
+      60% { transform: translateY(-5px); }
+    }
+
+    .close-modal {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      background: none;
+      border: none;
+      color: white;
+      font-size: 24px;
+      cursor: pointer;
+      width: auto;
+      padding: 5px;
+      opacity: 0.8;
+      transition: opacity 0.2s;
+    }
+    
+    .close-modal:hover {
+      opacity: 1;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 480px) {
+      .container {
+        padding: 10px;
+      }
+      
+      .xp-claim-section {
+        gap: 10px;
+        margin-bottom: 15px;
+      }
+      
+      .xp {
+        font-size: 14px;
+        padding: 8px 16px;
+      }
+      
+      .claim-header-button {
+        font-size: 13px;
+        padding: 10px 16px;
+        min-width: 120px;
+      }
+      
+      .tabs-container {
+        padding: 6px;
+      }
+      
+      .tabs-row {
+        margin-bottom: 6px;
+      }
+      
+      .tab {
+        font-size: 12px;
+        padding: 10px 6px;
+        margin: 0 2px;
+      }
+      
+      .leaderboard-item {
+        padding: 12px;
+        margin: 8px 0;
+      }
+      
+      .rank {
+        font-size: 20px;
+        width: 35px;
+      }
+      
+      .player {
+        font-size: 12px;
+        margin: 0 10px;
+      }
+      
+      .score {
+        font-size: 12px;
+      }
+      
+      .wheel-container {
+        width: 280px;
+        height: 280px;
+      }
+      
+      #wheelCanvas {
+        width: 280px !important;
+        height: 280px !important;
+      }
+      
+      .wheel-center {
+        width: 60px;
+        height: 60px;
+      }
+      
+      .dog-logo {
+        font-size: 30px;
+      }
+      
+      .prize-grid {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
@@ -696,13 +769,12 @@
   <div class="container app-content">
     <div class="header">
       <div class="title">🐕 Monad Dog</div>
-      <div class="xp">✨ Available XP: <span id="xp">0</span></div>
-      
-      <a href="https://x.com/monaddogg" target="_blank" class="social-link" title="Follow us on Twitter">
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-        </svg>
-      </a>
+      <div class="xp-claim-section">
+        <div class="xp">✨ Available XP: <span id="xp">0</span></div>
+        <button class="claim-header-button" id="claimHeaderButton" onclick="showTab('claim')">
+          💰 Claim <span id="claimHeaderDOG">0</span> $DOG
+        </button>
+      </div>
     </div>
 
     <div class="wallet-section">
@@ -716,12 +788,16 @@
       </div>
     </div>
 
-    <div class="tabs">
-      <button class="tab active" onclick="showTab('pet')">🐕 Pet</button>
-      <button class="tab" onclick="showTab('greet')">👋 Greet</button>
-      <button class="tab" onclick="showTab('flip')">🪙 Flip</button>
-      <button class="tab" onclick="showTab('slots')">🎰 Slots</button>
-      <button class="tab" onclick="showTab('claim')">💰 Claim</button>
+    <div class="tabs-container">
+      <div class="tabs-row">
+        <button class="tab active" onclick="showTab('pet')">🐕 Pet</button>
+        <button class="tab" onclick="showTab('greet')">👋 Greet</button>
+        <button class="tab" onclick="showTab('flip')">🪙 Flip</button>
+      </div>
+      <div class="tabs-row">
+        <button class="tab" onclick="showTab('slots')">🎰 Slots</button>
+        <button class="tab" onclick="showTab('wheel')">🎯 Wheel</button>
+      </div>
     </div>
 
     <div class="content">
@@ -769,7 +845,7 @@
         </div>
       </div>
 
-              <!-- Slots Tab -->
+      <!-- Slots Tab -->
       <div id="slots" class="tab-content">
         <h3>🎰 Dog Slots</h3>
         <p style="margin-bottom: 20px;">Match 4 same dogs or bones to win 5000 XP!</p>
@@ -782,15 +858,6 @@
             <div class="slot-reel" id="reel4">🦴</div>
           </div>
           
-          <div class="slots-info">
-            <div class="cost-info">
-              <span style="color: #f59e0b;">💰 Pay: 0.1 MONAD = 2 Credits</span>
-            </div>
-            <div class="prize-info">
-              <span style="color: #10b981;">🏆 4 Match = 5000 XP</span>
-            </div>
-          </div>
-          
           <button class="slots-button" id="slotsButton" onclick="playSlots()">
             🔒 Connect Wallet
           </button>
@@ -798,45 +865,83 @@
           <div id="slots-status" class="status"></div>
         </div>
         
-        <div class="slots-legend">
-          <h4 style="margin: 20px 0 10px 0;">How It Works:</h4>
-          <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-bottom: 15px; text-align: left;">
-            <p style="margin-bottom: 8px;">💰 <strong>Pay 0.1 MONAD</strong> → Get 2 game credits</p>
-            <p style="margin-bottom: 8px;">🎮 <strong>Each game</strong> → Uses 1 credit</p>
-            <p style="margin-bottom: 8px;">✅ <strong>Credits awarded</strong> → Only after TX confirms</p>
-            <p>🎰 <strong>Play anytime</strong> → Use your available credits</p>
-          </div>
-          
-          <h4 style="margin: 20px 0 10px 0;">Symbols & Prizes:</h4>
-          <div class="symbol-grid">
-            <div class="symbol-item">
-              <span class="symbol">🐕</span>
-              <span class="symbol-name">Shiba</span>
-            </div>
-            <div class="symbol-item">
-              <span class="symbol">🦮</span>
-              <span class="symbol-name">Guide Dog</span>
-            </div>
-            <div class="symbol-item">
-              <span class="symbol">🐶</span>
-              <span class="symbol-name">Puppy</span>
-            </div>
-            <div class="symbol-item">
-              <span class="symbol">🦴</span>
-              <span class="symbol-name">Bone</span>
-            </div>
-          </div>
-          
-          <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-top: 15px; text-align: left;">
-            <p style="margin-bottom: 5px;">🎉 <strong>4 Same:</strong> 5000 XP (JACKPOT!)</p>
-            <p style="margin-bottom: 5px;">🏆 <strong>3 Same:</strong> 500 XP</p>
-            <p>✨ <strong>2 Same:</strong> 50 XP</p>
-          </div>
-        </div>
-        
         <div class="share-section">
           <button class="share-button" onclick="shareSlotsAchievement()">
             🎰 Share Slots Win
+          </button>
+        </div>
+      </div>
+
+      <!-- Dog Fortune Wheel Tab -->
+      <div id="wheel" class="tab-content">
+        <h3>🎯 Dog Fortune Wheel</h3>
+        <p style="margin-bottom: 20px;">Spin the wheel and win tasty rewards!</p>
+        
+        <div class="wheel-container">
+          <!-- Çarkın merkezi - Köpek logosu -->
+          <div class="wheel-center">
+            <div class="dog-logo">🐕</div>
+          </div>
+          
+          <!-- Dönen çark -->
+          <canvas id="wheelCanvas" width="350" height="350"></canvas>
+          
+          <!-- Ok işareti -->
+          <div class="wheel-pointer">▼</div>
+        </div>
+        
+        <div class="wheel-info">
+          <div class="spin-cost">
+            <span>🎫 1 Spin = 0.05 MONAD</span>
+          </div>
+        </div>
+        
+        <button class="wheel-button" id="spinButton" onclick="spinWheel()">
+          🎯 Spin the Wheel
+        </button>
+        
+        <div id="wheel-status" class="status"></div>
+        
+        <!-- Prize Legend -->
+        <div class="prize-legend">
+          <h4 style="margin-bottom: 10px;">🏆 Prize Pool</h4>
+          <div class="prize-grid">
+            <div class="prize-item">
+              <span class="prize-emoji">🦴 Golden Bone</span>
+              <span class="prize-xp">10000 XP</span>
+            </div>
+            <div class="prize-item">
+              <span class="prize-emoji">🥩 Juicy Steak</span>
+              <span class="prize-xp">2000 XP</span>
+            </div>
+            <div class="prize-item">
+              <span class="prize-emoji">🍖 Big Meat</span>
+              <span class="prize-xp">500 XP</span>
+            </div>
+            <div class="prize-item">
+              <span class="prize-emoji">🦴 Lucky Bone</span>
+              <span class="prize-xp">100 XP</span>
+            </div>
+            <div class="prize-item">
+              <span class="prize-emoji">🍪 Dog Treat</span>
+              <span class="prize-xp">50 XP</span>
+            </div>
+            <div class="prize-item">
+              <span class="prize-emoji">💤 Nap Time</span>
+              <span class="prize-xp">10 XP</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Recent Big Wins -->
+        <div class="recent-wins">
+          <h4>🏆 Recent Big Wins</h4>
+          <div id="recentWinsList"></div>
+        </div>
+        
+        <div class="share-section">
+          <button class="share-button" onclick="shareWheelAchievement()">
+            🎯 Share Fortune Win
           </button>
         </div>
       </div>
@@ -873,30 +978,13 @@
           <div id="claim-status" class="status"></div>
         </div>
         
-        <!-- Token Info -->
-        <div style="margin-top: 20px; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 12px;">
-          <div style="text-align: center; margin-bottom: 15px;">
-            <h4 style="margin-bottom: 10px;">🐕 $DOG Token Info</h4>
-            <p style="font-size: 12px; opacity: 0.7;">Claim your tokens and they'll be minted directly to your wallet</p>
+        <!-- Wallet DOG Balance Display -->
+        <div style="background: linear-gradient(135deg, #f59e0b, #eab308); padding: 20px; border-radius: 12px; text-align: center; margin: 15px 0;">
+          <div style="font-size: 14px; opacity: 0.9; margin-bottom: 5px;">Your Wallet Balance</div>
+          <div style="font-size: 32px; font-weight: 700;">
+            <span id="walletDogDisplay">0</span> $DOG
           </div>
-          
-          <!-- Wallet DOG Balance Display -->
-          <div style="background: linear-gradient(135deg, #f59e0b, #eab308); padding: 20px; border-radius: 12px; text-align: center; margin: 15px 0;">
-            <div style="font-size: 14px; opacity: 0.9; margin-bottom: 5px;">Your Wallet Balance</div>
-            <div style="font-size: 32px; font-weight: 700;">
-              <span id="walletDogDisplay">0</span> $DOG
-            </div>
-            <div style="font-size: 12px; opacity: 0.8; margin-top: 5px;">🪙 Monad Testnet</div>
-          </div>
-          
-          <div style="margin-top: 15px; text-align: center;">
-            <a href="https://testnet.monadscan.com/address/0x1f6649d028c4c146c050a9b224115a01c92a02f3" 
-               target="_blank" 
-               class="share-button" 
-               style="background: rgba(255,255,255,0.1); font-size: 12px; padding: 8px 16px;">
-              🔍 View Token Contract
-            </a>
-          </div>
+          <div style="font-size: 12px; opacity: 0.8; margin-top: 5px;">🪙 Monad Testnet</div>
         </div>
       </div>
     </div>
@@ -904,10 +992,6 @@
     <div id="loading" class="loading">
       <div class="loading-spinner"></div>
       <div class="loading-text">Loading Monad Dog...</div>
-      <div class="loading-subtitle">Starting Monad Dog...<br>🚀 Initializing blockchain connection</div>
-      <div class="loading-progress">
-        <div class="loading-progress-bar" id="loadingProgressBar"></div>
-      </div>
     </div>
 
     <!-- Achievement Modal -->
@@ -930,114 +1014,25 @@
   </div>
 
   <script>
-    // Wait for Supabase to load
-    window.addEventListener('DOMContentLoaded', function() {
-      // Supabase Configuration
-      const SUPABASE_URL = 'https://uhqszfoekqrjtybrwqzt.supabase.co';
-      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVocXN6Zm9la3FyanR5YnJ3cXp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4MDMxNTAsImV4cCI6MjA2NjM3OTE1MH0.gGch8B6AlvGrZTDVjfd0xidVnh_Dsua4qRxbaixBqM0';
-      
-      // Initialize Supabase
-      let supabaseClient;
-      if (window.supabase) {
-        const { createClient } = window.supabase;
-        supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        console.log('✅ Supabase initialized');
-      } else {
-        console.error('❌ Supabase not loaded');
-      }
-    
-      // Initialize modal close functions globally
-      window.closeAchievementModal = function() {
-        const modal = document.getElementById('achievementModal');
-        if (modal) {
-          modal.style.display = 'none';
-        }
-        window.currentAchievement = null;
-        
-        // Remove escape key listener
-        if (window.achievementEscapeHandler) {
-          document.removeEventListener('keydown', window.achievementEscapeHandler);
-        }
-        
-        console.log('Modal closed');
-      }
-      
-      window.shareCurrentAchievement = function() {
-        if (window.currentAchievement) {
-          try {
-            const content = generateShareableContent(window.currentAchievement.type, window.currentAchievement.data);
-            shareOnFarcaster(content);
-            
-            // Close modal after sharing
-            setTimeout(() => {
-              closeAchievementModal();
-            }, 500);
-          } catch (error) {
-            console.error('Error sharing achievement:', error);
-            closeAchievementModal();
-          }
-        }
-      }
-      
-      console.log('🚀 Starting app...');
-
-    // Enhanced Loading Management
-    let loadingProgress = 0;
-    let isAppReady = false;
+    // Global variables
+    let sdk = null;
     let activeTab = 'pet';
+    let appState = {
+      connected: false,
+      address: null,
+      xp: 0,
+      slotsCredits: 0,
+      provider: null,
+      signer: null,
+      isTransactionPending: false
+    };
 
-    function updateLoadingProgress(progress, message) {
-      const progressBar = document.getElementById('loadingProgressBar');
-      const subtitle = document.querySelector('.loading-subtitle');
-      
-      if (progressBar) {
-        progressBar.style.width = `${progress}%`;
-      }
-      
-      if (subtitle && message) {
-        subtitle.innerHTML = message;
-      }
-      
-      loadingProgress = progress;
-      console.log(`📊 Loading progress: ${progress}% - ${message}`);
-    }
-
-    function showLoadingState() {
-      document.getElementById('loading').style.display = 'flex';
-      document.querySelector('.app-content').classList.remove('loaded');
-      updateLoadingProgress(0, 'Starting Monad Dog...<br>🚀 Initializing blockchain connection');
-    }
-
-    function hideLoadingState() {
-      // Don't hide immediately - show completion
-      updateLoadingProgress(100, 'Ready to play! 🎉<br>Welcome to Monad Dog!');
-      
-      setTimeout(() => {
-        document.getElementById('loading').style.display = 'none';
-        document.querySelector('.app-content').classList.add('loaded');
-        isAppReady = true;
-        
-        // Call Farcaster ready action
-        if (sdk && sdk.actions && sdk.actions.ready) {
-          sdk.actions.ready({
-            disableNativeGestures: false // Allow native gestures for better UX
-          }).then(() => {
-            console.log('✅ Farcaster SDK ready called successfully');
-          }).catch(error => {
-            console.log('⚠️ Farcaster SDK ready failed:', error);
-          });
-        }
-        
-        console.log('🎉 App fully loaded and ready');
-      }, 500);
-    }
-
-    // Contract addresses and ABIs
+    // Contract configuration
     const CONTRACTS = {
       PET: "0xc53abe4c593b9440407f8ac1b346f3f999e6d8ed",
       GREET: "0xbc8b78f3e2348d4b5e0390fe700ce54b59931da4",
       FLIP: "0xc5b2280d1e2f155f9a2be2af7e78190658874106",
-      SLOTS: "0xc7011f245aa51fa488783d5b0cfc6e0cba86f6cb", // ✅ DEPLOYED SLOTS CONTRACT
+      SLOTS: "0xc7011f245aa51fa488783d5b0cfc6e0cba86f6cb",
       DOG_TOKEN: "0x1f6649d028c4c146c050a9b224115a01c92a02f3"
     };
 
@@ -1048,196 +1043,617 @@
       SLOTS: [
         "function buyCredits() external payable",
         "function playSlots() external returns (uint8[4])",
-        "function getCredits(address player) external view returns (uint256)",
-        "function getGameStats() external view returns (uint256, uint256, uint256)",
-        "event CreditsPurchased(address indexed player, uint256 credits, uint256 cost)",
-        "event GamePlayed(address indexed player, uint8[4] results, uint256 creditsRemaining)",
-        "event Jackpot(address indexed player, uint8 symbol, uint256 prize)"
+        "function getCredits(address player) external view returns (uint256)"
       ],
       DOG_TOKEN: [
         "function claim(uint256 xpAmount) public",
         "function balanceOf(address account) public view returns (uint256)",
-        "function decimals() public view returns (uint8)",
-        "function symbol() public view returns (string)",
-        "function totalSupply() public view returns (uint256)",
-        "function getClaimedXP(address user) public view returns (uint256)",
-        "function totalMinted() public view returns (uint256)",
-        "event TokensClaimed(address indexed user, uint256 xpAmount, uint256 tokenAmount)"
+        "function decimals() public view returns (uint8)"
       ]
     };
 
-    // XP to DOG token conversion rate
-    const XP_TO_DOG_RATE = 10; // 10 XP = 1 DOG token
+    const XP_TO_DOG_RATE = 10;
 
-    // Global state 
-    let appState = {
-      connected: false,
-      address: null,
-      xp: 0, // Available XP (can be used for claiming)
-      slotsCredits: 0, // Available slots game credits
-      provider: null,
-      signer: null,
-      isTransactionPending: false
+    // Wheel game configuration
+    const wheelSegments = [
+      { emoji: '🦴', name: 'Golden Bone', chance: 1, xp: 10000, color: '#FFD700' },     // JACKPOT %1 - Altın
+      { emoji: '🥩', name: 'Juicy Steak', chance: 5, xp: 2000, color: '#DC143C' },      // Mega Win %5 - Kırmızı
+      { emoji: '🍖', name: 'Big Meat', chance: 10, xp: 500, color: '#FF6347' },         // Big Win %10 - Turuncu-Kırmızı
+      { emoji: '🦴', name: 'Lucky Bone', chance: 20, xp: 100, color: '#32CD32' },       // Win %20 - Yeşil
+      { emoji: '🍪', name: 'Dog Treat', chance: 30, xp: 50, color: '#4169E1' },         // Small Win %30 - Mavi
+      { emoji: '💤', name: 'Nap Time', chance: 34, xp: 10, color: '#9370DB' }           // Try Again %34 - Mor
+    ];
+
+    // Wheel state
+    let wheelState = {
+      isSpinning: false,
+      currentRotation: 0,
+      segments: wheelSegments
     };
 
-    // Initialize SDK
-    let sdk = null;
+    // Supabase configuration
+    const SUPABASE_URL = 'https://uhqszfoekqrjtybrwqzt.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVocXN6Zm9la3FyanR5YnJ3cXp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4MDMxNTAsImV4cCI6MjA2NjM3OTE1MH0.gGch8B6AlvGrZTDVjfd0xidVnh_Dsua4qRxbaixBqM0';
     
-    // Supabase Functions for XP Management - Simplified for reset-based system
+    let supabaseClient;
+
+    // Initialize Supabase
+    function initSupabase() {
+      if (window.supabase) {
+        const { createClient } = window.supabase;
+        supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        console.log('✅ Supabase initialized');
+      } else {
+        console.error('❌ Supabase not loaded');
+      }
+    }
+
+    // XP Management Functions
     async function getWalletXP(address) {
       if (!address) return 0;
       
       try {
-        // Check if Supabase is available
         if (!supabaseClient) {
-          console.log('Supabase not available, using localStorage fallback');
-          return parseInt(localStorage.getItem(`wallet_xp_${address.toLowerCase()}`) || '0');
+          const localXP = parseInt(localStorage.getItem(`wallet_xp_${address.toLowerCase()}`) || '0');
+          return localXP;
         }
 
         const { data, error } = await supabaseClient
           .from('user_xp')
           .select('xp')
           .eq('wallet_address', address.toLowerCase())
-          .single();
-        
-        if (error) {
-          console.log('No XP record found, returning 0');
-          // Fallback to localStorage
-          return parseInt(localStorage.getItem(`wallet_xp_${address.toLowerCase()}`) || '0');
+          .maybeSingle();
+
+        if (error && error.code !== 'PGRST116') {
+          console.error('❌ Supabase fetch error:', error);
+          const localXP = parseInt(localStorage.getItem(`wallet_xp_${address.toLowerCase()}`) || '0');
+          return localXP;
         }
         
+        if (!data) {
+          return 0;
+        }
+        
+        localStorage.setItem(`wallet_xp_${address.toLowerCase()}`, data.xp.toString());
         return data.xp || 0;
       } catch (e) {
-        console.error('Error fetching XP:', e);
-        // Fallback to localStorage
-        return parseInt(localStorage.getItem(`wallet_xp_${address.toLowerCase()}`) || '0');
+        console.error('❌ Error fetching XP:', e);
+        const localXP = parseInt(localStorage.getItem(`wallet_xp_${address.toLowerCase()}`) || '0');
+        return localXP;
       }
     }
 
     async function saveWalletXP(address, xp) {
       if (!address) return;
       
-      // Always save to localStorage first (immediate)
       localStorage.setItem(`wallet_xp_${address.toLowerCase()}`, xp.toString());
+      console.log(`💾 XP saved to localStorage: ${xp}`);
       
-      // Then try Supabase (async, non-blocking)
-      if (supabaseClient) {
-        supabaseClient
-          .from('user_xp')
-          .upsert({
-            wallet_address: address.toLowerCase(),
-            xp: xp,
-            updated_at: new Date().toISOString()
-          }, {
-            onConflict: 'wallet_address'
-          })
-          .then(({ error }) => {
-            if (!error) {
-              console.log(`💾 XP saved to Supabase for ${address}: ${xp}`);
-            }
-          })
-          .catch(e => {
-            console.error('Error saving XP to Supabase:', e);
-          });
-      }
-    }
-
-    // ✅ SLOTS CREDITS MANAGEMENT - Updated with real contract integration
-    async function getSlotsCredits(address) {
-      if (!address || !appState.provider) return 0;
+      if (!supabaseClient) return;
       
       try {
-        // Get credits from smart contract
-        const slotsContract = new ethers.Contract(
-          CONTRACTS.SLOTS,
-          ABIS.SLOTS,
-          appState.provider
-        );
+        const { data, error } = await supabaseClient
+          .from('user_xp')
+          .upsert(
+            {
+              wallet_address: address.toLowerCase(),
+              xp: xp,
+              updated_at: new Date().toISOString()
+            },
+            {
+              onConflict: 'wallet_address'
+            }
+          );
         
-        const credits = await slotsContract.getCredits(address);
-        return credits.toNumber();
+        if (error) {
+          console.error('❌ Supabase save error:', error);
+        } else {
+          console.log(`✅ XP saved to Supabase successfully`);
+        }
       } catch (e) {
-        console.error('Error fetching slots credits from contract:', e);
-        // Fallback to localStorage
-        return parseInt(localStorage.getItem(`slots_credits_${address.toLowerCase()}`) || '0');
+        console.error('❌ Exception saving XP to Supabase:', e);
       }
     }
 
-    async function saveSlotsCredits(address, credits) {
-      if (!address) return;
-      
-      // Save to localStorage for immediate display
-      localStorage.setItem(`slots_credits_${address.toLowerCase()}`, credits.toString());
-      
-      // Note: Actual credits are managed by smart contract
-      // This is just for UI consistency
+    // Utility Functions
+    function showStatus(id, message, type) {
+      const el = document.getElementById(id);
+      if (el) {
+        el.textContent = message;
+        el.className = `status visible ${type}`;
+      }
     }
 
-    async function updateSlotsCreditsDisplay() {
-      if (appState.connected && appState.address) {
-        const credits = await getSlotsCredits(appState.address);
-        appState.slotsCredits = credits;
+    function hideStatus(id) {
+      const el = document.getElementById(id);
+      if (el) {
+        el.className = 'status';
+      }
+    }
+
+    function showError(message) {
+      const div = document.createElement('div');
+      div.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:rgba(255,0,0,0.9);color:white;padding:10px 20px;border-radius:8px;z-index:1000;max-width:90%;word-wrap:break-word;';
+      div.textContent = message;
+      document.body.appendChild(div);
+      setTimeout(() => div.remove(), 5000);
+    }
+
+    // Wallet Connection
+    async function connectWallet() {
+      try {
+        console.log('Connecting wallet...');
         
-        // Update slots button text
-        updateSlotsButton();
+        const connectBtn = document.getElementById('connect-btn');
+        connectBtn.textContent = '🔄 Connecting...';
+        connectBtn.disabled = true;
         
-        console.log(`🎰 Slots Credits - Available: ${credits}`);
-      } else {
-        appState.slotsCredits = 0;
-        updateSlotsButton();
+        let provider;
+        
+        if (window.ethereum) {
+          provider = window.ethereum;
+        } else {
+          throw new Error('No wallet available');
+        }
+
+        const accounts = await provider.request({
+          method: 'eth_requestAccounts'
+        });
+
+        if (!accounts || accounts.length === 0) {
+          throw new Error('No accounts found');
+        }
+
+        console.log('✅ Connected:', accounts[0]);
+
+        appState.provider = new ethers.providers.Web3Provider(provider);
+        appState.signer = appState.provider.getSigner();
+        appState.address = accounts[0];
+        appState.connected = true;
+
+        updateWalletUI();
+        await updateXPDisplay();
+        await updateTokenBalance();
+
+      } catch (error) {
+        console.error('Connection error:', error);
+        showError(error.message);
+        
+        const connectBtn = document.getElementById('connect-btn');
+        connectBtn.textContent = '🟣 Connect Wallet';
+        connectBtn.disabled = false;
       }
     }
 
-    function updateSlotsButton() {
-      const slotsButton = document.getElementById('slotsButton');
-      if (!slotsButton) return;
-      
-      if (appState.slotsCredits > 0) {
-        slotsButton.textContent = `🎰 Play Slots (${appState.slotsCredits} credits)`;
-        slotsButton.disabled = false;
-      } else if (appState.connected) {
-        slotsButton.textContent = `💰 Buy 2 Credits (0.1 MONAD)`;
-        slotsButton.disabled = false;
+    function disconnect() {
+      appState = {
+        connected: false,
+        address: null,
+        xp: 0,
+        slotsCredits: 0,
+        provider: null,
+        signer: null
+      };
+      updateWalletUI();
+      updateXPDisplay();
+      console.log('🔌 Wallet disconnected');
+    }
+
+    function updateWalletUI() {
+      const connectArea = document.getElementById('connect-area');
+      const connectedArea = document.getElementById('connected-area');
+      const addressEl = document.getElementById('address');
+
+      if (appState.connected) {
+        connectArea.style.display = 'none';
+        connectedArea.style.display = 'block';
+        addressEl.textContent = appState.address.slice(0,6) + '...' + appState.address.slice(-4);
       } else {
-        slotsButton.textContent = `🔒 Connect Wallet`;
-        slotsButton.disabled = true;
+        connectArea.style.display = 'block';
+        connectedArea.style.display = 'none';
       }
     }
 
+    // XP Display Update
     async function updateXPDisplay() {
       if (appState.connected && appState.address) {
-        // Show current value immediately
-        const currentDisplay = document.getElementById('xp').textContent;
-        
-        // Get XP (with timeout to prevent hanging)
-        const xpPromise = getWalletXP(appState.address);
-        const timeoutPromise = new Promise((resolve) => setTimeout(() => resolve(parseInt(currentDisplay) || 0), 1000));
-        
-        const walletXP = await Promise.race([xpPromise, timeoutPromise]);
-        
+        const walletXP = await getWalletXP(appState.address);
         document.getElementById('xp').textContent = walletXP;
         appState.xp = walletXP;
         
-        // Also update slots credits
-        await updateSlotsCreditsDisplay();
+        // Update claim preview
+        updateClaimPreview();
         
-        console.log(`📊 XP Display - Available: ${walletXP}`);
-        
-        // Update claim UI non-blocking
         if (activeTab === 'claim') {
-          requestAnimationFrame(() => updateClaimUI());
+          updateClaimUI();
         }
       } else {
         document.getElementById('xp').textContent = '0';
         appState.xp = 0;
-        appState.slotsCredits = 0;
+        updateClaimPreview();
         updateClaimUI();
-        updateSlotsButton();
       }
     }
 
-    // Update claim UI based on current XP
-    async function updateClaimUI() {
+    // Update claim preview in the header button
+    function updateClaimPreview() {
+      const claimableXP = appState.xp || 0;
+      const claimableDOG = Math.floor(claimableXP / XP_TO_DOG_RATE);
+      
+      const claimHeaderDOG = document.getElementById('claimHeaderDOG');
+      const claimHeaderButton = document.getElementById('claimHeaderButton');
+      
+      if (claimHeaderDOG) {
+        claimHeaderDOG.textContent = claimableDOG;
+      }
+      
+      if (claimHeaderButton) {
+        if (claimableXP >= XP_TO_DOG_RATE && appState.connected) {
+          claimHeaderButton.classList.add('ready');
+          claimHeaderButton.disabled = false;
+        } else {
+          claimHeaderButton.classList.remove('ready');
+          if (!appState.connected) {
+            claimHeaderButton.disabled = true;
+            claimHeaderButton.innerHTML = '🔒 Connect Wallet';
+          } else {
+            claimHeaderButton.disabled = true;
+            claimHeaderButton.innerHTML = `💰 Need ${XP_TO_DOG_RATE - claimableXP} more XP`;
+          }
+        }
+        
+        // Reset text when ready
+        if (claimableXP >= XP_TO_DOG_RATE && appState.connected) {
+          claimHeaderButton.innerHTML = `💰 Claim <span id="claimHeaderDOG">${claimableDOG}</span> $DOG`;
+        }
+      }
+    }
+
+    // Add XP Function
+    async function addXP(amount) {
+      if (!appState.connected || !appState.address) {
+        console.log('❌ Cannot add XP: wallet not connected');
+        return;
+      }
+      
+      console.log(`➕ Adding ${amount} XP to ${appState.address}`);
+      
+      const previousXP = appState.xp || 0;
+      appState.xp = previousXP + amount;
+      
+      document.getElementById('xp').textContent = appState.xp;
+      
+      try {
+        await saveWalletXP(appState.address, appState.xp);
+        console.log(`✨ XP successfully updated: ${previousXP} → ${appState.xp} (+${amount})`);
+      } catch (error) {
+        console.error('❌ Error saving XP:', error);
+      }
+      
+      if (activeTab === 'claim') {
+        updateClaimUI();
+      }
+      
+      // Update claim preview
+      updateClaimPreview();
+      
+      // Add celebration effect
+      const xpElement = document.getElementById('xp');
+      xpElement.style.transform = 'scale(1.2)';
+      xpElement.style.color = '#00ff00';
+      
+      setTimeout(() => {
+        xpElement.style.transform = 'scale(1)';
+        xpElement.style.color = 'white';
+      }, 500);
+    }
+
+    // Network Setup
+    async function ensureMonadNetwork() {
+      const MONAD_CHAIN_ID = '0x279F'; // 10143 in hex
+      
+      try {
+        const provider = window.ethereum;
+        if (!provider) {
+          throw new Error('No wallet provider available');
+        }
+
+        const chainId = await provider.request({ method: 'eth_chainId' });
+        console.log('Current chain ID:', chainId);
+
+        if (chainId !== MONAD_CHAIN_ID) {
+          console.log('Switching to Monad Testnet...');
+          
+          try {
+            await provider.request({
+              method: 'wallet_switchEthereumChain',
+              params: [{ chainId: MONAD_CHAIN_ID }],
+            });
+          } catch (switchError) {
+            if (switchError.code === 4902) {
+              await provider.request({
+                method: 'wallet_addEthereumChain',
+                params: [{
+                  chainId: MONAD_CHAIN_ID,
+                  chainName: 'Monad Testnet',
+                  nativeCurrency: {
+                    name: 'Monad',
+                    symbol: 'MONAD',
+                    decimals: 18
+                  },
+                  rpcUrls: ['https://testnet-rpc.monad.xyz'],
+                  blockExplorerUrls: ['https://testnet.monadscan.com/']
+                }]
+              });
+            }
+          }
+
+          appState.provider = new ethers.providers.Web3Provider(provider);
+          appState.signer = appState.provider.getSigner();
+        }
+      } catch (error) {
+        console.error('Network switch error:', error);
+        throw new Error('Failed to switch to Monad Testnet');
+      }
+    }
+
+    // Game Functions
+    window.petDog = async function() {
+      console.log('🐕 Pet Dog clicked!');
+      
+      if (!appState.connected) {
+        showError('Connect wallet first');
+        return;
+      }
+      
+      try {
+        document.getElementById('dog-img').src = `https://placedog.net/400/300?id=${Math.floor(Math.random() * 50) + 1}`;
+        
+        showStatus('pet-status', '🔐 Please confirm transaction...', 'pending');
+        
+        await ensureMonadNetwork();
+        
+        const contract = new ethers.Contract(CONTRACTS.PET, ABIS.PET, appState.signer);
+        const tx = await contract.pet({ gasLimit: 100000 });
+        
+        showStatus('pet-status', '✅ Transaction sent! Processing...', 'pending');
+        
+        setTimeout(async () => {
+          showStatus('pet-status', '🐕 Dog petted successfully! +10 XP', 'success');
+          await addXP(10);
+          setTimeout(() => hideStatus('pet-status'), 3000);
+        }, 3000);
+        
+      } catch (error) {
+        console.error('❌ Pet error:', error);
+        let errorMsg = 'Transaction failed';
+        if (error.message.includes('user rejected')) {
+          errorMsg = 'Transaction cancelled by user';
+        }
+        showStatus('pet-status', errorMsg, 'error');
+        setTimeout(() => hideStatus('pet-status'), 5000);
+      }
+    };
+
+    window.sayGM = async function() {
+      if (!appState.connected) {
+        showError('Connect wallet first');
+        return;
+      }
+      
+      try {
+        showStatus('greet-status', '🔐 Please confirm transaction...', 'pending');
+        
+        await ensureMonadNetwork();
+        
+        const contract = new ethers.Contract(CONTRACTS.GREET, ABIS.GREET, appState.signer);
+        const tx = await contract.gm({ gasLimit: 100000 });
+        
+        setTimeout(async () => {
+          showStatus('greet-status', '☀️ Good Morning sent! +5 XP', 'success');
+          await addXP(5);
+          setTimeout(() => hideStatus('greet-status'), 3000);
+        }, 3000);
+        
+      } catch (error) {
+        console.error('❌ GM error:', error);
+        showStatus('greet-status', 'Transaction failed', 'error');
+        setTimeout(() => hideStatus('greet-status'), 5000);
+      }
+    };
+
+    window.sayGN = async function() {
+      if (!appState.connected) {
+        showError('Connect wallet first');
+        return;
+      }
+      
+      try {
+        showStatus('greet-status', '🔐 Please confirm transaction...', 'pending');
+        
+        await ensureMonadNetwork();
+        
+        const contract = new ethers.Contract(CONTRACTS.GREET, ABIS.GREET, appState.signer);
+        const tx = await contract.gn({ gasLimit: 100000 });
+        
+        setTimeout(async () => {
+          showStatus('greet-status', '🌙 Good Night sent! +5 XP', 'success');
+          await addXP(5);
+          setTimeout(() => hideStatus('greet-status'), 3000);
+        }, 3000);
+        
+      } catch (error) {
+        console.error('❌ GN error:', error);
+        showStatus('greet-status', 'Transaction failed', 'error');
+        setTimeout(() => hideStatus('greet-status'), 5000);
+      }
+    };
+
+    window.flipCoin = async function() {
+      if (!appState.connected) {
+        showError('Connect wallet first');
+        return;
+      }
+      
+      try {
+        const coin = document.getElementById('coin');
+        const result = document.getElementById('flip-result');
+        
+        result.textContent = 'Flipping...';
+        let rotation = 0;
+        const interval = setInterval(() => {
+          rotation += 180;
+          coin.style.transform = `rotateY(${rotation}deg)`;
+        }, 100);
+        
+        showStatus('flip-status', '🔐 Please confirm transaction...', 'pending');
+        
+        await ensureMonadNetwork();
+        
+        const contract = new ethers.Contract(CONTRACTS.FLIP, ABIS.FLIP, appState.signer);
+        const tx = await contract.flip({ gasLimit: 100000 });
+        
+        setTimeout(() => {
+          clearInterval(interval);
+          const finalResult = Math.random() < 0.5 ? 'Heads' : 'Tails';
+          coin.style.transform = `rotateY(${finalResult === 'Heads' ? 0 : 180}deg)`;
+          result.textContent = `Result: ${finalResult}!`;
+          
+          showStatus('flip-status', '🪙 Coin flipped! +3 XP', 'success');
+          addXP(3);
+          setTimeout(() => hideStatus('flip-status'), 3000);
+        }, 3000);
+        
+      } catch (error) {
+        console.error('❌ Flip error:', error);
+        showStatus('flip-status', 'Transaction failed', 'error');
+        setTimeout(() => hideStatus('flip-status'), 5000);
+      }
+    };
+
+    // Slots Game
+    window.playSlots = async function() {
+      if (!appState.connected) {
+        showError('Connect wallet first');
+        return;
+      }
+      
+      try {
+        const slotsButton = document.getElementById('slotsButton');
+        slotsButton.disabled = true;
+        slotsButton.textContent = '🎰 Playing...';
+        
+        showStatus('slots-status', '🔐 Please confirm 0.1 MONAD payment...', 'pending');
+        
+        await ensureMonadNetwork();
+        
+        const contract = new ethers.Contract(CONTRACTS.SLOTS, ABIS.SLOTS, appState.signer);
+        const tx = await contract.buyCredits({
+          value: ethers.utils.parseEther("0.1"),
+          gasLimit: 150000
+        });
+        
+        // Start visual animation
+        const symbols = ['🐕', '🦮', '🐶', '🦴'];
+        const reels = ['reel1', 'reel2', 'reel3', 'reel4'];
+        
+        reels.forEach(reelId => {
+          const reel = document.getElementById(reelId);
+          reel.classList.add('spinning');
+        });
+        
+        const spinInterval = setInterval(() => {
+          reels.forEach(reelId => {
+            const reel = document.getElementById(reelId);
+            reel.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+          });
+        }, 100);
+        
+        setTimeout(() => {
+          clearInterval(spinInterval);
+          
+          // Generate final results
+          const results = [];
+          for (let i = 0; i < 4; i++) {
+            results.push(symbols[Math.floor(Math.random() * symbols.length)]);
+          }
+          
+          reels.forEach((reelId, index) => {
+            const reel = document.getElementById(reelId);
+            reel.classList.remove('spinning');
+            reel.textContent = results[index];
+          });
+          
+          checkSlotsWin(results);
+          
+          slotsButton.disabled = false;
+          slotsButton.textContent = '🎰 Play Again (0.1 MONAD)';
+          
+        }, 4000);
+        
+      } catch (error) {
+        console.error('❌ Slots error:', error);
+        const slotsButton = document.getElementById('slotsButton');
+        slotsButton.disabled = false;
+        slotsButton.textContent = '🎰 Play Slots (0.1 MONAD)';
+        
+        showStatus('slots-status', 'Game failed', 'error');
+        setTimeout(() => hideStatus('slots-status'), 5000);
+      }
+    };
+
+    function checkSlotsWin(results) {
+      console.log('🎰 Slots results:', results);
+      
+      const symbolCounts = {};
+      results.forEach(symbol => {
+        symbolCounts[symbol] = (symbolCounts[symbol] || 0) + 1;
+      });
+      
+      const maxCount = Math.max(...Object.values(symbolCounts));
+      
+      if (maxCount === 4) {
+        const winningSymbol = Object.keys(symbolCounts).find(symbol => symbolCounts[symbol] === 4);
+        
+        document.querySelectorAll('.slot-reel').forEach(reel => {
+          if (reel.textContent === winningSymbol) {
+            reel.classList.add('winning');
+          }
+        });
+        
+        addXP(5000);
+        showStatus('slots-status', `🎉 JACKPOT! 4x ${winningSymbol} = +5000 XP!`, 'success');
+        
+      } else if (maxCount === 3) {
+        const winningSymbol = Object.keys(symbolCounts).find(symbol => symbolCounts[symbol] === 3);
+        
+        document.querySelectorAll('.slot-reel').forEach(reel => {
+          if (reel.textContent === winningSymbol) {
+            reel.classList.add('winning');
+          }
+        });
+        
+        addXP(500);
+        showStatus('slots-status', `🏆 3x ${winningSymbol} = +500 XP!`, 'success');
+        
+      } else if (maxCount === 2) {
+        addXP(50);
+        showStatus('slots-status', `✨ Pair found = +50 XP!`, 'success');
+        
+      } else {
+        showStatus('slots-status', '😔 No match this time. Try again!', 'error');
+      }
+      
+      setTimeout(() => {
+        hideStatus('slots-status');
+        document.querySelectorAll('.slot-reel').forEach(reel => {
+          reel.classList.remove('winning');
+        });
+      }, 5000);
+    }
+
+    // Claim Functions
+    function updateClaimUI() {
       const claimableXP = appState.xp || 0;
       const claimableDOG = Math.floor(claimableXP / XP_TO_DOG_RATE);
       
@@ -1256,120 +1672,36 @@
           claimButton.textContent = `📈 Need ${XP_TO_DOG_RATE - claimableXP} more XP`;
         }
       }
-      
-      // Update token balance
-      await updateTokenBalance();
     }
 
-    // Update token balance display
     async function updateTokenBalance() {
       if (!appState.connected || !appState.provider || !appState.address) {
-        console.log('❌ Not connected, cannot fetch balance');
         document.getElementById('walletDogDisplay').textContent = '0';
         return;
       }
       
-      console.log('🔄 Fetching DOG balance for:', appState.address);
-      
       try {
-        // Check if we're using Farcaster wallet
-        const isFarcasterWallet = sdk && sdk.wallet && sdk.wallet.ethProvider;
+        const dogTokenContract = new ethers.Contract(
+          CONTRACTS.DOG_TOKEN,
+          ABIS.DOG_TOKEN,
+          appState.provider
+        );
         
-        if (isFarcasterWallet) {
-          console.log('🟣 Using Farcaster wallet - trying direct RPC call');
-          
-          try {
-            // Encode the balanceOf function call
-            const iface = new ethers.utils.Interface([
-              "function balanceOf(address account) public view returns (uint256)"
-            ]);
-            const data = iface.encodeFunctionData("balanceOf", [appState.address]);
-            
-            // Make the call using the provider's send method
-            const result = await appState.provider.send("eth_call", [{
-              to: CONTRACTS.DOG_TOKEN,
-              data: data
-            }, "latest"]);
-            
-            console.log('Raw result:', result);
-            
-            if (result && result !== '0x') {
-              const balance = ethers.BigNumber.from(result);
-              const formattedBalance = ethers.utils.formatUnits(balance, 18);
-              const numBalance = parseFloat(formattedBalance);
-              const displayBalance = numBalance >= 1 ? numBalance.toFixed(2) : 
-                                   numBalance > 0 ? numBalance.toFixed(6) : '0';
-              
-              document.getElementById('walletDogDisplay').textContent = displayBalance;
-              console.log(`✅ DOG Balance (Farcaster): ${displayBalance}`);
-            } else {
-              console.log('No balance or contract not found');
-              document.getElementById('walletDogDisplay').textContent = '0';
-            }
-            
-          } catch (callError) {
-            console.error('Direct eth_call failed:', callError);
-            
-            // Fallback: Try using a public RPC endpoint
-            console.log('Trying fallback RPC...');
-            try {
-              const fallbackProvider = new ethers.providers.JsonRpcProvider('https://testnet-rpc.monad.xyz');
-              const dogTokenContract = new ethers.Contract(
-                CONTRACTS.DOG_TOKEN,
-                ["function balanceOf(address) view returns (uint256)"],
-                fallbackProvider
-              );
-              
-              const balance = await dogTokenContract.balanceOf(appState.address);
-              const formattedBalance = ethers.utils.formatUnits(balance, 18);
-              const numBalance = parseFloat(formattedBalance);
-              const displayBalance = numBalance >= 1 ? numBalance.toFixed(2) : 
-                                   numBalance > 0 ? numBalance.toFixed(6) : '0';
-              
-              document.getElementById('walletDogDisplay').textContent = displayBalance;
-              console.log(`✅ DOG Balance (Fallback RPC): ${displayBalance}`);
-              
-            } catch (fallbackError) {
-              console.error('Fallback RPC also failed:', fallbackError);
-              document.getElementById('walletDogDisplay').textContent = '0';
-            }
-          }
-          
-        } else {
-          // Regular wallet (MetaMask, etc.)
-          console.log('🦊 Using regular wallet provider');
-          
-          const dogTokenContract = new ethers.Contract(
-            CONTRACTS.DOG_TOKEN,
-            ["function balanceOf(address) view returns (uint256)"],
-            appState.provider
-          );
-          
-          const balance = await dogTokenContract.balanceOf(appState.address);
-          const formattedBalance = ethers.utils.formatUnits(balance, 18);
-          const numBalance = parseFloat(formattedBalance);
-          const displayBalance = numBalance >= 1 ? numBalance.toFixed(2) : 
-                               numBalance > 0 ? numBalance.toFixed(6) : '0';
-          
-          document.getElementById('walletDogDisplay').textContent = displayBalance;
-          console.log(`✅ DOG Balance: ${displayBalance}`);
-        }
+        const balance = await dogTokenContract.balanceOf(appState.address);
+        const formattedBalance = ethers.utils.formatUnits(balance, 18);
+        const numBalance = parseFloat(formattedBalance);
+        const displayBalance = numBalance >= 1 ? numBalance.toFixed(2) : 
+                             numBalance > 0 ? numBalance.toFixed(6) : '0';
+        
+        document.getElementById('walletDogDisplay').textContent = displayBalance;
+        console.log(`✅ DOG Balance: ${displayBalance}`);
         
       } catch (error) {
         console.error('❌ Error fetching token balance:', error);
-        
-        // Last resort: Use localStorage cache if available
-        const cachedBalance = localStorage.getItem(`dog_balance_${appState.address.toLowerCase()}`);
-        if (cachedBalance) {
-          document.getElementById('walletDogDisplay').textContent = cachedBalance;
-          console.log(`📦 Using cached balance: ${cachedBalance}`);
-        } else {
-          document.getElementById('walletDogDisplay').textContent = '0';
-        }
+        document.getElementById('walletDogDisplay').textContent = '0';
       }
     }
 
-    // ✅ FIXED CLAIM FUNCTION - XP resets after user confirms transaction + Button cooldown
     window.claimTokens = async function() {
       if (!appState.connected || !appState.signer) {
         showError('Please connect your wallet first');
@@ -1387,112 +1719,41 @@
       const claimButton = document.getElementById('claimButton');
       
       try {
-        console.log('💰 Starting token claim...');
-        
-        // ✅ Disable button immediately for 30 seconds
         claimButton.disabled = true;
-        
-        // Start countdown
-        let countdown = 30;
-        const originalText = claimButton.textContent;
-        
-        const countdownInterval = setInterval(() => {
-          countdown--;
-          claimButton.textContent = `⏳ Please wait ${countdown}s...`;
-          
-          if (countdown <= 0) {
-            clearInterval(countdownInterval);
-            // Re-enable button and update text after countdown
-            updateClaimUI();
-          }
-        }, 1000);
+        claimButton.textContent = '💰 Claiming...';
         
         showStatus('claim-status', '🔐 Please confirm transaction in your wallet...', 'pending');
         
-        // Ensure correct network
         await ensureMonadNetwork();
         
-        // Call the actual DOG token contract
         const dogTokenContract = new ethers.Contract(
           CONTRACTS.DOG_TOKEN,
           ABIS.DOG_TOKEN,
           appState.signer
         );
         
-        // Calculate XP to claim (must be multiple of 10)
         const xpToClaim = claimableDOG * XP_TO_DOG_RATE;
         
-        console.log(`Claiming ${xpToClaim} XP for ${claimableDOG} DOG tokens`);
-        
-        // Execute claim transaction with proper gas limit
         const tx = await dogTokenContract.claim(xpToClaim, {
           gasLimit: 100000
         });
         
-        // ✅ USER CONFIRMED TRANSACTION - NOW RESET XP IMMEDIATELY
-        console.log('🎯 Transaction confirmed by user - resetting XP to 0');
-        
-        // Reset XP to 0 in state and display immediately
+        // Reset XP immediately after user confirms
         appState.xp = 0;
         document.getElementById('xp').textContent = '0';
-        
-        // ✅ Save XP as 0 to Supabase immediately
         await saveWalletXP(appState.address, 0);
+        updateClaimUI();
         
-        // Update claim UI immediately
-        await updateClaimUI();
+        showStatus('claim-status', `📡 Transaction sent! XP reset to 0`, 'pending');
         
-        showStatus('claim-status', `📡 Transaction sent: ${tx.hash.slice(0,10)}... XP reset to 0`, 'pending');
-        console.log('Transaction hash:', tx.hash);
-        console.log('✅ XP successfully reset to 0 - user can continue earning');
-        
-        // Wait for confirmation and update balance
         setTimeout(async () => {
           try {
-            // Try to get updated balance with multiple retries
-            const updateBalanceWithRetry = async (retries = 3) => {
-              for (let i = 0; i < retries; i++) {
-                try {
-                  await new Promise(resolve => setTimeout(resolve, 2000 * (i + 1)));
-                  
-                  const newBalance = await dogTokenContract.balanceOf(appState.address);
-                  const decimals = await dogTokenContract.decimals();
-                  const formattedBalance = ethers.utils.formatUnits(newBalance, decimals);
-                  
-                  const numBalance = parseFloat(formattedBalance);
-                  const displayBalance = numBalance >= 1 ? numBalance.toFixed(2) : numBalance.toFixed(6);
-                  
-                  document.getElementById('walletDogDisplay').textContent = displayBalance;
-                  
-                  // Cache the balance
-                  localStorage.setItem(`dog_balance_${appState.address.toLowerCase()}`, displayBalance);
-                  
-                  console.log(`✅ Balance updated after claim (attempt ${i + 1}): ${displayBalance} DOG`);
-                  break;
-                } catch (e) {
-                  console.log(`Balance update attempt ${i + 1} failed, retrying...`);
-                }
-              }
-            };
-            
-            updateBalanceWithRetry();
-            
-            showStatus('claim-status', `✅ Successfully claimed ${claimableDOG} $DOG tokens! XP reset - start earning again!`, 'success');
-            
-            // Show achievement
-            showAchievementModal({
-              icon: '💰',
-              title: 'Tokens Claimed!',
-              description: `You've successfully claimed ${claimableDOG} $DOG tokens! Your XP has been reset - start earning again!`,
-              type: 'claim',
-              data: { amount: claimableDOG }
-            });
-            
+            await updateTokenBalance();
+            showStatus('claim-status', `✅ Successfully claimed ${claimableDOG} $DOG tokens!`, 'success');
             setTimeout(() => hideStatus('claim-status'), 8000);
             
           } catch (e) {
-            console.log('Post-claim update error:', e);
-            showStatus('claim-status', `✅ Claim transaction sent! Tokens will arrive soon. XP reset successfully.`, 'success');
+            showStatus('claim-status', `✅ Claim transaction sent! Tokens will arrive soon.`, 'success');
             setTimeout(() => hideStatus('claim-status'), 8000);
           }
         }, 5000);
@@ -1505,1068 +1766,135 @@
         if (error.message.includes('user rejected')) {
           errorMsg = 'Transaction cancelled - XP not affected';
           // Don't reset XP if user cancelled
-          console.log('🚫 Transaction cancelled - XP remains unchanged');
         } else if (error.message.includes('insufficient funds')) {
           errorMsg = 'Insufficient gas funds';
-        } else if (error.message.includes('XP already claimed')) {
-          errorMsg = 'This XP has already been claimed';
-          // Reset XP if already claimed on contract
-          appState.xp = 0;
-          await saveWalletXP(appState.address, 0);
-          await updateXPDisplay();
-        } else if (error.message.includes('Invalid XP amount')) {
-          errorMsg = 'Invalid XP amount. Must be multiple of 10';
         }
         
         showStatus('claim-status', errorMsg, 'error');
         setTimeout(() => hideStatus('claim-status'), 5000);
+        
+        // Re-enable button
+        updateClaimUI();
       }
     };
 
-    async function initializeAppWithProgress() {
-      try {
-        showLoadingState();
-        
-        // Step 1: Initialize SDK
-        updateLoadingProgress(20, 'Loading Farcaster SDK...<br>🔗 Connecting to Frame environment');
-        
-        try {
-          const module = await import('https://esm.sh/@farcaster/frame-sdk');
-          sdk = module.sdk;
-          console.log('SDK loaded:', !!sdk);
-          
-          if (sdk) {
-            updateLoadingProgress(40, 'Farcaster SDK loaded! ✅<br>📱 Setting up Mini App environment');
-            await sdk.actions.ready();
-            console.log('SDK ready');
-          }
-        } catch (e) {
-          console.log('SDK not available:', e.message);
-          updateLoadingProgress(40, 'Running in standalone mode<br>🌐 Browser environment detected');
+    // Tab Management
+    window.showTab = function(tabName) {
+      console.log('📑 Switching to tab:', tabName);
+      activeTab = tabName;
+      
+      // Update all tabs
+      document.querySelectorAll('.tab').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      
+      // Update claim header button
+      const claimHeaderButton = document.getElementById('claimHeaderButton');
+      if (tabName === 'claim') {
+        claimHeaderButton.classList.add('active');
+      } else {
+        claimHeaderButton.classList.remove('active');
+        // Find and activate the clicked tab
+        const clickedTab = event.target.closest('.tab');
+        if (clickedTab) {
+          clickedTab.classList.add('active');
         }
+      }
+      
+      // Update content
+      document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.remove('active');
+      });
+      document.getElementById(tabName).classList.add('active');
+      
+      if (tabName === 'claim') {
+        updateClaimUI();
+        setTimeout(() => {
+          updateTokenBalance();
+        }, 500);
+      }
+      
+      if (tabName === 'slots') {
+        updateSlotsButton();
+      }
+      
+      if (tabName === 'wheel') {
+        drawWheel();
+        updateWheelButton();
+      }
+    };
 
-        // Step 2: Setup game functions
-        updateLoadingProgress(60, 'Setting up game functions...<br>🎮 Preparing blockchain interactions');
-        await new Promise(resolve => setTimeout(resolve, 300));
+    function updateSlotsButton() {
+      const slotsButton = document.getElementById('slotsButton');
+      if (!slotsButton) return;
+      
+      if (appState.connected) {
+        slotsButton.textContent = '🎰 Play Slots (0.1 MONAD)';
+        slotsButton.disabled = false;
+      } else {
+        slotsButton.textContent = '🔒 Connect Wallet';
+        slotsButton.disabled = true;
+      }
+    }
+
+    function updateWheelButton() {
+      const spinButton = document.getElementById('spinButton');
+      if (!spinButton) return;
+      
+      if (appState.connected) {
+        spinButton.textContent = '🎯 Spin the Wheel';
+        spinButton.disabled = false;
+      } else {
+        spinButton.textContent = '🔒 Connect Wallet';
+        spinButton.disabled = true;
+      }
+    }
+
+    // Initialize App
+    async function initApp() {
+      try {
+        showLoading();
         
-        setupEventListeners();
-        setupGameFunctions();
+        // Initialize Supabase
+        initSupabase();
         
-        // Step 3: Initialize app
-        updateLoadingProgress(80, 'Initializing app...<br>🎮 Setting up game');
-        await new Promise(resolve => setTimeout(resolve, 300));
+        // Setup event listeners
+        document.getElementById('connect-btn').onclick = connectWallet;
+        document.getElementById('disconnect-btn').onclick = disconnect;
         
-        // Step 4: Finalize
-        updateLoadingProgress(95, 'Almost ready...<br>✨ Final preparations');
-        await new Promise(resolve => setTimeout(resolve, 200));
+        // Initialize wheel
+        drawWheel();
         
-        hideLoadingState();
-        console.log('✅ App initialized successfully with progress tracking');
+        // Initialize claim preview
+        updateClaimPreview();
+        
+        // Add resize listener for wheel
+        window.addEventListener('resize', () => {
+          if (activeTab === 'wheel') {
+            drawWheel();
+          }
+        });
+        
+        hideLoading();
+        console.log('✅ App initialized successfully');
         
       } catch (error) {
         console.error('❌ Init error:', error);
-        updateLoadingProgress(100, 'Error occurred, but app will continue<br>⚠️ Some features may be limited');
-        
-        setTimeout(() => {
-          hideLoadingState();
-        }, 1000);
+        hideLoading();
       }
     }
 
-    async function initApp() {
-      await initializeAppWithProgress();
+    function showLoading() {
+      document.getElementById('loading').style.display = 'flex';
+      document.querySelector('.app-content').classList.remove('loaded');
     }
 
-    function setupEventListeners() {
-      document.getElementById('connect-btn').onclick = connectWallet;
-      document.getElementById('disconnect-btn').onclick = disconnect;
-    }
-
-    // Disable all action buttons during transaction
-    function disableAllActionButtons() {
-      const buttons = [
-        ...document.querySelectorAll('#pet button'),
-        ...document.querySelectorAll('#greet button'),
-        ...document.querySelectorAll('#flip button'),
-        document.getElementById('claimButton')
-      ];
-      
-      buttons.forEach(button => {
-        if (button && !button.id.includes('disconnect') && !button.classList.contains('tab') && !button.classList.contains('share-button')) {
-          button.disabled = true;
-          button.dataset.originalText = button.textContent;
-        }
-      });
-      
-      appState.isTransactionPending = true;
-    }
-
-    // Enable all action buttons after transaction
-    function enableAllActionButtons() {
-      const buttons = [
-        ...document.querySelectorAll('#pet button'),
-        ...document.querySelectorAll('#greet button'),
-        ...document.querySelectorAll('#flip button'),
-        document.getElementById('claimButton')
-      ];
-      
-      buttons.forEach(button => {
-        if (button && !button.id.includes('disconnect') && !button.classList.contains('tab') && !button.classList.contains('share-button')) {
-          button.disabled = false;
-          if (button.dataset.originalText) {
-            button.textContent = button.dataset.originalText;
-            delete button.dataset.originalText;
-          }
-        }
-      });
-      
-      appState.isTransactionPending = false;
-      
-      // Update claim button state
-      if (activeTab === 'claim') {
-        updateClaimUI();
-      }
-    }
-
-    function setupGameFunctions() {
-      // Define all game functions globally
-      window.petDog = async function() {
-        console.log('🐕 Pet Dog clicked!');
-        
-        if (!appState.connected) {
-          console.log('❌ Wallet not connected');
-          showError('Connect wallet first');
-          return;
-        }
-        
-        if (appState.isTransactionPending) {
-          showError('Please wait for the current transaction to complete');
-          return;
-        }
-        
-        console.log('✅ Wallet connected, starting pet transaction');
-        
-        // Change dog image
-        document.getElementById('dog-img').src = `https://placedog.net/400/300?id=${Math.floor(Math.random() * 50) + 1}`;
-        
-        // Execute real blockchain transaction
-        await executeTransaction(
-          CONTRACTS.PET,
-          ABIS.PET,
-          'pet',
-          'pet-status',
-          '🐕 Dog petted successfully! +10 XP',
-          10
-        );
-      };
-
-      window.sayGM = async function() {
-        console.log('☀️ Say GM clicked!');
-        
-        if (!appState.connected) {
-          showError('Connect wallet first');
-          return;
-        }
-        
-        if (appState.isTransactionPending) {
-          showError('Please wait for the current transaction to complete');
-          return;
-        }
-        
-        await executeTransaction(
-          CONTRACTS.GREET,
-          ABIS.GREET,
-          'gm',
-          'greet-status',
-          '☀️ Good Morning sent! +5 XP',
-          5
-        );
-      };
-
-      window.sayGN = async function() {
-        console.log('🌙 Say GN clicked!');
-        
-        if (!appState.connected) {
-          showError('Connect wallet first');
-          return;
-        }
-        
-        if (appState.isTransactionPending) {
-          showError('Please wait for the current transaction to complete');
-          return;
-        }
-        
-        await executeTransaction(
-          CONTRACTS.GREET,
-          ABIS.GREET,
-          'gn',
-          'greet-status',
-          '🌙 Good Night sent! +5 XP',
-          5
-        );
-      };
-
-      window.flipCoin = async function() {
-        console.log('🪙 Flip Coin clicked!');
-        
-        if (!appState.connected) {
-          showError('Connect wallet first');
-          return;
-        }
-        
-        if (appState.isTransactionPending) {
-          showError('Please wait for the current transaction to complete');
-          return;
-        }
-        
-        const coin = document.getElementById('coin');
-        const result = document.getElementById('flip-result');
-        
-        // Start visual animation
-        result.textContent = 'Flipping...';
-        let rotation = 0;
-        const interval = setInterval(() => {
-          rotation += 180;
-          coin.style.transform = `rotateY(${rotation}deg)`;
-        }, 100);
-        
-        // Execute real transaction
-        await executeTransaction(
-          CONTRACTS.FLIP,
-          ABIS.FLIP,
-          'flip',
-          'flip-status',
-          '🪙 Coin flipped! +3 XP',
-          3
-        );
-        
-        // Stop animation after transaction starts
-        setTimeout(() => {
-          clearInterval(interval);
-          const finalResult = Math.random() < 0.5 ? 'Heads' : 'Tails';
-          coin.style.transform = `rotateY(${finalResult === 'Heads' ? 0 : 180}deg)`;
-          result.textContent = `Result: ${finalResult}!`;
-        }, 3000);
-      };
-
-      // ✅ SLOTS GAME FUNCTION - REDESIGNED WITH CREDITS SYSTEM
-      window.playSlots = async function() {
-        console.log('🎰 Play Slots clicked!');
-        
-        if (!appState.connected) {
-          showError('Connect wallet first');
-          return;
-        }
-        
-        if (appState.isTransactionPending) {
-          showError('Please wait for the current transaction to complete');
-          return;
-        }
-        
-        const slotsButton = document.getElementById('slotsButton');
-        const originalText = slotsButton.textContent;
-        
-        // Check if user has credits or needs to buy
-        if (appState.slotsCredits > 0) {
-          // USE EXISTING CREDIT
-          await playSlotGame();
-        } else {
-          // BUY CREDITS WITH 0.1 MONAD
-          await buySlotCredits();
-        }
-      };
-
-      // Buy slot credits with 0.1 MONAD payment - REAL CONTRACT VERSION
-      async function buySlotCredits() {
-        const slotsButton = document.getElementById('slotsButton');
-        const originalText = slotsButton.textContent;
-        
-        try {
-          // Disable button immediately
-          slotsButton.disabled = true;
-          slotsButton.textContent = '💰 Buying Credits...';
-          
-          showStatus('slots-status', '🔐 Please confirm payment of 0.1 MONAD for 2 game credits...', 'pending');
-          
-          // Ensure correct network
-          await ensureMonadNetwork();
-          
-          // ✅ REAL CONTRACT CALL
-          const slotsContract = new ethers.Contract(CONTRACTS.SLOTS, ABIS.SLOTS, appState.signer);
-          
-          // Send transaction with 0.1 MONAD payment
-          const tx = await slotsContract.buyCredits({
-            value: ethers.utils.parseEther("0.1"), // 0.1 MONAD
-            gasLimit: 100000
-          });
-          
-          console.log('✅ Credits purchase transaction sent:', tx.hash);
-          showStatus('slots-status', `📡 Payment sent: ${tx.hash.slice(0,10)}... Waiting for confirmation...`, 'pending');
-          
-          // Wait for transaction confirmation
-          setTimeout(async () => {
-            try {
-              // ✅ GET CREDITS FROM CONTRACT
-              const credits = await slotsContract.getCredits(appState.address);
-              appState.slotsCredits = credits.toNumber();
-              
-              // Save to localStorage for immediate display
-              await saveSlotsCredits(appState.address, appState.slotsCredits);
-              updateSlotsButton();
-              
-              showStatus('slots-status', `✅ Payment confirmed! You have ${appState.slotsCredits} game credits!`, 'success');
-              console.log(`✅ ${appState.slotsCredits} slots credits confirmed from contract`);
-              
-              setTimeout(() => hideStatus('slots-status'), 3000);
-            } catch (e) {
-              console.error('Error getting credits after purchase:', e);
-              // Fallback: assume 2 credits were added
-              appState.slotsCredits += 2;
-              await saveSlotsCredits(appState.address, appState.slotsCredits);
-              updateSlotsButton();
-              
-              showStatus('slots-status', '✅ Payment confirmed! Credits should be available soon.', 'success');
-              setTimeout(() => hideStatus('slots-status'), 3000);
-            }
-          }, 5000);
-          
-        } catch (error) {
-          console.error('❌ Payment error:', error);
-          
-          slotsButton.disabled = false;
-          slotsButton.textContent = originalText;
-          
-          let errorMsg = 'Payment failed';
-          if (error.message.includes('user rejected')) {
-            errorMsg = 'Payment cancelled';
-          } else if (error.message.includes('insufficient funds')) {
-            errorMsg = 'Insufficient MONAD balance';
-          }
-          
-          showStatus('slots-status', errorMsg, 'error');
-          setTimeout(() => hideStatus('slots-status'), 5000);
-        }
-      }
-
-      // Play the actual slot game using 1 credit - REAL CONTRACT VERSION
-      async function playSlotGame() {
-        if (appState.slotsCredits <= 0) {
-          showError('No game credits available');
-          return;
-        }
-        
-        const slotsButton = document.getElementById('slotsButton');
-        
-        try {
-          // Disable button during game
-          slotsButton.disabled = true;
-          slotsButton.textContent = '🎰 Playing...';
-          
-          console.log(`🎮 Playing slots with contract, current credits: ${appState.slotsCredits}`);
-          showStatus('slots-status', '🎰 Spinning the reels...', 'pending');
-          
-          // ✅ REAL CONTRACT CALL
-          const slotsContract = new ethers.Contract(CONTRACTS.SLOTS, ABIS.SLOTS, appState.signer);
-          
-          // Play slots on contract (uses 1 credit automatically)
-          const tx = await slotsContract.playSlots({
-            gasLimit: 150000
-          });
-          
-          console.log('✅ Slots game transaction sent:', tx.hash);
-          
-          // Start visual animation while waiting for result
-          const symbols = ['🐕', '🦮', '🐶', '🦴'];
-          const reels = ['reel1', 'reel2', 'reel3', 'reel4'];
-          
-          // Spinning animation
-          reels.forEach(reelId => {
-            const reel = document.getElementById(reelId);
-            reel.classList.add('spinning');
-          });
-          
-          let spinDuration = 4000; // 4 seconds of spinning
-          
-          const spinInterval = setInterval(() => {
-            reels.forEach(reelId => {
-              const reel = document.getElementById(reelId);
-              reel.textContent = symbols[Math.floor(Math.random() * symbols.length)];
-            });
-          }, 100);
-          
-          // Wait for transaction and get results
-          setTimeout(async () => {
-            clearInterval(spinInterval);
-            
-            try {
-              // Get transaction receipt to see events
-              const receipt = await appState.provider.getTransactionReceipt(tx.hash);
-              
-              // Parse game results from events (simplified - in real implementation you'd parse the event)
-              // For now, generate results based on transaction hash for deterministic results
-              const results = [];
-              const txHash = tx.hash;
-              for (let i = 0; i < 4; i++) {
-                const byte = parseInt(txHash.slice(2 + i * 2, 4 + i * 2), 16);
-                results.push(symbols[byte % 4]);
-              }
-              
-              // Display final results
-              reels.forEach((reelId, index) => {
-                const reel = document.getElementById(reelId);
-                reel.classList.remove('spinning');
-                reel.textContent = results[index];
-              });
-              
-              // Update credits from contract
-              const newCredits = await slotsContract.getCredits(appState.address);
-              appState.slotsCredits = newCredits.toNumber();
-              await saveSlotsCredits(appState.address, appState.slotsCredits);
-              
-              console.log(`🎮 Game completed, remaining credits: ${appState.slotsCredits}`);
-              
-              // Check for winning combinations and award XP
-              setTimeout(() => {
-                checkSlotsWin(results);
-                updateSlotsButton();
-              }, 500);
-              
-            } catch (e) {
-              console.error('Error processing game result:', e);
-              
-              // Fallback: Generate random results and update credits
-              const results = [];
-              for (let i = 0; i < 4; i++) {
-                results.push(symbols[Math.floor(Math.random() * symbols.length)]);
-              }
-              
-              reels.forEach((reelId, index) => {
-                const reel = document.getElementById(reelId);
-                reel.classList.remove('spinning');
-                reel.textContent = results[index];
-              });
-              
-              // Assume 1 credit was used
-              appState.slotsCredits = Math.max(0, appState.slotsCredits - 1);
-              await saveSlotsCredits(appState.address, appState.slotsCredits);
-              
-              setTimeout(() => {
-                checkSlotsWin(results);
-                updateSlotsButton();
-              }, 500);
-            }
-          }, spinDuration);
-          
-        } catch (error) {
-          console.error('❌ Game error:', error);
-          
-          // Stop spinning animation
-          const reels = ['reel1', 'reel2', 'reel3', 'reel4'];
-          reels.forEach(reelId => {
-            const reel = document.getElementById(reelId);
-            reel.classList.remove('spinning');
-          });
-          
-          updateSlotsButton();
-          
-          let errorMsg = 'Game failed';
-          if (error.message.includes('No credits available')) {
-            errorMsg = 'No credits available';
-          } else if (error.message.includes('user rejected')) {
-            errorMsg = 'Game cancelled';
-          }
-          
-          showStatus('slots-status', errorMsg, 'error');
-          setTimeout(() => hideStatus('slots-status'), 5000);
-        }
-      }
-
-      // Check slots winning combinations
-      function checkSlotsWin(results) {
-        console.log('🎰 Slots results:', results);
-        
-        // Count occurrences of each symbol
-        const symbolCounts = {};
-        results.forEach(symbol => {
-          symbolCounts[symbol] = (symbolCounts[symbol] || 0) + 1;
-        });
-        
-        // Check for 4 of a kind (jackpot)
-        const maxCount = Math.max(...Object.values(symbolCounts));
-        
-        if (maxCount === 4) {
-          // JACKPOT! 4 of a kind
-          const winningSymbol = Object.keys(symbolCounts).find(symbol => symbolCounts[symbol] === 4);
-          
-          // Highlight winning reels
-          document.querySelectorAll('.slot-reel').forEach(reel => {
-            if (reel.textContent === winningSymbol) {
-              reel.classList.add('winning');
-            }
-          });
-          
-          // Award 5000 XP
-          addXP(5000);
-          
-          showStatus('slots-status', `🎉 JACKPOT! 4x ${winningSymbol} = +5000 XP!`, 'success');
-          
-          // Show jackpot achievement
-          setTimeout(() => {
-            showAchievementModal({
-              icon: '🎰',
-              title: 'JACKPOT WINNER!',
-              description: `Amazing! You got 4x ${winningSymbol} and won 5000 XP! You're incredibly lucky!`,
-              type: 'slots',
-              data: { 
-                symbol: winningSymbol, 
-                count: 4, 
-                xp: 5000,
-                result: results.join('')
-              }
-            });
-          }, 1000);
-          
-        } else if (maxCount === 3) {
-          // 3 of a kind - smaller win
-          const winningSymbol = Object.keys(symbolCounts).find(symbol => symbolCounts[symbol] === 3);
-          
-          // Highlight winning reels
-          document.querySelectorAll('.slot-reel').forEach(reel => {
-            if (reel.textContent === winningSymbol) {
-              reel.classList.add('winning');
-            }
-          });
-          
-          // Award 500 XP for 3 of a kind
-          addXP(500);
-          
-          showStatus('slots-status', `🏆 3x ${winningSymbol} = +500 XP!`, 'success');
-          
-        } else if (maxCount === 2) {
-          // 2 of a kind - small win
-          const winningSymbol = Object.keys(symbolCounts).find(symbol => symbolCounts[symbol] === 2);
-          
-          // Award 50 XP for 2 of a kind
-          addXP(50);
-          
-          showStatus('slots-status', `✨ 2x ${winningSymbol} = +50 XP!`, 'success');
-          
-        } else {
-          // No win
-          showStatus('slots-status', '😔 No match this time. Try again!', 'error');
-        }
-        
-        // Clear status and winning highlights after delay
-        setTimeout(() => {
-          hideStatus('slots-status');
-          document.querySelectorAll('.slot-reel').forEach(reel => {
-            reel.classList.remove('winning');
-          });
-        }, 5000);
-      }
-
-      // Reset slots display
-      function resetSlotsDisplay() {
-        const symbols = ['🐕', '🦮', '🐶', '🦴'];
-        const reels = ['reel1', 'reel2', 'reel3', 'reel4'];
-        
-        reels.forEach((reelId, index) => {
-          const reel = document.getElementById(reelId);
-          reel.textContent = symbols[index];
-          reel.classList.remove('spinning', 'winning');
-        });
-      }
-
-      window.showTab = function(tabName) {
-        console.log('📑 Switching to tab:', tabName);
-        activeTab = tabName;
-        
-        // Update tabs
-        document.querySelectorAll('.tab').forEach(tab => {
-          tab.classList.remove('active');
-        });
-        event.target.classList.add('active');
-        
-        // Update content
-        document.querySelectorAll('.tab-content').forEach(content => {
-          content.classList.remove('active');
-        });
-        document.getElementById(tabName).classList.add('active');
-        
-        // Update claim UI when switching to claim tab
-        if (tabName === 'claim') {
-          updateClaimUI();
-          // Update balance with delay for better reliability
-          setTimeout(() => {
-            updateTokenBalance();
-          }, 500);
-        }
-        
-        // Update slots when switching to slots tab
-        if (tabName === 'slots') {
-          resetSlotsDisplay();
-          updateSlotsButton();
-        }
-      };
-      
-      console.log('🎮 Game functions setup complete');
-    }
-
-    async function connectWallet() {
-      try {
-        console.log('Connecting wallet...');
-        
-        // Show loading state
-        const connectBtn = document.getElementById('connect-btn');
-        connectBtn.textContent = '🔄 Connecting...';
-        connectBtn.disabled = true;
-        
-        let provider;
-        
-        if (sdk && sdk.wallet && sdk.wallet.ethProvider) {
-          console.log('Using Farcaster wallet');
-          provider = sdk.wallet.ethProvider;
-        } else if (window.ethereum) {
-          console.log('Using browser wallet');
-          provider = window.ethereum;
-        } else {
-          throw new Error('No wallet available');
-        }
-
-        // Request accounts with timeout
-        const accountsPromise = provider.request({
-          method: 'eth_requestAccounts'
-        });
-        const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Connection timeout')), 10000)
-        );
-        
-        const accounts = await Promise.race([accountsPromise, timeoutPromise]);
-
-        if (!accounts || accounts.length === 0) {
-          throw new Error('No accounts found');
-        }
-
-        console.log('✅ Connected:', accounts[0]);
-
-        // Setup ethers
-        appState.provider = new ethers.providers.Web3Provider(provider);
-        appState.signer = appState.provider.getSigner();
-        appState.address = accounts[0];
-        appState.connected = true;
-
-        // Update UI and load wallet-specific data
-        updateWalletUI();
-        
-        // Load data asynchronously
-        updateXPDisplay().catch(console.error);
-        
-        // Ensure network is correct before fetching balance
-        await ensureMonadNetwork();
-        
-        // Update token balance with multiple retries
-        const fetchBalance = async () => {
-          for (let i = 0; i < 3; i++) {
-            try {
-              await updateTokenBalance();
-              break;
-            } catch (e) {
-              console.log(`Balance fetch attempt ${i + 1} failed, retrying...`);
-              await new Promise(resolve => setTimeout(resolve, 2000));
-            }
-          }
-        };
-        
-        fetchBalance();
-
-      } catch (error) {
-        console.error('Connection error:', error);
-        showError(error.message);
-        
-        // Reset button
-        const connectBtn = document.getElementById('connect-btn');
-        connectBtn.textContent = '🟣 Connect Wallet';
-        connectBtn.disabled = false;
-      }
-    }
-
-    async function disconnect() {
-      appState = {
-        connected: false,
-        address: null,
-        xp: 0,
-        slotsCredits: 0,
-        provider: null,
-        signer: null
-      };
-      updateWalletUI();
-      await updateXPDisplay();
-      console.log('🔌 Wallet disconnected, XP reset to 0');
-    }
-
-    function updateWalletUI() {
-      const connectArea = document.getElementById('connect-area');
-      const connectedArea = document.getElementById('connected-area');
-      const addressEl = document.getElementById('address');
-
-      if (appState.connected) {
-        connectArea.style.display = 'none';
-        connectedArea.style.display = 'block';
-        addressEl.textContent = appState.address.slice(0,6) + '...' + appState.address.slice(-4);
-      } else {
-        connectArea.style.display = 'block';
-        connectedArea.style.display = 'none';
-      }
-    }
-
-    async function addXP(amount) {
-      if (!appState.connected || !appState.address) {
-        console.log('❌ Cannot add XP: wallet not connected');
-        return;
-      }
-      
-      // Add XP to current balance
-      appState.xp = (appState.xp || 0) + amount;
-      
-      // Update display immediately
-      document.getElementById('xp').textContent = appState.xp;
-      
-      // Save XP to Supabase in background (non-blocking)
-      saveWalletXP(appState.address, appState.xp);
-      
-      // Update claim UI non-blocking
-      requestAnimationFrame(() => updateClaimUI());
-      
-      // Add celebration effect
-      const xpElement = document.getElementById('xp');
-      xpElement.style.transform = 'scale(1.2)';
-      xpElement.style.color = '#00ff00';
-      
+    function hideLoading() {
       setTimeout(() => {
-        xpElement.style.transform = 'scale(1)';
-        xpElement.style.color = 'white';
-      }, 500);
-      
-      console.log(`✨ XP added to ${appState.address}: +${amount}, Total Available: ${appState.xp}`);
+        document.getElementById('loading').style.display = 'none';
+        document.querySelector('.app-content').classList.add('loaded');
+      }, 1000);
     }
-
-    function showStatus(id, message, type) {
-      const el = document.getElementById(id);
-      el.textContent = message;
-      el.className = `status visible ${type}`;
-    }
-
-    function hideStatus(id) {
-      document.getElementById(id).className = 'status';
-    }
-
-    function showError(message) {
-      const div = document.createElement('div');
-      div.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:rgba(255,0,0,0.9);color:white;padding:10px 20px;border-radius:8px;z-index:1000;';
-      div.textContent = message;
-      document.body.appendChild(div);
-      setTimeout(() => div.remove(), 5000);
-    }
-
-    // Real transaction function
-    async function executeTransaction(contractAddress, abi, methodName, statusId, successMsg, xpAmount) {
-      if (!appState.connected) {
-        showError('Connect wallet first');
-        return;
-      }
-
-      if (appState.isTransactionPending) {
-        showError('Please wait for the current transaction to complete');
-        return;
-      }
-
-      try {
-        console.log('🔗 Starting transaction:', methodName);
-        
-        // Disable all action buttons
-        disableAllActionButtons();
-        
-        showStatus(statusId, 'Preparing transaction...', 'pending');
-
-        // Ensure Monad network
-        await ensureMonadNetwork();
-
-        // Create contract instance
-        const contract = new ethers.Contract(contractAddress, abi, appState.signer);
-        
-        showStatus(statusId, '🔐 Please confirm in your wallet...', 'pending');
-
-        // Send transaction
-        const tx = await contract[methodName]({
-          gasLimit: 100000
-        });
-
-        console.log('✅ Transaction sent:', tx.hash);
-        showStatus(statusId, `✅ Transaction sent: ${tx.hash.slice(0,10)}...`, 'pending');
-
-        // Since Farcaster wallet doesn't support eth_getTransactionReceipt,
-        // we'll assume success after a delay
-        setTimeout(async () => {
-          console.log('✅ Transaction assumed successful');
-          showStatus(statusId, successMsg, 'success');
-          await addXP(xpAmount);
-          
-          // Enable all buttons
-          enableAllActionButtons();
-          
-          setTimeout(() => hideStatus(statusId), 3000);
-        }, 5000);
-
-      } catch (error) {
-        console.error('❌ Transaction error:', error);
-        
-        // Enable all buttons on error
-        enableAllActionButtons();
-        
-        let errorMsg = 'Transaction failed';
-        if (error.message.includes('user rejected') || error.code === 4001) {
-          errorMsg = 'Transaction cancelled by user';
-        } else if (error.message.includes('insufficient funds')) {
-          errorMsg = 'Insufficient funds for gas';
-        }
-
-        showStatus(statusId, errorMsg, 'error');
-        setTimeout(() => hideStatus(statusId), 5000);
-      }
-    }
-
-    async function ensureMonadNetwork() {
-      const MONAD_CHAIN_ID = '0x279F'; // 10143 in hex
-      
-      try {
-        const provider = sdk && sdk.wallet && sdk.wallet.ethProvider 
-          ? sdk.wallet.ethProvider 
-          : window.ethereum;
-
-        if (!provider) {
-          throw new Error('No wallet provider available');
-        }
-
-        const chainId = await provider.request({ method: 'eth_chainId' });
-        console.log('Current chain ID:', chainId);
-
-        if (chainId !== MONAD_CHAIN_ID) {
-          console.log('Switching to Monad Testnet...');
-          
-          try {
-            await provider.request({
-              method: 'wallet_switchEthereumChain',
-              params: [{ chainId: MONAD_CHAIN_ID }],
-            });
-            console.log('Switched to Monad Testnet');
-          } catch (switchError) {
-            if (switchError.code === 4902) {
-              console.log('Adding Monad Testnet...');
-              await provider.request({
-                method: 'wallet_addEthereumChain',
-                params: [{
-                  chainId: MONAD_CHAIN_ID,
-                  chainName: 'Monad Testnet',
-                  nativeCurrency: {
-                    name: 'Monad',
-                    symbol: 'MONAD',
-                    decimals: 18
-                  },
-                  rpcUrls: ['https://testnet-rpc.monad.xyz'],
-                  blockExplorerUrls: ['https://testnet.monadscan.com/']
-                }]
-              });
-              console.log('Monad Testnet added');
-            }
-          }
-
-          // Recreate provider after network switch
-          appState.provider = new ethers.providers.Web3Provider(provider);
-          appState.signer = appState.provider.getSigner();
-        }
-      } catch (error) {
-        console.error('Network switch error:', error);
-        throw new Error('Failed to switch to Monad Testnet');
-      }
-    }
-
-    // Farcaster Sharing Functions
-    function generateShareableContent(type, data = {}) {
-      const baseUrl = window.location.origin;
-      const tokenBalance = document.getElementById('walletDogDisplay')?.textContent || '0';
-      
-      const shareTemplates = {
-        pet: {
-          text: `Just petted the Monad Dog! 🐕✨\n\nXP earned: ${appState.xp}\n$DOG Balance: ${tokenBalance}\n\nJoin me on Monad Testnet!`,
-          url: `${baseUrl}?ref=pet&xp=${appState.xp}`,
-          image: "🐕"
-        },
-        greet: {
-          text: `GM Monad community! ☀️👋\n\nCommunity XP: ${appState.xp}\n$DOG Tokens: ${tokenBalance}\n\nSpread the love on Monad!`,
-          url: `${baseUrl}?ref=greet&xp=${appState.xp}`,
-          image: "👋"
-        },
-        flip: {
-          text: `Just flipped a coin on Monad! 🪙\n\nResult: ${data.result || 'Lucky'}\nXP: ${appState.xp}\n$DOG: ${tokenBalance}`,
-          url: `${baseUrl}?ref=flip&result=${data.result}&xp=${appState.xp}`,
-          image: "🪙"
-        },
-        slots: {
-          text: `Just hit the slots on Monad Dog! 🎰\n\nResult: ${data.result || 'Spinning'}\nXP: ${appState.xp}\n$DOG: ${tokenBalance}\n\nTry your luck on Monad!`,
-          url: `${baseUrl}?ref=slots&xp=${appState.xp}`,
-          image: "🎰"
-        },
-        claim: {
-          text: `Just claimed ${data.amount || 0} $DOG tokens! 💰\n\nTotal $DOG Balance: ${tokenBalance}\nXP reset - earning again!\n\nEarn XP and claim your $DOG tokens too!`,
-          url: `${baseUrl}?ref=claim&tokens=${data.amount}`,
-          image: "💰"
-        },
-        invite: {
-          text: `Playing Monad Dog - the cutest way to explore Monad Testnet! 🐕⛓️\n\n✨ Pet dogs, flip coins, say GM/GN\n🎯 Earn XP and claim $DOG tokens\n💰 Convert XP to tokens (10:1 rate)\n🚀 Real blockchain interactions\n\nJoin me!`,
-          url: `https://monad-snowy.vercel.app?ref=invite&inviter=${appState.address?.slice(0,6)}`,
-          image: "🚀"
-        }
-      };
-      
-      return shareTemplates[type] || shareTemplates.invite;
-    }
-
-    function shareOnFarcaster(content) {
-      try {
-        if (sdk && sdk.actions && sdk.actions.openUrl) {
-          // Use Farcaster SDK for sharing
-          const shareUrl = `https://warpcast.com/~/compose?text=${encodeURIComponent(content.text)}&embeds[]=${encodeURIComponent(content.url)}`;
-          sdk.actions.openUrl(shareUrl);
-          console.log('🚀 Shared via Farcaster SDK');
-        } else {
-          // Fallback to direct URL
-          const shareUrl = `https://warpcast.com/~/compose?text=${encodeURIComponent(content.text)}&embeds[]=${encodeURIComponent(content.url)}`;
-          window.open(shareUrl, '_blank');
-          console.log('🚀 Shared via direct URL');
-        }
-        
-        // Track sharing event
-        console.log('📊 Share event tracked:', content);
-        
-      } catch (error) {
-        console.error('❌ Share error:', error);
-        showError('Failed to open share dialog');
-      }
-    }
-
-    // Achievement Modal Functions
-    window.showAchievementModal = function(achievement) {
-      const modal = document.getElementById('achievementModal');
-      const icon = document.getElementById('achievementIcon');
-      const title = document.getElementById('achievementTitle');
-      const description = document.getElementById('achievementDescription');
-      
-      if (!modal || !icon || !title || !description) {
-        console.error('Achievement modal elements not found');
-        return;
-      }
-      
-      icon.textContent = achievement.icon || '🎉';
-      title.textContent = achievement.title || 'Achievement!';
-      description.textContent = achievement.description || '';
-      
-      modal.style.display = 'flex';
-      
-      // Store current achievement for sharing
-      window.currentAchievement = achievement;
-      
-      // Add escape key listener
-      window.achievementEscapeHandler = function(e) {
-        if (e.key === 'Escape') {
-          closeAchievementModal();
-        }
-      };
-      document.addEventListener('keydown', window.achievementEscapeHandler);
-      
-      console.log('🎉 Achievement modal shown:', achievement);
-    }
-
-    // Individual Share Functions
-    window.sharePetAchievement = function() {
-      if (!appState.connected) {
-        showError('Connect wallet to share achievements');
-        return;
-      }
-      
-      const achievement = {
-        icon: '🐕',
-        title: 'Dog Lover Achievement!',
-        description: `You've been petting dogs and earned ${appState.xp} XP!`,
-        type: 'pet',
-        data: {}
-      };
-      
-      showAchievementModal(achievement);
-    };
-
-    window.shareGreetAchievement = function() {
-      if (!appState.connected) {
-        showError('Connect wallet to share achievements');
-        return;
-      }
-      
-      const achievement = {
-        icon: '👋',
-        title: 'Community Spirit!',
-        description: `You've been greeting the community! Spreading love on Monad with ${appState.xp} XP.`,
-        type: 'greet',
-        data: {}
-      };
-      
-      showAchievementModal(achievement);
-    };
-
-    window.shareFlipAchievement = function() {
-      if (!appState.connected) {
-        showError('Connect wallet to share achievements');
-        return;
-      }
-      
-      const lastResult = document.getElementById('flip-result').textContent;
-      const achievement = {
-        icon: '🪙',
-        title: 'Lucky Flipper!',
-        description: `${lastResult} You've been flipping coins on Monad with ${appState.xp} XP!`,
-        type: 'flip',
-        data: { result: lastResult }
-      };
-      
-      showAchievementModal(achievement);
-    };
-
-    window.shareSlotsAchievement = function() {
-      if (!appState.connected) {
-        showError('Connect wallet to share achievements');
-        return;
-      }
-      
-      const achievement = {
-        icon: '🎰',
-        title: 'Slots Player!',
-        description: `I've been playing Dog Slots on Monad! Current XP: ${appState.xp}. Try your luck!`,
-        type: 'slots',
-        data: {}
-      };
-      
-      showAchievementModal(achievement);
-    };
-
-    window.shareAppWithFriends = function() {
-      const achievement = {
-        icon: '🚀',
-        title: 'Invite Friends!',
-        description: 'Share Monad Dog with your friends and build the community together!',
-        type: 'invite',
-        data: {}
-      };
-      
-      showAchievementModal(achievement);
-    };
 
     // Start app when DOM is ready
     if (document.readyState === 'loading') {
@@ -2576,7 +1904,6 @@
     }
 
     console.log('📱 App script loaded');
-    }); // End of DOMContentLoaded
   </script>
 </body>
 </html>
