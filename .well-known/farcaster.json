@@ -5,7 +5,7 @@
     "iconUrl": "https://monad-snowy.vercel.app/.well-known/icon.png",
     "homeUrl": "https://monad-snowy.vercel.app",
     "imageUrl": "https://monad-snowy.vercel.app/.well-known/share.png",
-    "buttonTitle": "🐕 Play Monad Dog",
+    "buttonTitle": "�� Play Monad Dog",
     "splashImageUrl": "https://monad-snowy.vercel.app/.well-known/icon.png",
     "splashBackgroundColor": "#1e003e",
     "screenshotUrls": [],
@@ -20,11 +20,8 @@
     "header": "eyJmaWQiOjI1MTYxOSwidHlwZSI6ImN1c3RvZHkiLCJrZXkiOiIweEMwNjM0OTQ1NjU5QzZCNzc5NkYzQ0Q2RTM1MzU5MTk3YzQ2YWVGNzUifQ",
     "payload": "eyJkb21haW4iOiJtb25hZC1zbm93eS52ZXJjZWwuYXBwIn0",
     "signature": "MHhhMjU0MTNmYzQ5NTA1OWJmYWI0ZDkyZDRiM2M1NjI3MzNmNGU0MjBiZTFlNmQ1YjUwNGQwOTEzMzUxY2UwZjQ2N2QxZTAzNWNmZDYxMzdlM2ExZWY2OWRmZDEwNWJlNzI5ZGQ4ZGYzNWVkZjFmNDQwNThiYzNhNzMxYzk2NmU1MTFi"
-  }
-},
-"baseBuilder": {
+  },
+  "baseBuilder": {
     "allowedAddresses": ["0xcF1B5d6CD8e0bfd6B1a8B2c2ceAb0bc165EEE5B3"]
   }
 }
-  
-
