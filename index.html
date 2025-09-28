@@ -2652,14 +2652,22 @@
         return;
       }
       
-      // Add XP to current balance
-      appState.xp = (appState.xp || 0) + amount;
+      // Get current XP from both networks
+      const currentTotalXP = await getWalletXP(appState.address);
+      
+      // Add XP to current network only
+      const networkKey = `${appState.address.toLowerCase()}_${currentNetwork}`;
+      const currentNetworkXP = parseInt(localStorage.getItem(`wallet_xp_${networkKey}`) || '0');
+      const newNetworkXP = currentNetworkXP + amount;
+      
+      // Update appState with total XP
+      appState.xp = currentTotalXP + amount;
       
       // Update display immediately
       document.getElementById('xp').textContent = appState.xp;
       
-      // Save XP to Supabase in background (non-blocking)
-      saveWalletXP(appState.address, appState.xp);
+      // Save XP to current network only
+      saveWalletXP(appState.address, newNetworkXP);
       
       // Update claim UI non-blocking
       requestAnimationFrame(() => updateClaimUI());
@@ -2674,7 +2682,7 @@
         xpElement.style.color = 'white';
       }, 500);
       
-      console.log(`✨ XP added to ${appState.address}: +${amount}, Total Available: ${appState.xp}`);
+      console.log(`✨ XP added to ${currentNetwork}: +${amount}, Network XP: ${newNetworkXP}, Total Available: ${appState.xp}`);
     }
 
     function showStatus(id, message, type) {
