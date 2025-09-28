@@ -2706,6 +2706,7 @@
         }
 
         // Create contract instance
+        console.log('🔗 Creating contract with signer:', appState.signer);
         const contract = new ethers.Contract(contractAddress, abi, appState.signer);
         
         // Show appropriate status message based on network
@@ -2729,8 +2730,10 @@
           // Base ağında fee gönder
           if (methodName === 'playSlots') {
             txOptions.value = ethers.utils.parseEther("0.00001"); // 0.00001 ETH fee for slots
+            console.log('💰 Base slots fee: 0.00001 ETH');
           } else {
             txOptions.value = ethers.utils.parseEther("0.000005"); // 0.000005 ETH fee for others
+            console.log('💰 Base fee: 0.000005 ETH');
           }
         }
         
@@ -2828,6 +2831,8 @@
           // Recreate provider after network switch
           appState.provider = new ethers.providers.Web3Provider(provider);
           appState.signer = appState.provider.getSigner();
+          
+          console.log('🔄 Provider and signer recreated for', network.name);
         }
       } catch (error) {
         console.error('Network switch error:', error);
