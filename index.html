@@ -1173,12 +1173,12 @@
     const CONTRACTS = NETWORKS[currentNetwork].contracts;
 
     const ABIS = {
-      PET: ["function pet() public"],
-      GREET: ["function gm() public", "function gn() public"],
-      FLIP: ["function flip() public"],
+      PET: ["function pet() public payable"],
+      GREET: ["function gm() public payable", "function gn() public payable"],
+      FLIP: ["function flip() public payable"],
       SLOTS: [
         "function buyCredits() external payable",
-        "function playSlots() external returns (uint8[4])",
+        "function playSlots() external payable returns (uint8[4])",
         "function getCredits(address player) external view returns (uint256)",
         "function getGameStats() external view returns (uint256, uint256, uint256)",
         "event CreditsPurchased(address indexed player, uint256 credits, uint256 cost)",
@@ -2126,9 +2126,9 @@
           // ✅ REAL CONTRACT CALL - Base ağında direkt oyun
           const slotsContract = new ethers.Contract(CONTRACTS.SLOTS, ABIS.SLOTS, appState.signer);
           
-          // Play slots on contract (fee disabled until contracts are payable)
+          // Play slots on contract (with fee automatically)
           const tx = await slotsContract.playSlots({
-            // value: ethers.utils.parseEther("0.00001"), // Disabled until contracts are payable
+            value: ethers.utils.parseEther("0.00001"), // 0.00001 ETH fee
             gasLimit: 150000
           });
           
@@ -2726,11 +2726,15 @@
           gasLimit: 100000
         };
         
-        // Base kontratları henüz payable olarak deploy edilmemiş
-        // TODO: Base kontratlarını payable olarak yeniden deploy et
         if (currentNetwork === 'base') {
-          console.log('⚠️ Base contracts not payable yet, skipping fee');
-          // txOptions.value = ethers.utils.parseEther("0.000005"); // Disabled until contracts are payable
+          // Base ağında fee gönder
+          if (methodName === 'playSlots') {
+            txOptions.value = ethers.utils.parseEther("0.00001"); // 0.00001 ETH fee for slots
+            console.log('💰 Base slots fee: 0.00001 ETH');
+          } else {
+            txOptions.value = ethers.utils.parseEther("0.000005"); // 0.000005 ETH fee for others
+            console.log('💰 Base fee: 0.000005 ETH');
+          }
         }
         
         const tx = await contract[methodName](txOptions);
