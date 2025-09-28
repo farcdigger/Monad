@@ -1850,6 +1850,15 @@
         console.log('❌ Claim tab hidden for Base network');
       }
       
+      // Force hide claim section on Base network
+      if (networkName === 'base') {
+        const claimSection = document.getElementById('claim-section');
+        if (claimSection) {
+          claimSection.style.display = 'none';
+          console.log('❌ Claim section hidden for Base network');
+        }
+      }
+      
       // If wallet is connected, switch network
       if (appState.connected) {
         try {
@@ -2555,6 +2564,13 @@
 
       window.showTab = function(tabName) {
         console.log('📑 Switching to tab:', tabName);
+        
+        // Block claim tab on Base network
+        if (tabName === 'claim' && currentNetwork === 'base') {
+          console.log('❌ Claim tab blocked on Base network');
+          return;
+        }
+        
         activeTab = tabName;
         
         // Update tabs
