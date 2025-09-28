@@ -1170,7 +1170,7 @@
     let currentNetwork = 'monad';
 
     // Contract addresses and ABIs (legacy support)
-    const CONTRACTS = NETWORKS[currentNetwork].contracts;
+    let CONTRACTS = NETWORKS[currentNetwork].contracts;
 
     const ABIS = {
       PET: ["function pet() public payable"],
