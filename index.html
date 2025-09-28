@@ -1839,6 +1839,16 @@
       CONTRACTS.DOG_TOKEN = NETWORKS[networkName].contracts.DOG_TOKEN;
       console.log('🔄 Updated CONTRACTS for', networkName, ':', CONTRACTS);
       
+      // Show/hide claim tab based on network
+      const claimTab = document.querySelector('.tab[onclick="showTab(\'claim\')"]');
+      if (networkName === 'monad') {
+        claimTab.style.display = 'block';
+        console.log('✅ Claim tab shown for Monad network');
+      } else {
+        claimTab.style.display = 'none';
+        console.log('❌ Claim tab hidden for Base network');
+      }
+      
       // If wallet is connected, switch network
       if (appState.connected) {
         try {
