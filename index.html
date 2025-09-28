@@ -1805,6 +1805,7 @@
       
       // Update contract addresses
       Object.assign(CONTRACTS, NETWORKS[networkName].contracts);
+      console.log('🔄 Updated CONTRACTS for', networkName, ':', CONTRACTS);
       
       // If wallet is connected, switch network
       if (appState.connected) {
