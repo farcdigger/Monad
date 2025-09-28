@@ -1252,9 +1252,19 @@
         
         const monadXP = monadData.data?.xp || 0;
         const baseXP = baseData.data?.xp || 0;
-        totalXP = monadXP + baseXP;
         
-        console.log(`📊 Total XP (Supabase): Monad=${monadXP}, Base=${baseXP}, Total=${totalXP}`);
+        // If Supabase has no data, fallback to localStorage
+        if (monadXP === 0 && baseXP === 0) {
+          console.log('📊 Supabase has no data, using localStorage fallback');
+          const monadLocalXP = parseInt(localStorage.getItem(`wallet_xp_${monadKey}`) || '0');
+          const baseLocalXP = parseInt(localStorage.getItem(`wallet_xp_${baseKey}`) || '0');
+          totalXP = monadLocalXP + baseLocalXP;
+          console.log(`📊 Total XP (localStorage fallback): Monad=${monadLocalXP}, Base=${baseLocalXP}, Total=${totalXP}`);
+        } else {
+          totalXP = monadXP + baseXP;
+          console.log(`📊 Total XP (Supabase): Monad=${monadXP}, Base=${baseXP}, Total=${totalXP}`);
+        }
+        
         return totalXP;
         
       } catch (e) {
