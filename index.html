@@ -1804,7 +1804,11 @@
       appState.currentNetwork = networkName;
       
       // Update contract addresses
-      Object.assign(CONTRACTS, NETWORKS[networkName].contracts);
+      CONTRACTS.PET = NETWORKS[networkName].contracts.PET;
+      CONTRACTS.GREET = NETWORKS[networkName].contracts.GREET;
+      CONTRACTS.FLIP = NETWORKS[networkName].contracts.FLIP;
+      CONTRACTS.SLOTS = NETWORKS[networkName].contracts.SLOTS;
+      CONTRACTS.DOG_TOKEN = NETWORKS[networkName].contracts.DOG_TOKEN;
       console.log('🔄 Updated CONTRACTS for', networkName, ':', CONTRACTS);
       
       // If wallet is connected, switch network
