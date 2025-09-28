@@ -1854,14 +1854,24 @@
         try {
           await ensureCorrectNetwork();
           
+          // Complete state refresh for new network
+          console.log(`🔄 Refreshing state for ${NETWORKS[networkName].name}...`);
+          
+          // Reset app state
+          appState.xp = 0;
+          appState.slotsCredits = 0;
+          appState.isTransactionPending = false;
+          
           // Update UI elements that show network info
           updateNetworkDisplay();
           
-          // Refresh data for new network
-          await updateXPDisplay();
-          await updateTokenBalance();
+          // Refresh data for new network with delay
+          setTimeout(async () => {
+            await updateXPDisplay();
+            await updateTokenBalance();
+            console.log(`✅ State refreshed for ${NETWORKS[networkName].name}`);
+          }, 200);
           
-          console.log(`✅ Successfully switched to ${NETWORKS[networkName].name}`);
         } catch (error) {
           console.error('❌ Network switch error:', error);
           showError(`Failed to switch to ${NETWORKS[networkName].name}`);
