@@ -1849,28 +1849,11 @@
         console.log('❌ Claim tab hidden for Base network');
       }
       
-      // If wallet is connected, switch network
-      if (appState.connected) {
-        try {
-          await ensureCorrectNetwork();
-          
-          // Update UI elements that show network info
-          updateNetworkDisplay();
-          
-          // Refresh data for new network
-          await updateXPDisplay();
-          await updateTokenBalance();
-          
-          console.log(`✅ Successfully switched to ${NETWORKS[networkName].name}`);
-        } catch (error) {
-          console.error('❌ Network switch error:', error);
-          showError(`Failed to switch to ${NETWORKS[networkName].name}`);
-        }
-      } else {
-        // Just update display if not connected
-        updateNetworkDisplay();
-        console.log(`📱 Network set to ${NETWORKS[networkName].name} (wallet not connected)`);
-      }
+      // Quick page refresh to ensure clean state
+      console.log(`🔄 Refreshing page for ${NETWORKS[networkName].name}...`);
+      setTimeout(() => {
+        window.location.reload();
+      }, 100);
     };
 
     // Update network display in UI
