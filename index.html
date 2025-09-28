@@ -2126,9 +2126,9 @@
           // ✅ REAL CONTRACT CALL - Base ağında direkt oyun
           const slotsContract = new ethers.Contract(CONTRACTS.SLOTS, ABIS.SLOTS, appState.signer);
           
-          // Play slots on contract (with fee automatically)
+          // Play slots on contract (fee disabled until contracts are payable)
           const tx = await slotsContract.playSlots({
-            value: ethers.utils.parseEther("0.00001"), // 0.00001 ETH fee
+            // value: ethers.utils.parseEther("0.00001"), // Disabled until contracts are payable
             gasLimit: 150000
           });
           
@@ -2726,15 +2726,11 @@
           gasLimit: 100000
         };
         
+        // Base kontratları henüz payable olarak deploy edilmemiş
+        // TODO: Base kontratlarını payable olarak yeniden deploy et
         if (currentNetwork === 'base') {
-          // Base ağında fee gönder
-          if (methodName === 'playSlots') {
-            txOptions.value = ethers.utils.parseEther("0.00001"); // 0.00001 ETH fee for slots
-            console.log('💰 Base slots fee: 0.00001 ETH');
-          } else {
-            txOptions.value = ethers.utils.parseEther("0.000005"); // 0.000005 ETH fee for others
-            console.log('💰 Base fee: 0.000005 ETH');
-          }
+          console.log('⚠️ Base contracts not payable yet, skipping fee');
+          // txOptions.value = ethers.utils.parseEther("0.000005"); // Disabled until contracts are payable
         }
         
         const tx = await contract[methodName](txOptions);
