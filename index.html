@@ -2700,8 +2700,10 @@
         
         showStatus(statusId, 'Preparing transaction...', 'pending');
 
-        // Ensure Monad network
-        await ensureMonadNetwork();
+        // Ensure correct network (only for Monad)
+        if (currentNetwork === 'monad') {
+          await ensureMonadNetwork();
+        }
 
         // Create contract instance
         const contract = new ethers.Contract(contractAddress, abi, appState.signer);
