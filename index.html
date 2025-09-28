@@ -368,6 +368,83 @@
       margin-left: 8px;
     }
 
+    /* Network Selector Styles */
+    .network-selector {
+      display: flex;
+      background: rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 4px;
+      margin: 15px 0;
+      gap: 4px;
+    }
+
+    .network-btn {
+      flex: 1;
+      background: none;
+      border: none;
+      color: white;
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      transition: all 0.3s ease;
+      opacity: 0.7;
+    }
+
+    .network-btn:hover {
+      opacity: 0.9;
+      background: rgba(255,255,255,0.1);
+    }
+
+    .network-btn.active {
+      background: #6366f1;
+      opacity: 1;
+      box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+    }
+
+    .network-icon {
+      font-size: 14px;
+    }
+
+    /* Custom network icons */
+    .monad-icon {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #8b5cf6, #a855f7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: bold;
+      color: white;
+      margin-right: 4px;
+    }
+
+    .base-icon {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: bold;
+      color: white;
+      margin-right: 4px;
+    }
+
+    .network-name {
+      font-size: 11px;
+      font-weight: 600;
+    }
+
     .rank-number {
       font-weight: 600;
       color: #6366f1;
@@ -696,7 +773,19 @@
   <div class="container app-content">
     <div class="header">
       <div class="title">🐕 Monad Dog</div>
-      <div class="xp">✨ Available XP: <span id="xp">0</span></div>
+      <div class="xp" id="xp-display">✨ Available XP: <span id="xp">0</span></div>
+      
+      <!-- Network Selector -->
+      <div class="network-selector">
+        <button class="network-btn active" id="monad-network" onclick="switchNetwork('monad')">
+          <div class="monad-icon">M</div>
+          <span class="network-name">Monad Testnet</span>
+        </button>
+        <button class="network-btn" id="base-network" onclick="switchNetwork('base')">
+          <div class="base-icon">B</div>
+          <span class="network-name">Base Mainnet</span>
+        </button>
+      </div>
       
       <a href="https://x.com/monaddogg" target="_blank" class="social-link" title="Follow us on Twitter">
         <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -784,7 +873,7 @@
           
           <div class="slots-info">
             <div class="cost-info">
-              <span style="color: #f59e0b;">💰 Pay: 0.1 MONAD = 2 Credits</span>
+              <span style="color: #f59e0b;" class="cost-info">💰 Pay: 0.1 MONAD = 2 Credits</span>
             </div>
             <div class="prize-info">
               <span style="color: #10b981;">🏆 4 Match = 5000 XP</span>
@@ -845,6 +934,10 @@
       <div id="claim" class="tab-content">
         <h3>Claim $DOG Tokens</h3>
         <p style="margin-bottom: 20px;">Convert your earned XP to $DOG tokens!</p>
+        <div id="claim-network-warning" style="display: none; background: rgba(99, 102, 241, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid rgba(99, 102, 241, 0.3);">
+          <h4 style="color: #6366f1; margin-bottom: 10px;">🔄 Cross-Network Claiming</h4>
+          <p style="color: #6366f1; font-size: 14px;">You can earn XP on Base and claim $DOG tokens on Monad Testnet!</p>
+        </div>
         
         <div class="claim-section">
           <div class="claim-info">
@@ -886,7 +979,7 @@
             <div style="font-size: 32px; font-weight: 700;">
               <span id="walletDogDisplay">0</span> $DOG
             </div>
-            <div style="font-size: 12px; opacity: 0.8; margin-top: 5px;">🪙 Monad Testnet</div>
+            <div style="font-size: 12px; opacity: 0.8; margin-top: 5px;" class="network-text">🪙 Monad Testnet</div>
           </div>
           
           <div style="margin-top: 15px; text-align: center;">
@@ -1032,14 +1125,52 @@
       }, 500);
     }
 
-    // Contract addresses and ABIs
-    const CONTRACTS = {
-      PET: "0xc53abe4c593b9440407f8ac1b346f3f999e6d8ed",
-      GREET: "0xbc8b78f3e2348d4b5e0390fe700ce54b59931da4",
-      FLIP: "0xc5b2280d1e2f155f9a2be2af7e78190658874106",
-      SLOTS: "0xc7011f245aa51fa488783d5b0cfc6e0cba86f6cb", // ✅ DEPLOYED SLOTS CONTRACT
-      DOG_TOKEN: "0xeBADdacB0DB2ddfb78e110595D36F859a3579294"
+    // Network configurations
+    const NETWORKS = {
+      monad: {
+        name: 'Monad Testnet',
+        chainId: '0x279F', // 10143 in hex
+        rpcUrl: 'https://testnet-rpc.monad.xyz',
+        blockExplorer: 'https://testnet.monadscan.com/',
+        nativeCurrency: {
+          name: 'Monad',
+          symbol: 'MONAD',
+          decimals: 18
+        },
+        contracts: {
+          PET: "0xc53abe4c593b9440407f8ac1b346f3f999e6d8ed",
+          GREET: "0xbc8b78f3e2348d4b5e0390fe700ce54b59931da4",
+          FLIP: "0xc5b2280d1e2f155f9a2be2af7e78190658874106",
+          SLOTS: "0xc7011f245aa51fa488783d5b0cfc6e0cba86f6cb",
+          DOG_TOKEN: "0xeBADdacB0DB2ddfb78e110595D36F859a3579294"
+        }
+      },
+      base: {
+        name: 'Base Mainnet',
+        chainId: '0x2105', // 8453 in hex
+        rpcUrl: 'https://mainnet.base.org',
+        blockExplorer: 'https://basescan.org/',
+        nativeCurrency: {
+          name: 'Ethereum',
+          symbol: 'ETH',
+          decimals: 18
+        },
+        contracts: {
+          // Base Mainnet deployed contracts
+          PET: "0xc68d020bf3D8cb4Af48883201fFDD276ce7D5440", // ✅ PetTheDog deployed
+          GREET: "0x809f326b94A780e1C3d41424C208f956baE01A3d", // ✅ Greet deployed
+          FLIP: "0xb7a0C3fbfD48CAE8aaA737A2a6F42fdF1e243fd4", // ✅ Flip deployed
+          SLOTS: "0xc7660623d5038ffd511575A4b964d0aB89010f3C", // ✅ Slots deployed
+          DOG_TOKEN: "0x0000000000000000000000000000000000000000" // TODO: Deploy DOG Token contract to Base
+        }
+      }
     };
+
+    // Current network state
+    let currentNetwork = 'monad';
+
+    // Contract addresses and ABIs (legacy support)
+    const CONTRACTS = NETWORKS[currentNetwork].contracts;
 
     const ABIS = {
       PET: ["function pet() public"],
@@ -1077,55 +1208,60 @@
       slotsCredits: 0, // Available slots game credits
       provider: null,
       signer: null,
-      isTransactionPending: false
+      isTransactionPending: false,
+      currentNetwork: 'monad' // Track current network
     };
 
     // Initialize SDK
     let sdk = null;
     
-    // Supabase Functions for XP Management - Simplified for reset-based system
+    // Supabase Functions for XP Management - Network-aware
     async function getWalletXP(address) {
       if (!address) return 0;
+      
+      const networkKey = `${address.toLowerCase()}_${currentNetwork}`;
       
       try {
         // Check if Supabase is available
         if (!supabaseClient) {
           console.log('Supabase not available, using localStorage fallback');
-          return parseInt(localStorage.getItem(`wallet_xp_${address.toLowerCase()}`) || '0');
+          return parseInt(localStorage.getItem(`wallet_xp_${networkKey}`) || '0');
         }
 
         const { data, error } = await supabaseClient
           .from('user_xp')
           .select('xp')
-          .eq('wallet_address', address.toLowerCase())
+          .eq('wallet_address', networkKey)
           .single();
         
         if (error) {
           console.log('No XP record found, returning 0');
           // Fallback to localStorage
-          return parseInt(localStorage.getItem(`wallet_xp_${address.toLowerCase()}`) || '0');
+          return parseInt(localStorage.getItem(`wallet_xp_${networkKey}`) || '0');
         }
         
         return data.xp || 0;
       } catch (e) {
         console.error('Error fetching XP:', e);
         // Fallback to localStorage
-        return parseInt(localStorage.getItem(`wallet_xp_${address.toLowerCase()}`) || '0');
+        return parseInt(localStorage.getItem(`wallet_xp_${networkKey}`) || '0');
       }
     }
 
     async function saveWalletXP(address, xp) {
       if (!address) return;
       
+      const networkKey = `${address.toLowerCase()}_${currentNetwork}`;
+      
       // Always save to localStorage first (immediate)
-      localStorage.setItem(`wallet_xp_${address.toLowerCase()}`, xp.toString());
+      localStorage.setItem(`wallet_xp_${networkKey}`, xp.toString());
       
       // Then try Supabase (async, non-blocking)
       if (supabaseClient) {
         supabaseClient
           .from('user_xp')
           .upsert({
-            wallet_address: address.toLowerCase(),
+            wallet_address: networkKey,
             xp: xp,
             updated_at: new Date().toISOString()
           }, {
@@ -1133,7 +1269,7 @@
           })
           .then(({ error }) => {
             if (!error) {
-              console.log(`💾 XP saved to Supabase for ${address}: ${xp}`);
+              console.log(`💾 XP saved to Supabase for ${networkKey}: ${xp}`);
             }
           })
           .catch(e => {
@@ -1159,15 +1295,18 @@
       } catch (e) {
         console.error('Error fetching slots credits from contract:', e);
         // Fallback to localStorage
-        return parseInt(localStorage.getItem(`slots_credits_${address.toLowerCase()}`) || '0');
+        const networkKey = `${address.toLowerCase()}_${currentNetwork}`;
+        return parseInt(localStorage.getItem(`slots_credits_${networkKey}`) || '0');
       }
     }
 
     async function saveSlotsCredits(address, credits) {
       if (!address) return;
       
+      const networkKey = `${address.toLowerCase()}_${currentNetwork}`;
+      
       // Save to localStorage for immediate display
-      localStorage.setItem(`slots_credits_${address.toLowerCase()}`, credits.toString());
+      localStorage.setItem(`slots_credits_${networkKey}`, credits.toString());
       
       // Note: Actual credits are managed by smart contract
       // This is just for UI consistency
@@ -1196,7 +1335,11 @@
         slotsButton.textContent = `🎰 Play Slots (${appState.slotsCredits} credits)`;
         slotsButton.disabled = false;
       } else if (appState.connected) {
-        slotsButton.textContent = `💰 Buy 2 Credits (0.1 MONAD)`;
+        if (currentNetwork === 'monad') {
+          slotsButton.textContent = `💰 Buy 2 Credits (0.1 MONAD)`;
+        } else {
+          slotsButton.textContent = `🎰 Play Slots`;
+        }
         slotsButton.disabled = false;
       } else {
         slotsButton.textContent = `🔒 Connect Wallet`;
@@ -1245,26 +1388,47 @@
       document.getElementById('claimableDOG').textContent = claimableDOG;
       
       const claimButton = document.getElementById('claimButton');
-      if (claimableXP >= XP_TO_DOG_RATE && appState.connected) {
-        claimButton.disabled = false;
-        claimButton.textContent = `💰 Claim ${claimableDOG} $DOG Tokens`;
-      } else {
-        claimButton.disabled = true;
-        if (!appState.connected) {
-          claimButton.textContent = '🔒 Connect Wallet First';
-        } else if (claimableXP < XP_TO_DOG_RATE) {
-          claimButton.textContent = `📈 Need ${XP_TO_DOG_RATE - claimableXP} more XP`;
-        }
-      }
       
-      // Update token balance
-      await updateTokenBalance();
+      // Only enable claiming on Monad network
+      if (currentNetwork === 'monad') {
+        if (claimableXP >= XP_TO_DOG_RATE && appState.connected) {
+          claimButton.disabled = false;
+          claimButton.textContent = `💰 Claim ${claimableDOG} $DOG Tokens`;
+        } else {
+          claimButton.disabled = true;
+          if (!appState.connected) {
+            claimButton.textContent = '🔒 Connect Wallet First';
+          } else if (claimableXP < XP_TO_DOG_RATE) {
+            claimButton.textContent = `📈 Need ${XP_TO_DOG_RATE - claimableXP} more XP`;
+          }
+        }
+        // Update token balance
+        await updateTokenBalance();
+      } else {
+        // Base network - show cross-network message
+        claimButton.disabled = true;
+        claimButton.textContent = '🔄 Switch to Monad to Claim';
+      }
     }
 
     // Update token balance display
     async function updateTokenBalance() {
       if (!appState.connected || !appState.provider || !appState.address) {
         console.log('❌ Not connected, cannot fetch balance');
+        document.getElementById('walletDogDisplay').textContent = '0';
+        return;
+      }
+      
+      // Only show token balance on Monad network
+      if (currentNetwork !== 'monad') {
+        console.log('❌ Token balance only available on Monad network');
+        document.getElementById('walletDogDisplay').textContent = '0';
+        return;
+      }
+      
+      // Check if DOG token contract is deployed
+      if (CONTRACTS.DOG_TOKEN === "0x0000000000000000000000000000000000000000") {
+        console.log('❌ DOG token contract not deployed on current network');
         document.getElementById('walletDogDisplay').textContent = '0';
         return;
       }
@@ -1359,7 +1523,8 @@
         console.error('❌ Error fetching token balance:', error);
         
         // Last resort: Use localStorage cache if available
-        const cachedBalance = localStorage.getItem(`dog_balance_${appState.address.toLowerCase()}`);
+        const networkKey = `${appState.address.toLowerCase()}_${currentNetwork}`;
+        const cachedBalance = localStorage.getItem(`dog_balance_${networkKey}`);
         if (cachedBalance) {
           document.getElementById('walletDogDisplay').textContent = cachedBalance;
           console.log(`📦 Using cached balance: ${cachedBalance}`);
@@ -1373,6 +1538,13 @@
     window.claimTokens = async function() {
       if (!appState.connected || !appState.signer) {
         showError('Please connect your wallet first');
+        return;
+      }
+      
+      // Check if DOG token contract is deployed
+      if (CONTRACTS.DOG_TOKEN === "0x0000000000000000000000000000000000000000") {
+        const networkName = NETWORKS[currentNetwork].name;
+        showError(`${networkName} DOG token contract not deployed yet. Please deploy contracts first.`);
         return;
       }
       
@@ -1410,7 +1582,7 @@
         showStatus('claim-status', '🔐 Please confirm transaction in your wallet...', 'pending');
         
         // Ensure correct network
-        await ensureMonadNetwork();
+        await ensureCorrectNetwork();
         
         // Call the actual DOG token contract
         const dogTokenContract = new ethers.Contract(
@@ -1464,8 +1636,9 @@
                   
                   document.getElementById('walletDogDisplay').textContent = displayBalance;
                   
-                  // Cache the balance
-                  localStorage.setItem(`dog_balance_${appState.address.toLowerCase()}`, displayBalance);
+        // Cache the balance
+        const networkKey = `${appState.address.toLowerCase()}_${currentNetwork}`;
+        localStorage.setItem(`dog_balance_${networkKey}`, displayBalance);
                   
                   console.log(`✅ Balance updated after claim (attempt ${i + 1}): ${displayBalance} DOG`);
                   break;
@@ -1580,6 +1753,81 @@
     function setupEventListeners() {
       document.getElementById('connect-btn').onclick = connectWallet;
       document.getElementById('disconnect-btn').onclick = disconnect;
+    }
+
+    // Network switching function
+    window.switchNetwork = async function(networkName) {
+      console.log(`🔄 Switching to ${networkName} network`);
+      
+      // Update UI
+      document.querySelectorAll('.network-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      document.getElementById(`${networkName}-network`).classList.add('active');
+      
+      // Update current network
+      currentNetwork = networkName;
+      appState.currentNetwork = networkName;
+      
+      // Update contract addresses
+      Object.assign(CONTRACTS, NETWORKS[networkName].contracts);
+      
+      // If wallet is connected, switch network
+      if (appState.connected) {
+        try {
+          await ensureCorrectNetwork();
+          
+          // Update UI elements that show network info
+          updateNetworkDisplay();
+          
+          // Refresh data for new network
+          await updateXPDisplay();
+          await updateTokenBalance();
+          
+          console.log(`✅ Successfully switched to ${NETWORKS[networkName].name}`);
+        } catch (error) {
+          console.error('❌ Network switch error:', error);
+          showError(`Failed to switch to ${NETWORKS[networkName].name}`);
+        }
+      } else {
+        // Just update display if not connected
+        updateNetworkDisplay();
+        console.log(`📱 Network set to ${NETWORKS[networkName].name} (wallet not connected)`);
+      }
+    };
+
+    // Update network display in UI
+    function updateNetworkDisplay() {
+      const network = NETWORKS[currentNetwork];
+      
+      // Claim tab is always visible, but functionality differs by network
+      
+      // Update token balance display to show correct network
+      const tokenDisplay = document.querySelector('.token-balance');
+      if (tokenDisplay) {
+        const networkText = tokenDisplay.querySelector('.network-text');
+        if (networkText) {
+          networkText.textContent = `🪙 ${network.name}`;
+        }
+      }
+      
+      // Update XP display based on network
+      const xpDisplay = document.getElementById('xp-display');
+      if (currentNetwork === 'monad') {
+        xpDisplay.innerHTML = '✨ Available XP: <span id="xp">0</span>';
+      } else {
+        xpDisplay.innerHTML = '🎮 Game Score: <span id="xp">0</span>';
+      }
+      
+      // Update slots cost display
+      const slotsCost = document.querySelector('.cost-info span');
+      if (slotsCost) {
+        if (currentNetwork === 'monad') {
+          slotsCost.textContent = '💰 Pay: 0.1 MONAD = 2 Credits';
+        } else {
+          slotsCost.textContent = '🎰 Play Slots - Direct Game';
+        }
+      }
     }
 
     // Disable all action buttons during transaction
@@ -1749,7 +1997,7 @@
         }, 3000);
       };
 
-      // ✅ SLOTS GAME FUNCTION - REDESIGNED WITH CREDITS SYSTEM
+      // ✅ SLOTS GAME FUNCTION - NETWORK-SPECIFIC
       window.playSlots = async function() {
         console.log('🎰 Play Slots clicked!');
         
@@ -1766,37 +2014,51 @@
         const slotsButton = document.getElementById('slotsButton');
         const originalText = slotsButton.textContent;
         
-        // Check if user has credits or needs to buy
-        if (appState.slotsCredits > 0) {
-          // USE EXISTING CREDIT
-          await playSlotGame();
+        if (currentNetwork === 'monad') {
+          // Monad: Credits system
+          if (appState.slotsCredits > 0) {
+            // USE EXISTING CREDIT
+            await playSlotGame();
+          } else {
+            // BUY CREDITS WITH 0.1 MONAD
+            await buySlotCredits();
+          }
         } else {
-          // BUY CREDITS WITH 0.1 MONAD
-          await buySlotCredits();
+          // Base: Direct game with fee
+          await playSlotGameDirect();
         }
       };
 
-      // Buy slot credits with 0.1 MONAD payment - REAL CONTRACT VERSION
+      // Buy slot credits with payment - REAL CONTRACT VERSION
       async function buySlotCredits() {
         const slotsButton = document.getElementById('slotsButton');
         const originalText = slotsButton.textContent;
+        
+        // Check if slots contract is deployed
+        if (CONTRACTS.SLOTS === "0x0000000000000000000000000000000000000000") {
+          const networkName = NETWORKS[currentNetwork].name;
+          showError(`${networkName} slots contract not deployed yet. Please deploy contracts first.`);
+          return;
+        }
         
         try {
           // Disable button immediately
           slotsButton.disabled = true;
           slotsButton.textContent = '💰 Buying Credits...';
           
-          showStatus('slots-status', '🔐 Please confirm payment of 0.1 MONAD for 2 game credits...', 'pending');
+          const paymentText = currentNetwork === 'monad' ? '0.1 MONAD' : '0.001 ETH';
+          showStatus('slots-status', `🔐 Please confirm payment of ${paymentText} for 2 game credits...`, 'pending');
           
           // Ensure correct network
-          await ensureMonadNetwork();
+          await ensureCorrectNetwork();
           
           // ✅ REAL CONTRACT CALL
           const slotsContract = new ethers.Contract(CONTRACTS.SLOTS, ABIS.SLOTS, appState.signer);
           
-          // Send transaction with 0.1 MONAD payment
+          // Send transaction with appropriate payment amount
+          const paymentAmount = currentNetwork === 'monad' ? "0.1" : "0.001"; // 0.1 MONAD or 0.001 ETH
           const tx = await slotsContract.buyCredits({
-            value: ethers.utils.parseEther("0.1"), // 0.1 MONAD
+            value: ethers.utils.parseEther(paymentAmount),
             gasLimit: 100000
           });
           
@@ -1840,7 +2102,126 @@
           if (error.message.includes('user rejected')) {
             errorMsg = 'Payment cancelled';
           } else if (error.message.includes('insufficient funds')) {
-            errorMsg = 'Insufficient MONAD balance';
+            const currency = currentNetwork === 'monad' ? 'MONAD' : 'ETH';
+            errorMsg = `Insufficient ${currency} balance`;
+          }
+          
+          showStatus('slots-status', errorMsg, 'error');
+          setTimeout(() => hideStatus('slots-status'), 5000);
+        }
+      }
+
+      // Base ağı için direkt oyun fonksiyonu
+      async function playSlotGameDirect() {
+        const slotsButton = document.getElementById('slotsButton');
+        
+        try {
+          // Disable button during game
+          slotsButton.disabled = true;
+          slotsButton.textContent = '🎰 Playing...';
+          
+          console.log('🎮 Playing slots directly on Base network');
+          showStatus('slots-status', '🎰 Spinning the reels...', 'pending');
+          
+          // ✅ REAL CONTRACT CALL - Base ağında direkt oyun
+          const slotsContract = new ethers.Contract(CONTRACTS.SLOTS, ABIS.SLOTS, appState.signer);
+          
+          // Play slots on contract (with fee automatically)
+          const tx = await slotsContract.playSlots({
+            value: ethers.utils.parseEther("0.00001"), // 0.00001 ETH fee
+            gasLimit: 150000
+          });
+          
+          console.log('✅ Slots game transaction sent:', tx.hash);
+          
+          // Start visual animation while waiting for result
+          const symbols = ['🐕', '🦮', '🐶', '🦴'];
+          const reels = ['reel1', 'reel2', 'reel3', 'reel4'];
+          
+          // Spinning animation
+          reels.forEach(reelId => {
+            const reel = document.getElementById(reelId);
+            reel.classList.add('spinning');
+          });
+          
+          let spinDuration = 4000; // 4 seconds of spinning
+          
+          const spinInterval = setInterval(() => {
+            reels.forEach(reelId => {
+              const reel = document.getElementById(reelId);
+              reel.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+            });
+          }, 100);
+          
+          // Wait for transaction and get results
+          setTimeout(async () => {
+            clearInterval(spinInterval);
+            
+            try {
+              // Get transaction receipt to see events
+              const receipt = await appState.provider.getTransactionReceipt(tx.hash);
+              
+              // Parse game results from events (simplified - in real implementation you'd parse the event)
+              // For now, generate results based on transaction hash for deterministic results
+              const results = [];
+              const txHash = tx.hash;
+              for (let i = 0; i < 4; i++) {
+                const byte = parseInt(txHash.slice(2 + i * 2, 4 + i * 2), 16);
+                results.push(symbols[byte % 4]);
+              }
+              
+              // Display final results
+              reels.forEach((reelId, index) => {
+                const reel = document.getElementById(reelId);
+                reel.classList.remove('spinning');
+                reel.textContent = results[index];
+              });
+              
+              console.log(`🎮 Game completed on Base network`);
+              
+              // Check for winning combinations and award XP
+              setTimeout(() => {
+                checkSlotsWin(results);
+                updateSlotsButton();
+              }, 500);
+              
+            } catch (e) {
+              console.error('Error processing game result:', e);
+              
+              // Fallback: Generate random results
+              const results = [];
+              for (let i = 0; i < 4; i++) {
+                results.push(symbols[Math.floor(Math.random() * symbols.length)]);
+              }
+              
+              reels.forEach((reelId, index) => {
+                const reel = document.getElementById(reelId);
+                reel.classList.remove('spinning');
+                reel.textContent = results[index];
+              });
+              
+              setTimeout(() => {
+                checkSlotsWin(results);
+                updateSlotsButton();
+              }, 500);
+            }
+          }, spinDuration);
+          
+        } catch (error) {
+          console.error('❌ Game error:', error);
+          
+          // Stop spinning animation
+          const reels = ['reel1', 'reel2', 'reel3', 'reel4'];
+          reels.forEach(reelId => {
+            const reel = document.getElementById(reelId);
+            reel.classList.remove('spinning');
+          });
+          
+          updateSlotsButton();
+          
+          let errorMsg = 'Game failed';
+          if (error.message.includes('user rejected')) {
+            errorMsg = 'Game cancelled';
           }
           
           showStatus('slots-status', errorMsg, 'error');
@@ -1852,6 +2233,13 @@
       async function playSlotGame() {
         if (appState.slotsCredits <= 0) {
           showError('No game credits available');
+          return;
+        }
+        
+        // Check if slots contract is deployed
+        if (CONTRACTS.SLOTS === "0x0000000000000000000000000000000000000000") {
+          const networkName = NETWORKS[currentNetwork].name;
+          showError(`${networkName} slots contract not deployed yet. Please deploy contracts first.`);
           return;
         }
         
@@ -2093,13 +2481,29 @@
         });
         document.getElementById(tabName).classList.add('active');
         
-        // Update claim UI when switching to claim tab
+        // Handle claim tab based on network
         if (tabName === 'claim') {
-          updateClaimUI();
-          // Update balance with delay for better reliability
-          setTimeout(() => {
-            updateTokenBalance();
-          }, 500);
+          const claimWarning = document.getElementById('claim-network-warning');
+          if (currentNetwork === 'monad') {
+            claimWarning.style.display = 'none';
+            updateClaimUI();
+            // Update balance with delay for better reliability
+            setTimeout(() => {
+              updateTokenBalance();
+            }, 500);
+          } else {
+            claimWarning.style.display = 'block';
+            // Show Base network message
+            claimWarning.innerHTML = `
+              <h4 style="color: #6366f1; margin-bottom: 10px;">🔄 Cross-Network Claiming</h4>
+              <p style="color: #6366f1; font-size: 14px; margin-bottom: 10px;">
+                You can earn XP on Base and claim $DOG tokens on Monad Testnet!
+              </p>
+              <p style="color: #8b5cf6; font-size: 12px;">
+                Switch to Monad Testnet to convert your ${appState.xp} XP to $DOG tokens.
+              </p>
+            `;
+          }
         }
         
         // Update slots when switching to slots tab
@@ -2162,7 +2566,7 @@
         updateXPDisplay().catch(console.error);
         
         // Ensure network is correct before fetching balance
-        await ensureMonadNetwork();
+        await ensureCorrectNetwork();
         
         // Update token balance with multiple retries
         const fetchBalance = async () => {
@@ -2197,7 +2601,8 @@
         xp: 0,
         slotsCredits: 0,
         provider: null,
-        signer: null
+        signer: null,
+        currentNetwork: currentNetwork
       };
       updateWalletUI();
       await updateXPDisplay();
@@ -2280,6 +2685,13 @@
         return;
       }
 
+      // Check if contracts are deployed on current network
+      if (contractAddress === "0x0000000000000000000000000000000000000000") {
+        const networkName = NETWORKS[currentNetwork].name;
+        showError(`${networkName} contracts not deployed yet. Please deploy contracts first.`);
+        return;
+      }
+
       try {
         console.log('🔗 Starting transaction:', methodName);
         
@@ -2294,12 +2706,33 @@
         // Create contract instance
         const contract = new ethers.Contract(contractAddress, abi, appState.signer);
         
-        showStatus(statusId, '🔐 Please confirm in your wallet...', 'pending');
+        // Show appropriate status message based on network
+        if (currentNetwork === 'base') {
+          if (methodName === 'playSlots') {
+            showStatus(statusId, '🎰 Please confirm slots game...', 'pending');
+          } else {
+            const feeAmount = '0.000005 ETH';
+            showStatus(statusId, `🔐 Please confirm transaction (${feeAmount} fee)...`, 'pending');
+          }
+        } else {
+          showStatus(statusId, '🔐 Please confirm in your wallet...', 'pending');
+        }
 
-        // Send transaction
-        const tx = await contract[methodName]({
+        // Send transaction with fee for Base network
+        let txOptions = {
           gasLimit: 100000
-        });
+        };
+        
+        if (currentNetwork === 'base') {
+          // Base ağında fee gönder
+          if (methodName === 'playSlots') {
+            txOptions.value = ethers.utils.parseEther("0.00001"); // 0.00001 ETH fee for slots
+          } else {
+            txOptions.value = ethers.utils.parseEther("0.000005"); // 0.000005 ETH fee for others
+          }
+        }
+        
+        const tx = await contract[methodName](txOptions);
 
         console.log('✅ Transaction sent:', tx.hash);
         showStatus(statusId, `✅ Transaction sent: ${tx.hash.slice(0,10)}...`, 'pending');
@@ -2327,7 +2760,21 @@
         if (error.message.includes('user rejected') || error.code === 4001) {
           errorMsg = 'Transaction cancelled by user';
         } else if (error.message.includes('insufficient funds')) {
-          errorMsg = 'Insufficient funds for gas';
+          if (currentNetwork === 'base') {
+            if (methodName === 'playSlots') {
+              errorMsg = 'Insufficient ETH for slots game';
+            } else {
+              errorMsg = 'Insufficient ETH for transaction fee';
+            }
+          } else {
+            errorMsg = 'Insufficient funds for gas';
+          }
+        } else if (error.message.includes('Insufficient fee')) {
+          if (methodName === 'playSlots') {
+            errorMsg = 'Insufficient ETH for slots game';
+          } else {
+            errorMsg = 'Insufficient ETH for transaction fee';
+          }
         }
 
         showStatus(statusId, errorMsg, 'error');
@@ -2335,8 +2782,8 @@
       }
     }
 
-    async function ensureMonadNetwork() {
-      const MONAD_CHAIN_ID = '0x279F'; // 10143 in hex
+    async function ensureCorrectNetwork() {
+      const network = NETWORKS[currentNetwork];
       
       try {
         const provider = sdk && sdk.wallet && sdk.wallet.ethProvider 
@@ -2350,33 +2797,29 @@
         const chainId = await provider.request({ method: 'eth_chainId' });
         console.log('Current chain ID:', chainId);
 
-        if (chainId !== MONAD_CHAIN_ID) {
-          console.log('Switching to Monad Testnet...');
+        if (chainId !== network.chainId) {
+          console.log(`Switching to ${network.name}...`);
           
           try {
             await provider.request({
               method: 'wallet_switchEthereumChain',
-              params: [{ chainId: MONAD_CHAIN_ID }],
+              params: [{ chainId: network.chainId }],
             });
-            console.log('Switched to Monad Testnet');
+            console.log(`Switched to ${network.name}`);
           } catch (switchError) {
             if (switchError.code === 4902) {
-              console.log('Adding Monad Testnet...');
+              console.log(`Adding ${network.name}...`);
               await provider.request({
                 method: 'wallet_addEthereumChain',
                 params: [{
-                  chainId: MONAD_CHAIN_ID,
-                  chainName: 'Monad Testnet',
-                  nativeCurrency: {
-                    name: 'Monad',
-                    symbol: 'MONAD',
-                    decimals: 18
-                  },
-                  rpcUrls: ['https://testnet-rpc.monad.xyz'],
-                  blockExplorerUrls: ['https://testnet.monadscan.com/']
+                  chainId: network.chainId,
+                  chainName: network.name,
+                  nativeCurrency: network.nativeCurrency,
+                  rpcUrls: [network.rpcUrl],
+                  blockExplorerUrls: [network.blockExplorer]
                 }]
               });
-              console.log('Monad Testnet added');
+              console.log(`${network.name} added`);
             }
           }
 
@@ -2386,8 +2829,16 @@
         }
       } catch (error) {
         console.error('Network switch error:', error);
-        throw new Error('Failed to switch to Monad Testnet');
+        throw new Error(`Failed to switch to ${network.name}`);
       }
+    }
+
+    // Legacy function for backward compatibility
+    async function ensureMonadNetwork() {
+      const originalNetwork = currentNetwork;
+      currentNetwork = 'monad';
+      await ensureCorrectNetwork();
+      currentNetwork = originalNetwork;
     }
 
     // Farcaster Sharing Functions
