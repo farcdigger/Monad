@@ -1642,8 +1642,36 @@
         appState.xp = 0;
         document.getElementById('xp').textContent = '0';
         
-        // ✅ Save XP as 0 to Supabase immediately
-        await saveWalletXP(appState.address, 0);
+        // ✅ Save XP as 0 to BOTH networks immediately
+        const monadKey = `${appState.address.toLowerCase()}_monad`;
+        const baseKey = `${appState.address.toLowerCase()}_base`;
+        
+        // Reset Monad XP
+        localStorage.setItem(`wallet_xp_${monadKey}`, '0');
+        // Reset Base XP  
+        localStorage.setItem(`wallet_xp_${baseKey}`, '0');
+        
+        // Save to Supabase for both networks
+        if (supabaseClient) {
+          await Promise.all([
+            supabaseClient
+              .from('user_xp')
+              .upsert({
+                wallet_address: monadKey,
+                xp: 0,
+                updated_at: new Date().toISOString()
+              }, { onConflict: 'wallet_address' }),
+            supabaseClient
+              .from('user_xp')
+              .upsert({
+                wallet_address: baseKey,
+                xp: 0,
+                updated_at: new Date().toISOString()
+              }, { onConflict: 'wallet_address' })
+          ]);
+        }
+        
+        console.log('🔄 XP reset to 0 on both Monad and Base networks');
         
         // Update claim UI immediately
         await updateClaimUI();
