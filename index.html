@@ -1215,36 +1215,58 @@
     // Initialize SDK
     let sdk = null;
     
-    // Supabase Functions for XP Management - Network-aware
+    // Supabase Functions for XP Management - Cross-network XP
     async function getWalletXP(address) {
       if (!address) return 0;
       
-      const networkKey = `${address.toLowerCase()}_${currentNetwork}`;
-      
       try {
+        // Get XP from both networks
+        const monadKey = `${address.toLowerCase()}_monad`;
+        const baseKey = `${address.toLowerCase()}_base`;
+        
+        let totalXP = 0;
+        
         // Check if Supabase is available
         if (!supabaseClient) {
           console.log('Supabase not available, using localStorage fallback');
-          return parseInt(localStorage.getItem(`wallet_xp_${networkKey}`) || '0');
+          const monadXP = parseInt(localStorage.getItem(`wallet_xp_${monadKey}`) || '0');
+          const baseXP = parseInt(localStorage.getItem(`wallet_xp_${baseKey}`) || '0');
+          totalXP = monadXP + baseXP;
+          console.log(`📊 Total XP (localStorage): Monad=${monadXP}, Base=${baseXP}, Total=${totalXP}`);
+          return totalXP;
         }
 
-        const { data, error } = await supabaseClient
-          .from('user_xp')
-          .select('xp')
-          .eq('wallet_address', networkKey)
-          .single();
+        // Get XP from both networks from Supabase
+        const [monadData, baseData] = await Promise.all([
+          supabaseClient
+            .from('user_xp')
+            .select('xp')
+            .eq('wallet_address', monadKey)
+            .single(),
+          supabaseClient
+            .from('user_xp')
+            .select('xp')
+            .eq('wallet_address', baseKey)
+            .single()
+        ]);
         
-        if (error) {
-          console.log('No XP record found, returning 0');
-          // Fallback to localStorage
-          return parseInt(localStorage.getItem(`wallet_xp_${networkKey}`) || '0');
-        }
+        const monadXP = monadData.data?.xp || 0;
+        const baseXP = baseData.data?.xp || 0;
+        totalXP = monadXP + baseXP;
         
-        return data.xp || 0;
+        console.log(`📊 Total XP (Supabase): Monad=${monadXP}, Base=${baseXP}, Total=${totalXP}`);
+        return totalXP;
+        
       } catch (e) {
         console.error('Error fetching XP:', e);
         // Fallback to localStorage
-        return parseInt(localStorage.getItem(`wallet_xp_${networkKey}`) || '0');
+        const monadKey = `${address.toLowerCase()}_monad`;
+        const baseKey = `${address.toLowerCase()}_base`;
+        const monadXP = parseInt(localStorage.getItem(`wallet_xp_${monadKey}`) || '0');
+        const baseXP = parseInt(localStorage.getItem(`wallet_xp_${baseKey}`) || '0');
+        totalXP = monadXP + baseXP;
+        console.log(`📊 Total XP (fallback): Monad=${monadXP}, Base=${baseXP}, Total=${totalXP}`);
+        return totalXP;
       }
     }
 
