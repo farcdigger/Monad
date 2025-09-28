@@ -1459,6 +1459,7 @@
       }
       
       // Check if DOG token contract is deployed
+      console.log('🔍 DOG Token contract check:', CONTRACTS.DOG_TOKEN, 'Network:', currentNetwork);
       if (CONTRACTS.DOG_TOKEN === "0x0000000000000000000000000000000000000000") {
         console.log('❌ DOG token contract not deployed on current network');
         document.getElementById('walletDogDisplay').textContent = '0';
@@ -1574,6 +1575,7 @@
       }
       
       // Check if DOG token contract is deployed
+      console.log('🔍 Claim DOG Token contract check:', CONTRACTS.DOG_TOKEN, 'Network:', currentNetwork);
       if (CONTRACTS.DOG_TOKEN === "0x0000000000000000000000000000000000000000") {
         const networkName = NETWORKS[currentNetwork].name;
         showError(`${networkName} DOG token contract not deployed yet. Please deploy contracts first.`);
