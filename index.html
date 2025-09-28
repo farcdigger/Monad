@@ -1838,6 +1838,7 @@
       CONTRACTS.SLOTS = NETWORKS[networkName].contracts.SLOTS;
       CONTRACTS.DOG_TOKEN = NETWORKS[networkName].contracts.DOG_TOKEN;
       console.log('🔄 Updated CONTRACTS for', networkName, ':', CONTRACTS);
+      console.log('🔍 DOG_TOKEN address:', CONTRACTS.DOG_TOKEN);
       
       // Show/hide claim tab based on network
       const claimTab = document.querySelector('.tab[onclick="showTab(\'claim\')"]');
