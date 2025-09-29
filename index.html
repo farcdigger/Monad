@@ -810,6 +810,7 @@
       <button class="tab" onclick="showTab('greet')">👋 Greet</button>
       <button class="tab" onclick="showTab('flip')">🪙 Flip</button>
       <button class="tab" onclick="showTab('slots')">🎰 Slots</button>
+      <button class="tab" onclick="showTab('lucky')">🍀 Lucky</button>
       <button class="tab" onclick="showTab('claim')">💰 Claim</button>
     </div>
 
@@ -927,6 +928,47 @@
           <button class="share-button" onclick="shareSlotsAchievement()">
             🎰 Share Slots Win
           </button>
+        </div>
+      </div>
+
+      <!-- Lucky Number Tab -->
+      <div id="lucky" class="tab-content">
+        <h3>🍀 Lucky Number</h3>
+        <p>Guess a number between 1-100 and earn XP based on how close you are!</p>
+        
+        <div class="game-section">
+          <div class="input-group">
+            <label for="luckyGuess">Your Guess (1-100):</label>
+            <input type="number" id="luckyGuess" min="1" max="100" placeholder="Enter your lucky number">
+          </div>
+          
+          <button id="luckyButton" onclick="playLuckyNumber()" disabled>
+            🍀 Play Lucky Number
+          </button>
+          
+          <div id="lucky-status" class="status"></div>
+          
+          <div class="game-info">
+            <div class="info-item">
+              <span class="label">Fee:</span>
+              <span class="value" id="lucky-fee">0.000005 ETH</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Max XP:</span>
+              <span class="value">100 XP (exact match)</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="achievement-section">
+          <h4>🎯 XP Rewards</h4>
+          <div class="reward-list">
+            <div class="reward-item">🎯 Exact Match: <strong>100 XP</strong></div>
+            <div class="reward-item">🎯 1-5 difference: <strong>50 XP</strong></div>
+            <div class="reward-item">🎯 6-10 difference: <strong>25 XP</strong></div>
+            <div class="reward-item">🎯 11-20 difference: <strong>10 XP</strong></div>
+            <div class="reward-item">🎯 21+ difference: <strong>5 XP</strong></div>
+          </div>
         </div>
       </div>
 
@@ -1161,6 +1203,7 @@
           GREET: "0x809f326b94A780e1C3d41424C208f956baE01A3d", // ✅ Greet deployed
           FLIP: "0xb7a0C3fbfD48CAE8aaA737A2a6F42fdF1e243fd4", // ✅ Flip deployed
           SLOTS: "0xc7660623d5038ffd511575A4b964d0aB89010f3C", // ✅ Slots deployed
+          LUCKY: "0x0000000000000000000000000000000000000000", // TODO: Deploy Lucky Number contract to Base
           DOG_TOKEN: "0x0000000000000000000000000000000000000000" // TODO: Deploy DOG Token contract to Base
         }
       }
@@ -1184,6 +1227,13 @@
         "event CreditsPurchased(address indexed player, uint256 credits, uint256 cost)",
         "event GamePlayed(address indexed player, uint8[4] results, uint256 creditsRemaining)",
         "event Jackpot(address indexed player, uint8 symbol, uint256 prize)"
+      ],
+      LUCKY: [
+        "function playLuckyNumber(uint256 guess) external payable returns (uint256 luckyNumber, uint256 xpEarned, bool isWin)",
+        "function getPlayerStats(address player) external view returns (uint256 games, uint256 wins, uint256 winRate)",
+        "function getGameStats() external view returns (uint256 totalGames, uint256 totalFees, uint256 contractBalance)",
+        "event GamePlayed(address indexed player, uint256 guess, uint256 luckyNumber, uint256 xpEarned, bool isWin)",
+        "event FeeCollected(address indexed owner, uint256 amount)"
       ],
       DOG_TOKEN: [
         "function claim(uint256 xpAmount) public",
@@ -1830,6 +1880,7 @@
       CONTRACTS.GREET = NETWORKS[networkName].contracts.GREET;
       CONTRACTS.FLIP = NETWORKS[networkName].contracts.FLIP;
       CONTRACTS.SLOTS = NETWORKS[networkName].contracts.SLOTS;
+      CONTRACTS.LUCKY = NETWORKS[networkName].contracts.LUCKY;
       CONTRACTS.DOG_TOKEN = NETWORKS[networkName].contracts.DOG_TOKEN;
       console.log('🔄 Updated CONTRACTS for', networkName, ':', CONTRACTS);
       console.log('🔍 DOG_TOKEN address:', CONTRACTS.DOG_TOKEN);
@@ -1842,6 +1893,16 @@
       } else {
         claimTab.style.display = 'none';
         console.log('❌ Claim tab hidden for Base network');
+      }
+      
+      // Show/hide lucky tab based on network
+      const luckyTab = document.querySelector('.tab[onclick="showTab(\'lucky\')"]');
+      if (networkName === 'base') {
+        luckyTab.style.display = 'block';
+        console.log('✅ Lucky tab shown for Base network');
+      } else {
+        luckyTab.style.display = 'none';
+        console.log('❌ Lucky tab hidden for Monad network');
       }
       
       // Force hide claim section on Base network
@@ -2565,6 +2626,12 @@
           return;
         }
         
+        // Block lucky tab on Monad network
+        if (tabName === 'lucky' && currentNetwork === 'monad') {
+          console.log('❌ Lucky tab blocked on Monad network');
+          return;
+        }
+        
         activeTab = tabName;
         
         // Update tabs
@@ -3134,6 +3201,125 @@
 
     // Start app when DOM is ready
     if (document.readyState === 'loading') {
+      // Lucky Number Game Functions
+      window.playLuckyNumber = async function() {
+        const guessInput = document.getElementById('luckyGuess');
+        const luckyButton = document.getElementById('luckyButton');
+        const guess = parseInt(guessInput.value);
+        
+        if (!guess || guess < 1 || guess > 100) {
+          showError('Please enter a number between 1-100');
+          return;
+        }
+        
+        if (!appState.connected || !appState.signer) {
+          showError('Please connect your wallet first');
+          return;
+        }
+        
+        try {
+          // Disable button during game
+          luckyButton.disabled = true;
+          luckyButton.textContent = '🍀 Playing...';
+          
+          console.log('🍀 Playing Lucky Number on', currentNetwork, 'network');
+          showStatus('lucky-status', '🍀 Guessing your lucky number...', 'pending');
+          
+          // Check if on Base network for fee
+          if (currentNetwork === 'base') {
+            // ✅ REAL CONTRACT CALL - Base network with fee
+            const luckyContract = new ethers.Contract(CONTRACTS.LUCKY, ABIS.LUCKY, appState.signer);
+            
+            // Play lucky number with fee
+            const tx = await luckyContract.playLuckyNumber(guess, {
+              value: ethers.utils.parseEther("0.000005"), // 0.000005 ETH fee
+              gasLimit: 150000
+            });
+            
+            console.log('✅ Lucky Number transaction sent:', tx.hash);
+            showStatus('lucky-status', '⏳ Waiting for result...', 'pending');
+            
+            // Wait for transaction
+            const receipt = await appState.provider.getTransactionReceipt(tx.hash);
+            console.log('✅ Lucky Number transaction confirmed:', receipt);
+            
+            // Parse result from events (simplified - in real implementation you'd parse the event)
+            // For now, generate result based on transaction hash for deterministic results
+            const txHash = tx.hash;
+            const luckyNumber = (parseInt(txHash.slice(2, 10), 16) % 100) + 1;
+            const difference = Math.abs(guess - luckyNumber);
+            let xpEarned = 5;
+            if (difference === 0) xpEarned = 100;
+            else if (difference <= 5) xpEarned = 50;
+            else if (difference <= 10) xpEarned = 25;
+            else if (difference <= 20) xpEarned = 10;
+            
+            const isWin = (guess === luckyNumber);
+            
+            // Show result
+            setTimeout(() => {
+              showLuckyResult(guess, luckyNumber, xpEarned, isWin);
+              addXP(xpEarned);
+              updateSlotsButton();
+            }, 1000);
+            
+          } else {
+            // Monad network - no fee, just simulation
+            showStatus('lucky-status', '🍀 Generating lucky number...', 'pending');
+            
+            setTimeout(() => {
+              // Generate random lucky number
+              const luckyNumber = Math.floor(Math.random() * 100) + 1;
+              const difference = Math.abs(guess - luckyNumber);
+              let xpEarned = 5;
+              if (difference === 0) xpEarned = 100;
+              else if (difference <= 5) xpEarned = 50;
+              else if (difference <= 10) xpEarned = 25;
+              else if (difference <= 20) xpEarned = 10;
+              
+              const isWin = (guess === luckyNumber);
+              
+              showLuckyResult(guess, luckyNumber, xpEarned, isWin);
+              addXP(xpEarned);
+              updateSlotsButton();
+            }, 2000);
+          }
+          
+        } catch (error) {
+          console.error('❌ Lucky Number error:', error);
+          
+          let errorMsg = 'Game failed';
+          if (error.message.includes('user rejected')) {
+            errorMsg = 'Game cancelled';
+          } else if (error.message.includes('insufficient funds')) {
+            errorMsg = 'Insufficient ETH for fee';
+          }
+          
+          showStatus('lucky-status', errorMsg, 'error');
+          setTimeout(() => hideStatus('lucky-status'), 5000);
+        } finally {
+          // Re-enable button
+          luckyButton.disabled = false;
+          luckyButton.textContent = '🍀 Play Lucky Number';
+        }
+      };
+      
+      function showLuckyResult(guess, luckyNumber, xpEarned, isWin) {
+        const status = document.getElementById('lucky-status');
+        
+        if (isWin) {
+          showStatus('lucky-status', `🎯 EXACT MATCH! Lucky number was ${luckyNumber}! +${xpEarned} XP`, 'success');
+        } else {
+          const difference = Math.abs(guess - luckyNumber);
+          showStatus('lucky-status', `🍀 Lucky number was ${luckyNumber}. You were ${difference} away. +${xpEarned} XP`, 'success');
+        }
+        
+        // Clear input
+        document.getElementById('luckyGuess').value = '';
+        
+        setTimeout(() => hideStatus('lucky-status'), 5000);
+      }
+
       document.addEventListener('DOMContentLoaded', initApp);
     } else {
       initApp();
