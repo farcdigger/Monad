@@ -10,7 +10,7 @@
     "splashBackgroundColor": "#1e003e",
     "screenshotUrls": [],
     "tags": ["monad", "farcaster", "miniapp", "dog", "game"],
-    "primaryCategory": "games",
+    "primaryCategory": "games","social", "finance", "utility", "productivity", 
     "requiredCapabilities": [
       "actions.signIn",
       "wallet.getEthereumProvider"
