@@ -1015,16 +1015,12 @@
           
           <div class="game-info">
             <div class="info-item">
-              <span class="label">Fee:</span>
-              <span class="value">0.000005 ETH</span>
-            </div>
-            <div class="info-item">
               <span class="label">Win XP:</span>
-              <span class="value">50 XP</span>
+              <span class="value">200 XP</span>
             </div>
             <div class="info-item">
               <span class="label">Lose XP:</span>
-              <span class="value">5 XP</span>
+              <span class="value">100 XP</span>
             </div>
           </div>
         </div>
@@ -1033,9 +1029,8 @@
           <h4>🎯 How to Play</h4>
           <div class="reward-list">
             <div class="reward-item">🎯 Choose a number 1-10</div>
-            <div class="reward-item">🎯 Pay 0.000005 ETH fee</div>
-            <div class="reward-item">🎯 Win: Get 50 XP</div>
-            <div class="reward-item">🎯 Lose: Get 5 XP</div>
+            <div class="reward-item">🎯 Win: Get 200 XP</div>
+            <div class="reward-item">🎯 Lose: Get 100 XP</div>
           </div>
         </div>
       </div>
@@ -3340,7 +3335,7 @@
           const txHash = tx.hash;
           const luckyNumber = (parseInt(txHash.slice(2, 10), 16) % 10) + 1;
           const isWin = (selectedLuckyNumber === luckyNumber);
-          const xpEarned = isWin ? 50 : 5;
+          const xpEarned = isWin ? 200 : 100;
           
           // Show result
           setTimeout(() => {
