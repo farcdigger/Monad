@@ -3279,7 +3279,14 @@
         document.querySelectorAll('.number-btn').forEach(btn => {
           btn.classList.remove('selected');
         });
-        event.target.classList.add('selected');
+        
+        // Find and select the clicked button
+        const buttons = document.querySelectorAll('.number-btn');
+        buttons.forEach(btn => {
+          if (btn.textContent.trim() === number.toString()) {
+            btn.classList.add('selected');
+          }
+        });
         
         // Show selected number
         document.getElementById('selected-number').style.display = 'block';
