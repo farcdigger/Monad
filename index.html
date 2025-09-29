@@ -3262,12 +3262,10 @@
       showAchievementModal(achievement);
     };
 
-    // Start app when DOM is ready
-    if (document.readyState === 'loading') {
-      // Lucky Number Game Functions
-      let selectedLuckyNumber = null;
-      
-      window.selectLuckyNumber = function(number) {
+    // Lucky Number Game Functions
+    let selectedLuckyNumber = null;
+    
+    window.selectLuckyNumber = function(number) {
         selectedLuckyNumber = number;
         
         // Update UI
@@ -3293,7 +3291,7 @@
         console.log('🍀 Selected lucky number:', number);
       };
       
-      window.playLuckyNumber = async function() {
+    window.playLuckyNumber = async function() {
         if (!selectedLuckyNumber) {
           showError('Please select a number first');
           return;
@@ -3370,7 +3368,7 @@
         }
       };
       
-      function showLuckyResult(guess, luckyNumber, xpEarned, isWin) {
+    function showLuckyResult(guess, luckyNumber, xpEarned, isWin) {
         if (isWin) {
           showStatus('lucky-status', `🎯 YOU WON! Lucky number was ${luckyNumber}! +${xpEarned} XP`, 'success');
         } else {
@@ -3380,6 +3378,8 @@
         setTimeout(() => hideStatus('lucky-status'), 5000);
       }
 
+    // Start app when DOM is ready
+    if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', initApp);
     } else {
       initApp();
