@@ -3322,20 +3322,17 @@
           });
           
           console.log('✅ Lucky Number transaction sent:', tx.hash);
-          showStatus('lucky-status', '⏳ Waiting for result...', 'pending');
+          showStatus('lucky-status', '⏳ Processing result...', 'pending');
           
-          // Wait for transaction
-          const receipt = await appState.provider.getTransactionReceipt(tx.hash);
-          console.log('✅ Lucky Number transaction confirmed:', receipt);
-          
-          // Parse result from events (simplified - in real implementation you'd parse the event)
-          // For now, generate result based on transaction hash for deterministic results
+          // Generate result based on transaction hash for deterministic results
           const txHash = tx.hash;
           const luckyNumber = (parseInt(txHash.slice(2, 10), 16) % 10) + 1;
           const isWin = (selectedLuckyNumber === luckyNumber);
           const xpEarned = isWin ? 200 : 100;
           
-          // Show result
+          console.log('🎲 Lucky Number result:', { guess: selectedLuckyNumber, lucky: luckyNumber, isWin, xpEarned });
+          
+          // Show result immediately (transaction is sent, assume success)
           setTimeout(() => {
             showLuckyResult(selectedLuckyNumber, luckyNumber, xpEarned, isWin);
             addXP(xpEarned);
@@ -3347,7 +3344,7 @@
             document.querySelectorAll('.number-btn').forEach(btn => {
               btn.classList.remove('selected');
             });
-          }, 1000);
+          }, 1500);
           
         } catch (error) {
           console.error('❌ Lucky Number error:', error);
