@@ -1,28 +1,34 @@
 {
-  "frame": {
-    "name": "Monad Dog",
-    "version": "1",
-    "iconUrl": "https://monad-snowy.vercel.app/.well-known/icon.png",
-    "homeUrl": "https://monad-snowy.vercel.app",
-    "imageUrl": "https://monad-snowy.vercel.app/.well-known/share.png",
-    "buttonTitle": "Play Monad Dog",
-    "splashImageUrl": "https://monad-snowy.vercel.app/.well-known/icon.png",
-    "splashBackgroundColor": "#1e003e",
-    "screenshotUrls": [],
-    "primaryCategory": "games",
-    "tags": ["monad", "farcaster", "miniapp", "dog", "game"],
-    "description": "Play Monad Dog — a fun mini app game",
-    "tagline": "Monad Dog — play & enjoy",
-    "ogTitle": "Monad Dog",
-    "ogDescription": "Play Monad Dog mini app"
-  },
   "accountAssociation": {
     "header": "eyJmaWQiOjI1MTYxOSwidHlwZSI6ImN1c3RvZHkiLCJrZXkiOiIweEMwNjM0OTQ1NjU5QzZCNzc5NkYzQ0Q2RTM1MzU5MTk3YzQ2YWVGNzUifQ",
     "payload": "eyJkb21haW4iOiJtb25hZC1zbm93eS52ZXJjZWwuYXBwIn0",
     "signature": "MHhhMjU0MTNmYzQ5NTA1OWJmYWI0ZDkyZDRiM2M1NjI3MzNmNGU0MjBiZTFlNmQ1YjUwNGQwOTEzMzUxY2UwZjQ2N2QxZTAzNWNmZDYxMzdlM2ExZWY2OWRmZDEwNWJlNzI5ZGQ4ZGYzNWVkZjFmNDQwNThiYzNhNzMxYzk2NmU1MTFi"
   },
+  "miniapp": {
+    "version": "1",
+    "name": "Monad Dog",
+    "description": "Play Monad Dog — a fun and engaging mini app game",
+    "subtitle": "Dog game on Base",
+    "tagline": "Play Monad Dog",
+    "iconUrl": "https://monad-snowy.vercel.app/.well-known/icon.png",
+    "homeUrl": "https://monad-snowy.vercel.app",
+    "imageUrl": "https://monad-snowy.vercel.app/.well-known/share.png",
+    "splashImageUrl": "https://monad-snowy.vercel.app/.well-known/icon.png",
+    "splashBackgroundColor": "#1e003e",
+    "screenshotUrls": [],
+    "heroImageUrl": "https://monad-snowy.vercel.app/.well-known/share.png",
+    "ogTitle": "Monad Dog",
+    "ogDescription": "Play Monad Dog mini app on Base",
+    "ogImageUrl": "https://monad-snowy.vercel.app/.well-known/share.png",
+    "primaryCategory": "games",
+    "tags": ["monad", "farcaster", "miniapp", "dog", "game"],
+    "noindex": false,
+    "requiredCapabilities": [
+      "actions.signIn",
+      "wallet.getEthereumProvider"
+    ]
+  },
   "baseBuilder": {
     "allowedAddresses": ["0xcF1B5d6CD8e0bfd6B1a8B2c2ceAb0bc165EEE5B3"]
-  },
-  "noindex": false
+  }
 }
