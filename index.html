@@ -161,6 +161,12 @@
       overflow: hidden;
     }
     
+    .tabs-bottom {
+      margin-top: 20px;
+      margin-bottom: 10px;
+      justify-content: center;
+    }
+    
     .tab {
       flex: 1;
       padding: 12px;
@@ -900,6 +906,9 @@
           <button class="tab" onclick="showTab('slots')">🎰 Slots</button>
           <button class="tab" onclick="showTab('lucky')">🍀 Lucky</button>
           <button class="tab" onclick="showTab('deploy')">🚀 Deploy</button>
+        </div>
+        
+        <div class="tabs tabs-bottom">
           <button class="tab" onclick="showTab('claim')">💰 Claim</button>
         </div>
 
@@ -3628,11 +3637,22 @@
       const shareText = `🚀 Deploy your own ERC20 tokens on ${networkName}!\n\n💰 ${feeText}\n🎯 Earn 250 XP per deployment\n📢 Share for +50 XP\n\nTry it now! 👇`;
       const shareUrl = 'https://monad-snowy.vercel.app';
       
-      // Create Farcaster intent URL
-      const farcasterUrl = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}&embeds[]=${encodeURIComponent(shareUrl)}`;
+      // Create Farcaster intent URL for direct cast creation
+      const farcasterUrl = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}`;
       
-      // Open share and award XP
-      window.open(farcasterUrl, '_blank');
+      // Try to open in Farcaster app first, fallback to web
+      if (navigator.userAgent.includes('Farcaster') || window.farcaster) {
+        // In Farcaster app - create cast directly
+        if (window.farcaster && window.farcaster.publishCast) {
+          window.farcaster.publishCast(shareText);
+        } else {
+          // Fallback to intent URL
+          window.open(farcasterUrl, '_blank');
+        }
+      } else {
+        // Outside Farcaster - open intent URL
+        window.open(farcasterUrl, '_blank');
+      }
       addXP(50);
       updateSlotsButton();
       showStatus('deploy-status', '🎉 +50 XP for sharing deploy feature!', 'success');
@@ -3644,8 +3664,8 @@
       const shareText = `🚀 Just deployed ${tokenName} ($${tokenSymbol}) on ${networkName}!\n\n💰 Supply: ${initialSupply}\n🎯 Earned 250 XP\n\nDeploy your own token now! 👇`;
       const shareUrl = 'https://monad-snowy.vercel.app';
       
-      // Create Farcaster intent URL
-      const farcasterUrl = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}&embeds[]=${encodeURIComponent(shareUrl)}`;
+      // Create Farcaster intent URL for direct cast creation
+      const farcasterUrl = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}`;
       
       // Create share button
       const deployStatus = document.getElementById('deploy-status');
@@ -3656,7 +3676,19 @@
         shareButton.style.background = 'linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)';
         shareButton.innerHTML = '📢 Share on Farcaster (+50 XP)';
         shareButton.onclick = function() {
-          window.open(farcasterUrl, '_blank');
+          // Try to open in Farcaster app first, fallback to web
+          if (navigator.userAgent.includes('Farcaster') || window.farcaster) {
+            // In Farcaster app - create cast directly
+            if (window.farcaster && window.farcaster.publishCast) {
+              window.farcaster.publishCast(shareText);
+            } else {
+              // Fallback to intent URL
+              window.open(farcasterUrl, '_blank');
+            }
+          } else {
+            // Outside Farcaster - open intent URL
+            window.open(farcasterUrl, '_blank');
+          }
           // Award XP for sharing
           addXP(50);
           updateSlotsButton();
