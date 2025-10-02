@@ -3285,6 +3285,16 @@
           text: `Playing Monad Dog - the cutest way to explore Monad Testnet! 🐕⛓️\n\n✨ Pet dogs, flip coins, say GM/GN\n🎯 Earn XP and claim $DOG tokens\n💰 Convert XP to tokens (10:1 rate)\n🚀 Real blockchain interactions\n\nJoin me!`,
           url: `https://monad-snowy.vercel.app?ref=invite&inviter=${appState.address?.slice(0,6)}`,
           image: "🚀"
+        },
+        deploy: {
+          text: `Just deployed ${data.tokenName} ($${data.tokenSymbol}) on ${data.network}! 🚀\n\n💰 Supply: ${data.initialSupply}\n🎯 Earned 250 XP\n\nDeploy your own token now!`,
+          url: `https://monad-snowy.vercel.app?ref=deploy&token=${data.tokenSymbol}&network=${data.network}`,
+          image: "🚀"
+        },
+        deploy_feature: {
+          text: `Deploy your own ERC20 tokens on ${data.network}! 🚀\n\n💰 ${data.fee}\n🎯 Earn 250 XP per deployment\n📢 Share for +50 XP\n\nTry it now!`,
+          url: `https://monad-snowy.vercel.app?ref=deploy_feature&network=${data.network}`,
+          image: "🚀"
         }
       };
       
@@ -3303,6 +3313,13 @@
           const shareUrl = `https://warpcast.com/~/compose?text=${encodeURIComponent(content.text)}&embeds[]=${encodeURIComponent(content.url)}`;
           window.open(shareUrl, '_blank');
           console.log('🚀 Shared via direct URL');
+        }
+        
+        // Award XP for sharing (only for deploy-related shares)
+        if (window.currentAchievement && (window.currentAchievement.type === 'deploy' || window.currentAchievement.type === 'deploy_feature')) {
+          addXP(50);
+          updateSlotsButton();
+          console.log('🎉 +50 XP for sharing deploy achievement!');
         }
         
         // Track sharing event
@@ -3647,8 +3664,8 @@
 
         console.log('🎉 Awarded 250 XP for token deployment!');
         
-        // Show Farcaster share option
-        showFarcasterShare(tokenName, tokenSymbol, initialSupply);
+        // Show achievement modal for sharing
+        showDeployAchievement(tokenName, tokenSymbol, initialSupply);
 
       } catch (error) {
         console.error('❌ Token deployment failed:', error);
@@ -3669,77 +3686,40 @@
       }
     };
     
+    // Deploy Achievement Function
+    window.showDeployAchievement = function(tokenName, tokenSymbol, initialSupply) {
+      if (!appState.connected) {
+        showError('Connect wallet to share achievements');
+        return;
+      }
+      
+      const networkName = appState.currentNetwork === 'base' ? 'Base Mainnet' : 'Monad Testnet';
+      const achievement = {
+        icon: '🚀',
+        title: 'Token Deployed!',
+        description: `Just deployed ${tokenName} ($${tokenSymbol}) on ${networkName}!\n💰 Supply: ${initialSupply}\n🎯 Earned 250 XP\n\nDeploy your own token now!`,
+        type: 'deploy',
+        data: { tokenName, tokenSymbol, initialSupply, network: networkName }
+      };
+      
+      showAchievementModal(achievement);
+    };
+    
     // Share Deploy Feature Function
     window.shareDeployFeature = function() {
       const networkName = appState.currentNetwork === 'base' ? 'Base Mainnet' : 'Monad Testnet';
       const feeText = appState.currentNetwork === 'base' ? '0.0001 ETH fee' : 'FREE';
-      const shareText = `🚀 Deploy your own ERC20 tokens on ${networkName}!\n\n💰 ${feeText}\n🎯 Earn 250 XP per deployment\n📢 Share for +50 XP\n\nTry it now! 👇`;
-      const shareUrl = 'https://monad-snowy.vercel.app';
+      const achievement = {
+        icon: '🚀',
+        title: 'Deploy Feature!',
+        description: `Deploy your own ERC20 tokens on ${networkName}!\n\n💰 ${feeText}\n🎯 Earn 250 XP per deployment\n📢 Share for +50 XP\n\nTry it now!`,
+        type: 'deploy_feature',
+        data: { network: networkName, fee: feeText }
+      };
       
-      // Use Farcaster Mini App SDK for cast creation
-      if (window.farcaster && window.farcaster.composeCast) {
-        // In Farcaster Mini App - use SDK composeCast
-        window.farcaster.composeCast({
-          text: shareText,
-          embeds: [shareUrl]
-        });
-      } else if (window.farcaster && window.farcaster.openUrl) {
-        // Fallback to openUrl with compose intent
-        window.farcaster.openUrl(`https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}`);
-      } else {
-        // Outside Farcaster - open intent URL
-        window.open(`https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}`, '_blank');
-      }
-      addXP(50);
-      updateSlotsButton();
-      showStatus('deploy-status', '🎉 +50 XP for sharing deploy feature!', 'success');
+      showAchievementModal(achievement);
     };
     
-    // Farcaster Share Function for Token Deployment
-    window.showFarcasterShare = function(tokenName, tokenSymbol, initialSupply) {
-      const networkName = appState.currentNetwork === 'base' ? 'Base Mainnet' : 'Monad Testnet';
-      const shareText = `🚀 Just deployed ${tokenName} ($${tokenSymbol}) on ${networkName}!\n\n💰 Supply: ${initialSupply}\n🎯 Earned 250 XP\n\nDeploy your own token now! 👇`;
-      const shareUrl = 'https://monad-snowy.vercel.app';
-      
-      // Create Farcaster intent URL for direct cast creation
-      const farcasterUrl = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}`;
-      
-      // Create share button
-      const deployStatus = document.getElementById('deploy-status');
-      if (deployStatus) {
-        const shareButton = document.createElement('button');
-        shareButton.className = 'game-button';
-        shareButton.style.marginTop = '15px';
-        shareButton.style.background = 'linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)';
-        shareButton.innerHTML = '📢 Share on Farcaster (+50 XP)';
-        shareButton.onclick = function() {
-          // Use Farcaster Mini App SDK for cast creation
-          if (window.farcaster && window.farcaster.composeCast) {
-            // In Farcaster Mini App - use SDK composeCast
-            window.farcaster.composeCast({
-              text: shareText,
-              embeds: [shareUrl]
-            });
-          } else if (window.farcaster && window.farcaster.openUrl) {
-            // Fallback to openUrl with compose intent
-            window.farcaster.openUrl(`https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}`);
-          } else {
-            // Outside Farcaster - open intent URL
-            window.open(`https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}`, '_blank');
-          }
-          // Award XP for sharing
-          addXP(50);
-          updateSlotsButton();
-          showStatus('deploy-status', '🎉 +50 XP for sharing!', 'success');
-        };
-        
-        // Remove old share button if exists
-        const oldButton = deployStatus.querySelector('.game-button');
-        if (oldButton) oldButton.remove();
-        
-        deployStatus.appendChild(shareButton);
-      }
-    };
     
     // Start app when DOM is ready
     if (document.readyState === 'loading') {
