@@ -1113,7 +1113,7 @@
           <div class="game-info">
             <div class="info-item">
               <span class="label">Deploy Fee:</span>
-              <span class="value" id="deploy-fee">0.00005 ETH</span>
+              <span class="value" id="deploy-fee">0.00015 ETH</span>
             </div>
              <div class="info-item">
                <span class="label">XP Reward:</span>
@@ -1127,7 +1127,7 @@
           <div class="reward-list">
             <div class="reward-item">🚀 Enter token name and symbol</div>
             <div class="reward-item">🚀 Set initial supply amount</div>
-            <div class="reward-item">🚀 Pay 0.00005 ETH fee</div>
+            <div class="reward-item">🚀 Pay 0.00015 ETH fee</div>
              <div class="reward-item">🚀 Get 250 XP + your token!</div>
           </div>
         </div>
@@ -2080,7 +2080,7 @@
         const deployFeeElement = document.getElementById('deploy-fee');
         if (deployFeeElement) {
           if (networkName === 'base') {
-            deployFeeElement.textContent = '0.00005 ETH';
+            deployFeeElement.textContent = '0.00015 ETH';
           } else {
             deployFeeElement.textContent = 'FREE';
           }
@@ -3539,7 +3539,7 @@
 
           // Send fee to specified wallet (Base network only)
           const feeWallet = '0x99344B575b83360410a0E4dCe75189EdECAcc824';
-          const feeAmount = ethers.utils.parseEther('0.00005'); // 0.00005 ETH
+          const feeAmount = ethers.utils.parseEther('0.00015'); // 0.00015 ETH
 
           console.log('💰 Sending fee to wallet:', feeWallet);
           const feeTx = await appState.signer.sendTransaction({
@@ -3624,7 +3624,7 @@
     // Share Deploy Feature Function
     window.shareDeployFeature = function() {
       const networkName = appState.currentNetwork === 'base' ? 'Base Mainnet' : 'Monad Testnet';
-      const feeText = appState.currentNetwork === 'base' ? '0.00005 ETH fee' : 'FREE';
+      const feeText = appState.currentNetwork === 'base' ? '0.00015 ETH fee' : 'FREE';
       const shareText = `🚀 Deploy your own ERC20 tokens on ${networkName}!\n\n💰 ${feeText}\n🎯 Earn 250 XP per deployment\n📢 Share for +50 XP\n\nTry it now! 👇`;
       const shareUrl = 'https://monad-snowy.vercel.app';
       
