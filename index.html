@@ -1102,6 +1102,10 @@
             <button id="deployButton" onclick="deployToken()" class="game-button">
               🚀 Deploy Token
             </button>
+            
+            <button id="shareDeployFeature" onclick="shareDeployFeature()" class="game-button" style="margin-top: 10px; background: linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%);">
+              📢 Share Deploy Feature (+50 XP)
+            </button>
           </div>
           
           <div id="deploy-status" class="status"></div>
@@ -3617,6 +3621,23 @@
       }
     };
     
+    // Share Deploy Feature Function
+    window.shareDeployFeature = function() {
+      const networkName = appState.currentNetwork === 'base' ? 'Base Mainnet' : 'Monad Testnet';
+      const feeText = appState.currentNetwork === 'base' ? '0.00005 ETH fee' : 'FREE';
+      const shareText = `🚀 Deploy your own ERC20 tokens on ${networkName}!\n\n💰 ${feeText}\n🎯 Earn 250 XP per deployment\n📢 Share for +50 XP\n\nTry it now! 👇`;
+      const shareUrl = 'https://monad-snowy.vercel.app';
+      
+      // Create Farcaster intent URL
+      const farcasterUrl = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}&embeds[]=${encodeURIComponent(shareUrl)}`;
+      
+      // Open share and award XP
+      window.open(farcasterUrl, '_blank');
+      addXP(50);
+      updateSlotsButton();
+      showStatus('deploy-status', '🎉 +50 XP for sharing deploy feature!', 'success');
+    };
+    
     // Farcaster Share Function for Token Deployment
     window.showFarcasterShare = function(tokenName, tokenSymbol, initialSupply) {
       const networkName = appState.currentNetwork === 'base' ? 'Base Mainnet' : 'Monad Testnet';
@@ -3633,9 +3654,13 @@
         shareButton.className = 'game-button';
         shareButton.style.marginTop = '15px';
         shareButton.style.background = 'linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)';
-        shareButton.innerHTML = '📢 Share on Farcaster';
+        shareButton.innerHTML = '📢 Share on Farcaster (+50 XP)';
         shareButton.onclick = function() {
           window.open(farcasterUrl, '_blank');
+          // Award XP for sharing
+          addXP(50);
+          updateSlotsButton();
+          showStatus('deploy-status', '🎉 +50 XP for sharing!', 'success');
         };
         
         // Remove old share button if exists
