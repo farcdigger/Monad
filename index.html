@@ -895,11 +895,11 @@
 
         <div class="tabs">
           <button class="tab active" onclick="showTab('pet')">🐕 Pet</button>
-          <button class="tab" onclick="showTab('deploy')">🚀 Deploy</button>
           <button class="tab" onclick="showTab('greet')">👋 Greet</button>
           <button class="tab" onclick="showTab('flip')">🪙 Flip</button>
           <button class="tab" onclick="showTab('slots')">🎰 Slots</button>
           <button class="tab" onclick="showTab('lucky')">🍀 Lucky</button>
+          <button class="tab" onclick="showTab('deploy')">🚀 Deploy</button>
           <button class="tab" onclick="showTab('claim')">💰 Claim</button>
         </div>
 
@@ -1109,7 +1109,7 @@
           <div class="game-info">
             <div class="info-item">
               <span class="label">Deploy Fee:</span>
-              <span class="value">0.00005 ETH</span>
+              <span class="value" id="deploy-fee">0.00005 ETH</span>
             </div>
              <div class="info-item">
                <span class="label">XP Reward:</span>
@@ -2062,15 +2062,25 @@
         console.log('❌ Lucky tab hidden for Monad network');
       }
 
-      // Show/hide deploy tab based on network
-      const deployTab = document.querySelector('.tab[onclick="showTab(\'deploy\')"]');
-      if (networkName === 'base') {
-        deployTab.style.display = 'block';
-        console.log('✅ Deploy tab shown for Base network');
-      } else {
-        deployTab.style.display = 'none';
-        console.log('❌ Deploy tab hidden for Monad network');
-      }
+        // Show/hide deploy tab based on network
+        const deployTab = document.querySelector('.tab[onclick="showTab(\'deploy\')"]');
+        if (networkName === 'base') {
+          deployTab.style.display = 'block';
+          console.log('✅ Deploy tab shown for Base network');
+        } else {
+          deployTab.style.display = 'block';
+          console.log('✅ Deploy tab shown for Monad network');
+        }
+        
+        // Update deploy fee display based on network
+        const deployFeeElement = document.getElementById('deploy-fee');
+        if (deployFeeElement) {
+          if (networkName === 'base') {
+            deployFeeElement.textContent = '0.00005 ETH';
+          } else {
+            deployFeeElement.textContent = 'FREE';
+          }
+        }
       
       // Force hide claim section on Base network
       if (networkName === 'base') {
@@ -3491,10 +3501,7 @@
         return;
       }
 
-      if (appState.currentNetwork !== 'base') {
-        showStatus('deploy-status', '❌ Token deployment only available on Base network!', 'error');
-        return;
-      }
+      // Token deployment is available on both networks
 
       const tokenName = document.getElementById('tokenName').value.trim();
       const tokenSymbol = document.getElementById('tokenSymbol').value.trim();
@@ -3521,24 +3528,31 @@
 
       try {
         console.log('🚀 Starting token deployment:', { tokenName, tokenSymbol, initialSupply });
-        showStatus('deploy-status', '⏳ Sending fee...', 'pending');
+        
+        // Fee logic based on network
+        if (appState.currentNetwork === 'base') {
+          showStatus('deploy-status', '⏳ Sending fee...', 'pending');
 
-        // Send fee to specified wallet
-        const feeWallet = '0x99344B575b83360410a0E4dCe75189EdECAcc824';
-        const feeAmount = ethers.utils.parseEther('0.00005'); // 0.00005 ETH
+          // Send fee to specified wallet (Base network only)
+          const feeWallet = '0x99344B575b83360410a0E4dCe75189EdECAcc824';
+          const feeAmount = ethers.utils.parseEther('0.00005'); // 0.00005 ETH
 
-        console.log('💰 Sending fee to wallet:', feeWallet);
-        const feeTx = await appState.signer.sendTransaction({
-          to: feeWallet,
-          value: feeAmount,
-          gasLimit: 21000
-        });
+          console.log('💰 Sending fee to wallet:', feeWallet);
+          const feeTx = await appState.signer.sendTransaction({
+            to: feeWallet,
+            value: feeAmount,
+            gasLimit: 21000
+          });
 
-        console.log('✅ Fee transaction sent:', feeTx.hash);
-        showStatus('deploy-status', '⏳ Fee sent, deploying token...', 'pending');
+          console.log('✅ Fee transaction sent:', feeTx.hash);
+          showStatus('deploy-status', '⏳ Fee sent, deploying token...', 'pending');
 
-        // Wait for fee transaction (simplified - just wait a bit)
-        await new Promise(resolve => setTimeout(resolve, 2000));
+          // Wait for fee transaction (simplified - just wait a bit)
+          await new Promise(resolve => setTimeout(resolve, 2000));
+        } else {
+          // Monad network - no fee required
+          showStatus('deploy-status', '⏳ Deploying token (no fee required)...', 'pending');
+        }
 
         // Deploy real ERC20 token
         console.log('🚀 Deploying real ERC20 contract...');
