@@ -3650,21 +3650,19 @@
       const shareText = `🚀 Deploy your own ERC20 tokens on ${networkName}!\n\n💰 ${feeText}\n🎯 Earn 250 XP per deployment\n📢 Share for +50 XP\n\nTry it now! 👇`;
       const shareUrl = 'https://monad-snowy.vercel.app';
       
-      // Create Farcaster intent URL for direct cast creation
-      const farcasterUrl = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}`;
-      
-      // Try to open in Farcaster app first, fallback to web
-      if (navigator.userAgent.includes('Farcaster') || window.farcaster) {
-        // In Farcaster app - create cast directly
-        if (window.farcaster && window.farcaster.publishCast) {
-          window.farcaster.publishCast(shareText);
-        } else {
-          // Fallback to intent URL
-          window.open(farcasterUrl, '_blank');
-        }
+      // Use Farcaster Mini App SDK for cast creation
+      if (window.farcaster && window.farcaster.composeCast) {
+        // In Farcaster Mini App - use SDK composeCast
+        window.farcaster.composeCast({
+          text: shareText,
+          embeds: [shareUrl]
+        });
+      } else if (window.farcaster && window.farcaster.openUrl) {
+        // Fallback to openUrl with compose intent
+        window.farcaster.openUrl(`https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}`);
       } else {
         // Outside Farcaster - open intent URL
-        window.open(farcasterUrl, '_blank');
+        window.open(`https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}`, '_blank');
       }
       addXP(50);
       updateSlotsButton();
@@ -3689,18 +3687,19 @@
         shareButton.style.background = 'linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)';
         shareButton.innerHTML = '📢 Share on Farcaster (+50 XP)';
         shareButton.onclick = function() {
-          // Try to open in Farcaster app first, fallback to web
-          if (navigator.userAgent.includes('Farcaster') || window.farcaster) {
-            // In Farcaster app - create cast directly
-            if (window.farcaster && window.farcaster.publishCast) {
-              window.farcaster.publishCast(shareText);
-            } else {
-              // Fallback to intent URL
-              window.open(farcasterUrl, '_blank');
-            }
+          // Use Farcaster Mini App SDK for cast creation
+          if (window.farcaster && window.farcaster.composeCast) {
+            // In Farcaster Mini App - use SDK composeCast
+            window.farcaster.composeCast({
+              text: shareText,
+              embeds: [shareUrl]
+            });
+          } else if (window.farcaster && window.farcaster.openUrl) {
+            // Fallback to openUrl with compose intent
+            window.farcaster.openUrl(`https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}`);
           } else {
             // Outside Farcaster - open intent URL
-            window.open(farcasterUrl, '_blank');
+            window.open(`https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}`, '_blank');
           }
           // Award XP for sharing
           addXP(50);
