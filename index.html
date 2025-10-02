@@ -3594,6 +3594,9 @@
         updateSlotsButton();
 
         console.log('🎉 Awarded 250 XP for token deployment!');
+        
+        // Show Farcaster share option
+        showFarcasterShare(tokenName, tokenSymbol, initialSupply);
 
       } catch (error) {
         console.error('❌ Token deployment failed:', error);
@@ -3613,7 +3616,36 @@
         deployButton.textContent = '🚀 Deploy Token';
       }
     };
-
+    
+    // Farcaster Share Function for Token Deployment
+    window.showFarcasterShare = function(tokenName, tokenSymbol, initialSupply) {
+      const networkName = appState.currentNetwork === 'base' ? 'Base Mainnet' : 'Monad Testnet';
+      const shareText = `🚀 Just deployed ${tokenName} ($${tokenSymbol}) on ${networkName}!\n\n💰 Supply: ${initialSupply}\n🎯 Earned 250 XP\n\nDeploy your own token now! 👇`;
+      const shareUrl = 'https://monad-snowy.vercel.app';
+      
+      // Create Farcaster intent URL
+      const farcasterUrl = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}&embeds[]=${encodeURIComponent(shareUrl)}`;
+      
+      // Create share button
+      const deployStatus = document.getElementById('deploy-status');
+      if (deployStatus) {
+        const shareButton = document.createElement('button');
+        shareButton.className = 'game-button';
+        shareButton.style.marginTop = '15px';
+        shareButton.style.background = 'linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)';
+        shareButton.innerHTML = '📢 Share on Farcaster';
+        shareButton.onclick = function() {
+          window.open(farcasterUrl, '_blank');
+        };
+        
+        // Remove old share button if exists
+        const oldButton = deployStatus.querySelector('.game-button');
+        if (oldButton) oldButton.remove();
+        
+        deployStatus.appendChild(shareButton);
+      }
+    };
+    
     // Start app when DOM is ready
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', initApp);
