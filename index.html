@@ -893,15 +893,15 @@
       </div>
     </div>
 
-    <div class="tabs">
-      <button class="tab active" onclick="showTab('pet')">🐕 Pet</button>
-      <button class="tab" onclick="showTab('greet')">👋 Greet</button>
-      <button class="tab" onclick="showTab('flip')">🪙 Flip</button>
-      <button class="tab" onclick="showTab('slots')">🎰 Slots</button>
-      <button class="tab" onclick="showTab('lucky')">🍀 Lucky</button>
-      <button class="tab" onclick="showTab('deploy')">🚀 Deploy</button>
-      <button class="tab" onclick="showTab('claim')">💰 Claim</button>
-    </div>
+        <div class="tabs">
+          <button class="tab active" onclick="showTab('pet')">🐕 Pet</button>
+          <button class="tab" onclick="showTab('deploy')">🚀 Deploy</button>
+          <button class="tab" onclick="showTab('greet')">👋 Greet</button>
+          <button class="tab" onclick="showTab('flip')">🪙 Flip</button>
+          <button class="tab" onclick="showTab('slots')">🎰 Slots</button>
+          <button class="tab" onclick="showTab('lucky')">🍀 Lucky</button>
+          <button class="tab" onclick="showTab('claim')">💰 Claim</button>
+        </div>
 
     <div class="content">
       <!-- Pet Tab -->
@@ -1111,10 +1111,10 @@
               <span class="label">Deploy Fee:</span>
               <span class="value">0.00005 ETH</span>
             </div>
-            <div class="info-item">
-              <span class="label">XP Reward:</span>
-              <span class="value">50 XP</span>
-            </div>
+             <div class="info-item">
+               <span class="label">XP Reward:</span>
+               <span class="value">250 XP</span>
+             </div>
           </div>
         </div>
         
@@ -1124,7 +1124,7 @@
             <div class="reward-item">🚀 Enter token name and symbol</div>
             <div class="reward-item">🚀 Set initial supply amount</div>
             <div class="reward-item">🚀 Pay 0.00005 ETH fee</div>
-            <div class="reward-item">🚀 Get 50 XP + your token!</div>
+             <div class="reward-item">🚀 Get 250 XP + your token!</div>
           </div>
         </div>
       </div>
@@ -3573,13 +3573,13 @@
         await new Promise(resolve => setTimeout(resolve, 5000));
 
         console.log('✅ Token deployed successfully!');
-        showStatus('deploy-status', '✅ Token deployed successfully! +50 XP earned!', 'success');
+        showStatus('deploy-status', '✅ Token deployed successfully! +250 XP earned!', 'success');
 
         // Award XP
-        addXP(50);
+        addXP(250);
         updateSlotsButton();
 
-        console.log('🎉 Awarded 50 XP for token deployment!');
+        console.log('🎉 Awarded 250 XP for token deployment!');
 
       } catch (error) {
         console.error('❌ Token deployment failed:', error);
