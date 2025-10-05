@@ -2111,16 +2111,16 @@
         // Update tab order based on network
         const mainTabs = document.getElementById('main-tabs');
         if (mainTabs) {
-          if (networkName === 'base') {
-            // Base: Deploy first, then Pet, then others
-            mainTabs.innerHTML = `
-              <button class="tab active" onclick="showTab('deploy')">🚀 Deploy</button>
-              <button class="tab" onclick="showTab('pet')">🐕 Pet</button>
-              <button class="tab" onclick="showTab('greet')">👋 Greet</button>
-              <button class="tab" onclick="showTab('flip')">🪙 Flip</button>
-              <button class="tab" onclick="showTab('slots')">🎰 Slots</button>
-              <button class="tab" onclick="showTab('lucky')">🍀 Lucky</button>
-            `;
+        if (networkName === 'base') {
+          // Base: Pet first, then Deploy, then others
+          mainTabs.innerHTML = `
+            <button class="tab active" onclick="showTab('pet')">🐕 Pet</button>
+            <button class="tab" onclick="showTab('deploy')">🚀 Deploy</button>
+            <button class="tab" onclick="showTab('greet')">👋 Greet</button>
+            <button class="tab" onclick="showTab('flip')">🪙 Flip</button>
+            <button class="tab" onclick="showTab('slots')">🎰 Slots</button>
+            <button class="tab" onclick="showTab('lucky')">🍀 Lucky</button>
+          `;
           } else {
             // Monad: Pet first, then others, Deploy last
             mainTabs.innerHTML = `
