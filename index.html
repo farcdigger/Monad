@@ -2795,10 +2795,9 @@
         
         // Show appropriate status message (Base Mainnet only)
         if (methodName === 'playSlots') {
-          showStatus(statusId, '🎰 Please confirm slots game...', 'pending');
+          showStatus(statusId, '🎰 Waiting for confirmation...', 'pending');
         } else {
-          const feeAmount = '0.000005 ETH';
-          showStatus(statusId, `🔐 Please confirm transaction (${feeAmount} fee)...`, 'pending');
+          showStatus(statusId, '⏳ Waiting for confirmation...', 'pending');
         }
 
         // Send transaction with fee (Base Mainnet only)
