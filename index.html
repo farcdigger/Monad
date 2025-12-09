@@ -1327,7 +1327,7 @@
 
     function showLoadingState() {
       document.getElementById('loading').style.display = 'flex';
-      document.querySelector('.app-content').classList.remove('loaded');
+      // Keep app content visible to prevent white screen
       updateLoadingProgress(0, 'Starting Tx App...<br>🚀 Initializing blockchain connection');
     }
 
