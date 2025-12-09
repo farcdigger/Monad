@@ -1758,9 +1758,7 @@
         
         // Reset Base XP (localStorage only)
         localStorage.setItem(`wallet_xp_${baseKey}`, '0');
-        console.log('💾 XP reset in localStorage');
-        
-        console.log('🔄 XP reset to 0 on both Monad and Base networks');
+        console.log('💾 XP reset in localStorage (Base Mainnet)');
         
         // Update claim UI immediately
         await updateClaimUI();
