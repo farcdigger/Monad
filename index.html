@@ -2891,39 +2891,33 @@
         
         showStatus(statusId, 'Preparing transaction...', 'pending');
 
-        // Ensure correct network (only for Monad)
-        // Base Mainnet only - network check handled by ensureCorrectNetwork
+        // Ensure correct network (Base Mainnet)
+        await ensureCorrectNetwork();
 
         // Create contract instance
         console.log('🔗 Creating contract with signer:', appState.signer);
         const contract = new ethers.Contract(contractAddress, abi, appState.signer);
         
-        // Show appropriate status message based on network
-        if (currentNetwork === 'base') {
-          if (methodName === 'playSlots') {
-            showStatus(statusId, '🎰 Please confirm slots game...', 'pending');
-          } else {
-            const feeAmount = '0.000005 ETH';
-            showStatus(statusId, `🔐 Please confirm transaction (${feeAmount} fee)...`, 'pending');
-          }
+        // Show appropriate status message (Base Mainnet only)
+        if (methodName === 'playSlots') {
+          showStatus(statusId, '🎰 Please confirm slots game...', 'pending');
         } else {
-          showStatus(statusId, '🔐 Please confirm in your wallet...', 'pending');
+          const feeAmount = '0.000005 ETH';
+          showStatus(statusId, `🔐 Please confirm transaction (${feeAmount} fee)...`, 'pending');
         }
 
-        // Send transaction with fee for Base network
+        // Send transaction with fee (Base Mainnet only)
         let txOptions = {
           gasLimit: 100000
         };
         
-        if (currentNetwork === 'base') {
-          // Base ağında fee gönder
-          if (methodName === 'playSlots') {
-            txOptions.value = ethers.utils.parseEther("0.00001"); // 0.00001 ETH fee for slots
-            console.log('💰 Base slots fee: 0.00001 ETH');
-          } else {
-            txOptions.value = ethers.utils.parseEther("0.000005"); // 0.000005 ETH fee for others
-            console.log('💰 Base fee: 0.000005 ETH');
-          }
+        // Base Mainnet - always send fee
+        if (methodName === 'playSlots') {
+          txOptions.value = ethers.utils.parseEther("0.00001"); // 0.00001 ETH fee for slots
+          console.log('💰 Base slots fee: 0.00001 ETH');
+        } else {
+          txOptions.value = ethers.utils.parseEther("0.000005"); // 0.000005 ETH fee for pet, greet, flip
+          console.log('💰 Base fee: 0.000005 ETH');
         }
         
         const tx = await contract[methodName](txOptions);
@@ -2954,20 +2948,16 @@
         if (error.message.includes('user rejected') || error.code === 4001) {
           errorMsg = 'Transaction cancelled by user';
         } else if (error.message.includes('insufficient funds')) {
-          if (currentNetwork === 'base') {
-            if (methodName === 'playSlots') {
-              errorMsg = 'Insufficient ETH for slots game';
-            } else {
-              errorMsg = 'Insufficient ETH for transaction fee';
-            }
+          if (methodName === 'playSlots') {
+            errorMsg = 'Insufficient ETH for slots game';
           } else {
-            errorMsg = 'Insufficient funds for gas';
+            errorMsg = 'Insufficient ETH for transaction fee (need 0.000005 ETH)';
           }
         } else if (error.message.includes('Insufficient fee')) {
           if (methodName === 'playSlots') {
             errorMsg = 'Insufficient ETH for slots game';
           } else {
-            errorMsg = 'Insufficient ETH for transaction fee';
+            errorMsg = 'Insufficient ETH for transaction fee (need 0.000005 ETH)';
           }
         }
 
