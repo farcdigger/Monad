@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Monad Dog</title>
+  <title>Tx App</title>
 
 <!-- Supabase Client -->
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
@@ -17,26 +17,26 @@
     "version": "next",
     "imageUrl": "https://monad-snowy.vercel.app/.well-known/share.png",
     "button": {
-      "title": "🐕 Play Monad Dog",
+      "title": "🚀 Play Tx App",
       "action": {
         "type": "launch_frame",
         "url": "https://monad-snowy.vercel.app",
-        "name": "Monad Dog",
+        "name": "Tx App",
         "splashImageUrl": "https://monad-snowy.vercel.app/.well-known/splash.png",
-        "splashBackgroundColor": "#1e003e"
+        "splashBackgroundColor": "#001f3f"
       }
     }
   }' />
 
   <!-- Open Graph for better sharing -->
-  <meta property="og:title" content="Monad Dog - Pet, Greet, Flip on Monad Testnet" />
-  <meta property="og:description" content="Interactive Farcaster Mini App on Monad Testnet. Pet the dog, say GM/GN, flip coins and earn XP!" />
+  <meta property="og:title" content="Tx App - Deploy, Pet, Greet, Flip on Base Mainnet" />
+  <meta property="og:description" content="Interactive Farcaster Mini App on Base Mainnet. Deploy tokens, pet the dog, say GM/GN, flip coins and earn XP!" />
   <meta property="og:image" content="https://monad-snowy.vercel.app/.well-known/share.png" />
   <meta property="og:url" content="https://monad-snowy.vercel.app" />
   <meta property="og:type" content="website" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Monad Dog - Pet, Greet, Flip on Monad Testnet" />
-  <meta name="twitter:description" content="Interactive Farcaster Mini App on Monad Testnet. Pet the dog, say GM/GN, flip coins and earn XP!" />
+  <meta name="twitter:title" content="Tx App - Deploy, Pet, Greet, Flip on Base Mainnet" />
+  <meta name="twitter:description" content="Interactive Farcaster Mini App on Base Mainnet. Deploy tokens, pet the dog, say GM/GN, flip coins and earn XP!" />
   <meta name="twitter:image" content="https://monad-snowy.vercel.app/.well-known/share.png" />
 
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
@@ -70,7 +70,7 @@
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-      background: linear-gradient(135deg, #1e003e 0%, #330066 100%);
+      background: linear-gradient(135deg, #001f3f 0%, #003d7a 100%);
       color: white;
       min-height: 100vh;
       padding: 20px;
@@ -133,7 +133,7 @@
     }
     
     button {
-      background: #6366f1;
+      background: #007bff;
       color: white;
       border: none;
       padding: 12px 24px;
@@ -145,7 +145,7 @@
     }
     
     button:hover {
-      background: #5855e8;
+      background: #0056b3;
     }
     
     button:disabled {
@@ -191,7 +191,7 @@
     }
     
     .tab.active {
-      background: #6366f1;
+      background: #007bff;
     }
     
     .content {
@@ -256,7 +256,7 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: linear-gradient(135deg, #1e003e 0%, #330066 100%);
+      background: linear-gradient(135deg, #001f3f 0%, #003d7a 100%);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -270,7 +270,7 @@
       height: 60px;
       border: 4px solid rgba(255,255,255,0.2);
       border-radius: 50%;
-      border-top-color: #6366f1;
+      border-top-color: #007bff;
       animation: spin 1s linear infinite;
       margin-bottom: 20px;
     }
@@ -301,7 +301,7 @@
 
     .loading-progress-bar {
       height: 100%;
-      background: linear-gradient(90deg, #6366f1, #8b5cf6);
+      background: linear-gradient(90deg, #007bff, #0056b3);
       border-radius: 2px;
       width: 0%;
       transition: width 0.3s ease;
@@ -421,7 +421,7 @@
     }
 
     .network-btn.active {
-      background: #6366f1;
+      background: #007bff;
       opacity: 1;
       box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
     }
@@ -431,11 +431,45 @@
     }
 
     /* Custom network icons */
+    .app-logo {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    
+    .logo-icon {
+      width: 80px;
+      height: 80px;
+      background: #007bff;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+      font-weight: bold;
+      color: white;
+      box-shadow: 0 0 30px rgba(0, 123, 255, 0.5);
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+    
+    .logo-icon::after {
+      content: '';
+      position: absolute;
+      width: 80px;
+      height: 80px;
+      background: #007bff;
+      border-radius: 20px;
+      opacity: 0.3;
+      filter: blur(20px);
+      z-index: -1;
+    }
+    
     .monad-icon {
       width: 16px;
       height: 16px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #8b5cf6, #a855f7);
+      background: linear-gradient(135deg, #0056b3, #a855f7);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -539,7 +573,7 @@
 
     .form-group input:focus {
       outline: none;
-      border-color: #6366f1;
+      border-color: #007bff;
       box-shadow: 0 0 10px rgba(99, 102, 241, 0.3);
     }
 
@@ -554,7 +588,7 @@
 
     .rank-number {
       font-weight: 600;
-      color: #6366f1;
+      color: #007bff;
       width: 40px;
     }
 
@@ -564,7 +598,7 @@
     }
 
     .share-button {
-      background: linear-gradient(45deg, #6366f1, #8b5cf6);
+      background: linear-gradient(45deg, #007bff, #0056b3);
       color: white;
       border: none;
       padding: 10px 20px;
@@ -609,12 +643,12 @@
     }
 
     .achievement-content {
-      background: linear-gradient(135deg, #1e003e 0%, #330066 100%);
+      background: linear-gradient(135deg, #001f3f 0%, #003d7a 100%);
       padding: 30px;
       border-radius: 20px;
       text-align: center;
       max-width: 350px;
-      border: 2px solid #6366f1;
+      border: 2px solid #007bff;
       box-shadow: 0 20px 40px rgba(0,0,0,0.5);
     }
 
@@ -763,7 +797,7 @@
       padding: 20px;
       background: rgba(0,0,0,0.3);
       border-radius: 12px;
-      border: 2px solid #6366f1;
+      border: 2px solid #007bff;
     }
 
     .slot-reel {
@@ -879,7 +913,10 @@
 <body>
   <div class="container app-content">
     <div class="header">
-      <div class="title">🐕 Monad Dog</div>
+      <div class="app-logo">
+        <div class="logo-icon">Tx</div>
+      </div>
+      <div class="title">Tx App</div>
       <div class="xp" id="xp-display">✨ Available XP: <span id="xp">0</span></div>
       
       <a href="https://x.com/monaddogg" target="_blank" class="social-link" title="Follow us on Twitter">
@@ -899,17 +936,6 @@
         <button id="disconnect-btn">Disconnect</button>
       </div>
       
-      <!-- Network Selector -->
-      <div class="network-selector">
-        <button class="network-btn active" id="monad-network" onclick="switchNetwork('monad')">
-          <div class="monad-icon">M</div>
-          <span class="network-name">Monad Testnet</span>
-        </button>
-        <button class="network-btn" id="base-network" onclick="switchNetwork('base')">
-          <div class="base-icon">B</div>
-          <span class="network-name">Base Mainnet</span>
-        </button>
-      </div>
     </div>
 
         <div class="tabs" id="main-tabs">
@@ -921,9 +947,6 @@
           <button class="tab" onclick="showTab('deploy')">🚀 Deploy</button>
         </div>
         
-        <div class="tabs tabs-bottom">
-          <button class="tab" onclick="showTab('claim')">💰 Claim</button>
-        </div>
 
     <div class="content">
       <!-- Pet Tab -->
@@ -1160,8 +1183,8 @@
         <h3>Claim $DOG Tokens</h3>
         <p style="margin-bottom: 20px;">Convert your earned XP to $DOG tokens!</p>
         <div id="claim-network-warning" style="display: none; background: rgba(99, 102, 241, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid rgba(99, 102, 241, 0.3);">
-          <h4 style="color: #6366f1; margin-bottom: 10px;">🔄 Cross-Network Claiming</h4>
-          <p style="color: #6366f1; font-size: 14px;">You can earn XP on Base and claim $DOG tokens on Monad Testnet!</p>
+          <h4 style="color: #007bff; margin-bottom: 10px;">🔄 Cross-Network Claiming</h4>
+          <p style="color: #007bff; font-size: 14px;">You can earn XP on Base and claim $DOG tokens on Monad Testnet!</p>
         </div>
         
         <div class="claim-section">
@@ -1221,8 +1244,11 @@
 
     <div id="loading" class="loading">
       <div class="loading-spinner"></div>
-      <div class="loading-text">Loading Monad Dog...</div>
-      <div class="loading-subtitle">Starting Monad Dog...<br>🚀 Initializing blockchain connection</div>
+      <div class="loading-logo">
+        <div class="logo-icon">Tx</div>
+      </div>
+      <div class="loading-text">Loading Tx App...</div>
+      <div class="loading-subtitle">Starting Tx App...<br>🚀 Initializing blockchain connection</div>
       <div class="loading-progress">
         <div class="loading-progress-bar" id="loadingProgressBar"></div>
       </div>
@@ -1323,12 +1349,12 @@
     function showLoadingState() {
       document.getElementById('loading').style.display = 'flex';
       document.querySelector('.app-content').classList.remove('loaded');
-      updateLoadingProgress(0, 'Starting Monad Dog...<br>🚀 Initializing blockchain connection');
+      updateLoadingProgress(0, 'Starting Tx App...<br>🚀 Initializing blockchain connection');
     }
 
     function hideLoadingState() {
       // Don't hide immediately - show completion
-      updateLoadingProgress(100, 'Ready to play! 🎉<br>Welcome to Monad Dog!');
+      updateLoadingProgress(100, 'Ready to play! 🎉<br>Welcome to Tx App!');
       
       setTimeout(() => {
         document.getElementById('loading').style.display = 'none';
@@ -1350,53 +1376,29 @@
       }, 500);
     }
 
-    // Network configurations
-    const NETWORKS = {
-      monad: {
-        name: 'Monad Testnet',
-        chainId: '0x279F', // 10143 in hex
-        rpcUrl: 'https://testnet-rpc.monad.xyz',
-        blockExplorer: 'https://testnet.monadscan.com/',
-        nativeCurrency: {
-          name: 'Monad',
-          symbol: 'MONAD',
-          decimals: 18
-        },
-        contracts: {
-          PET: "0xc53abe4c593b9440407f8ac1b346f3f999e6d8ed",
-          GREET: "0xbc8b78f3e2348d4b5e0390fe700ce54b59931da4",
-          FLIP: "0xc5b2280d1e2f155f9a2be2af7e78190658874106",
-          SLOTS: "0xc7011f245aa51fa488783d5b0cfc6e0cba86f6cb",
-          DOG_TOKEN: "0xeBADdacB0DB2ddfb78e110595D36F859a3579294"
-        }
+    // Network configuration - Base Mainnet only
+    const NETWORK = {
+      name: 'Base Mainnet',
+      chainId: '0x2105', // 8453 in hex
+      rpcUrl: 'https://mainnet.base.org',
+      blockExplorer: 'https://basescan.org/',
+      nativeCurrency: {
+        name: 'Ethereum',
+        symbol: 'ETH',
+        decimals: 18
       },
-      base: {
-        name: 'Base Mainnet',
-        chainId: '0x2105', // 8453 in hex
-        rpcUrl: 'https://mainnet.base.org',
-        blockExplorer: 'https://basescan.org/',
-        nativeCurrency: {
-          name: 'Ethereum',
-          symbol: 'ETH',
-          decimals: 18
-        },
-        contracts: {
-          // Base Mainnet deployed contracts
-          PET: "0xc68d020bf3D8cb4Af48883201fFDD276ce7D5440", // ✅ PetTheDog deployed
-          GREET: "0x809f326b94A780e1C3d41424C208f956baE01A3d", // ✅ Greet deployed
-          FLIP: "0xb7a0C3fbfD48CAE8aaA737A2a6F42fdF1e243fd4", // ✅ Flip deployed
-          SLOTS: "0xc7660623d5038ffd511575A4b964d0aB89010f3C", // ✅ Slots deployed
-          LUCKY: "0xF42c81785bDa7694F51Aa1eb35c54BbdC43aF026", // ✅ Lucky Number deployed
-          DOG_TOKEN: "0x0000000000000000000000000000000000000000" // TODO: Deploy DOG Token contract to Base
-        }
+      contracts: {
+        // Base Mainnet deployed contracts
+        PET: "0xc68d020bf3D8cb4Af48883201fFDD276ce7D5440", // ✅ PetTheDog deployed
+        GREET: "0x809f326b94A780e1C3d41424C208f956baE01A3d", // ✅ Greet deployed
+        FLIP: "0xb7a0C3fbfD48CAE8aaA737A2a6F42fdF1e243fd4", // ✅ Flip deployed
+        SLOTS: "0xc7660623d5038ffd511575A4b964d0aB89010f3C", // ✅ Slots deployed
+        LUCKY: "0xF42c81785bDa7694F51Aa1eb35c54BbdC43aF026" // ✅ Lucky Number deployed
       }
     };
 
-    // Current network state
-    let currentNetwork = 'monad';
-
-    // Contract addresses and ABIs (legacy support)
-    let CONTRACTS = NETWORKS[currentNetwork].contracts;
+    // Contract addresses and ABIs
+    const CONTRACTS = NETWORK.contracts;
 
     const ABIS = {
       PET: ["function pet() public payable"],
@@ -1442,7 +1444,7 @@
       provider: null,
       signer: null,
       isTransactionPending: false,
-      currentNetwork: 'monad' // Track current network
+      currentNetwork: 'base' // Base Mainnet only
     };
 
     // Initialize SDK
@@ -1453,8 +1455,7 @@
       if (!address) return 0;
       
       try {
-        // Get XP from both networks
-        const monadKey = `${address.toLowerCase()}_monad`;
+        // Get XP from Base Mainnet only
         const baseKey = `${address.toLowerCase()}_base`;
         
         let totalXP = 0;
@@ -1462,40 +1463,30 @@
         // Check if Supabase is available
         if (!supabaseClient) {
           console.log('Supabase not available, using localStorage fallback');
-          const monadXP = parseInt(localStorage.getItem(`wallet_xp_${monadKey}`) || '0');
           const baseXP = parseInt(localStorage.getItem(`wallet_xp_${baseKey}`) || '0');
-          totalXP = monadXP + baseXP;
-          console.log(`📊 Total XP (localStorage): Monad=${monadXP}, Base=${baseXP}, Total=${totalXP}`);
+          totalXP = baseXP;
+          console.log(`📊 Total XP (localStorage): Base=${baseXP}, Total=${totalXP}`);
           return totalXP;
         }
 
-        // Get XP from both networks from Supabase
-        const [monadData, baseData] = await Promise.all([
-          supabaseClient
-            .from('user_xp')
-            .select('xp')
-            .eq('wallet_address', monadKey)
-            .single(),
-          supabaseClient
-            .from('user_xp')
-            .select('xp')
-            .eq('wallet_address', baseKey)
-            .single()
-        ]);
+        // Get XP from Base Mainnet from Supabase
+        const baseData = await supabaseClient
+          .from('user_xp')
+          .select('xp')
+          .eq('wallet_address', baseKey)
+          .single();
         
-        const monadXP = monadData.data?.xp || 0;
         const baseXP = baseData.data?.xp || 0;
         
         // If Supabase has no data, fallback to localStorage
-        if (monadXP === 0 && baseXP === 0) {
+        if (baseXP === 0) {
           console.log('📊 Supabase has no data, using localStorage fallback');
-          const monadLocalXP = parseInt(localStorage.getItem(`wallet_xp_${monadKey}`) || '0');
           const baseLocalXP = parseInt(localStorage.getItem(`wallet_xp_${baseKey}`) || '0');
-          totalXP = monadLocalXP + baseLocalXP;
-          console.log(`📊 Total XP (localStorage fallback): Monad=${monadLocalXP}, Base=${baseLocalXP}, Total=${totalXP}`);
+          totalXP = baseLocalXP;
+          console.log(`📊 Total XP (localStorage fallback): Base=${baseLocalXP}, Total=${totalXP}`);
         } else {
-          totalXP = monadXP + baseXP;
-          console.log(`📊 Total XP (Supabase): Monad=${monadXP}, Base=${baseXP}, Total=${totalXP}`);
+          totalXP = baseXP;
+          console.log(`📊 Total XP (Supabase): Base=${baseXP}, Total=${totalXP}`);
         }
         
         return totalXP;
@@ -1503,12 +1494,10 @@
       } catch (e) {
         console.error('Error fetching XP:', e);
         // Fallback to localStorage
-        const monadKey = `${address.toLowerCase()}_monad`;
         const baseKey = `${address.toLowerCase()}_base`;
-        const monadXP = parseInt(localStorage.getItem(`wallet_xp_${monadKey}`) || '0');
         const baseXP = parseInt(localStorage.getItem(`wallet_xp_${baseKey}`) || '0');
-        totalXP = monadXP + baseXP;
-        console.log(`📊 Total XP (fallback): Monad=${monadXP}, Base=${baseXP}, Total=${totalXP}`);
+        totalXP = baseXP;
+        console.log(`📊 Total XP (fallback): Base=${baseXP}, Total=${totalXP}`);
         return totalXP;
       }
     }
@@ -1516,7 +1505,7 @@
     async function saveWalletXP(address, xp) {
       if (!address) return;
       
-      const networkKey = `${address.toLowerCase()}_${currentNetwork}`;
+      const networkKey = `${address.toLowerCase()}_base`;
       
       // Always save to localStorage first (immediate)
       localStorage.setItem(`wallet_xp_${networkKey}`, xp.toString());
@@ -1560,7 +1549,7 @@
       } catch (e) {
         console.error('Error fetching slots credits from contract:', e);
         // Fallback to localStorage
-        const networkKey = `${address.toLowerCase()}_${currentNetwork}`;
+        const networkKey = `${address.toLowerCase()}_base`;
         return parseInt(localStorage.getItem(`slots_credits_${networkKey}`) || '0');
       }
     }
@@ -1568,7 +1557,7 @@
     async function saveSlotsCredits(address, credits) {
       if (!address) return;
       
-      const networkKey = `${address.toLowerCase()}_${currentNetwork}`;
+      const networkKey = `${address.toLowerCase()}_base`;
       
       // Save to localStorage for immediate display
       localStorage.setItem(`slots_credits_${networkKey}`, credits.toString());
@@ -1600,11 +1589,7 @@
         slotsButton.textContent = `🎰 Play Slots (${appState.slotsCredits} credits)`;
         slotsButton.disabled = false;
       } else if (appState.connected) {
-        if (currentNetwork === 'monad') {
-          slotsButton.textContent = `💰 Buy 2 Credits (0.1 MONAD)`;
-        } else {
-          slotsButton.textContent = `🎰 Play Slots`;
-        }
+        slotsButton.textContent = `🎰 Play Slots`;
         slotsButton.disabled = false;
       } else {
         slotsButton.textContent = `🔒 Connect Wallet`;
@@ -1654,26 +1639,9 @@
       
       const claimButton = document.getElementById('claimButton');
       
-      // Only enable claiming on Monad network
-      if (currentNetwork === 'monad') {
-        if (claimableXP >= XP_TO_DOG_RATE && appState.connected) {
-          claimButton.disabled = false;
-          claimButton.textContent = `💰 Claim ${claimableDOG} $DOG Tokens`;
-        } else {
-          claimButton.disabled = true;
-          if (!appState.connected) {
-            claimButton.textContent = '🔒 Connect Wallet First';
-          } else if (claimableXP < XP_TO_DOG_RATE) {
-            claimButton.textContent = `📈 Need ${XP_TO_DOG_RATE - claimableXP} more XP`;
-          }
-        }
-        // Update token balance
-        await updateTokenBalance();
-      } else {
-        // Base network - show cross-network message
-        claimButton.disabled = true;
-        claimButton.textContent = '🔄 Switch to Monad to Claim';
-      }
+      // Claim feature removed - Base Mainnet only
+      claimButton.disabled = true;
+      claimButton.textContent = '🚀 Claim feature coming soon!';
     }
 
     // Update token balance display
@@ -1684,20 +1652,12 @@
         return;
       }
       
-      // Only show token balance on Monad network
-      if (currentNetwork !== 'monad') {
-        console.log('❌ Token balance only available on Monad network');
+      // Token balance feature removed - Base Mainnet only
+      console.log('❌ Token balance feature not available on Base Mainnet');
+      if (document.getElementById('walletDogDisplay')) {
         document.getElementById('walletDogDisplay').textContent = '0';
-        return;
       }
-      
-      // Check if DOG token contract is deployed
-      console.log('🔍 DOG Token contract check:', CONTRACTS.DOG_TOKEN, 'Network:', currentNetwork);
-      if (CONTRACTS.DOG_TOKEN === "0x0000000000000000000000000000000000000000") {
-        console.log('❌ DOG token contract not deployed on current network');
-        document.getElementById('walletDogDisplay').textContent = '0';
-        return;
-      }
+      return;
       
       console.log('🔄 Fetching DOG balance for:', appState.address);
       
@@ -1789,7 +1749,7 @@
         console.error('❌ Error fetching token balance:', error);
         
         // Last resort: Use localStorage cache if available
-        const networkKey = `${appState.address.toLowerCase()}_${currentNetwork}`;
+        const networkKey = `${appState.address.toLowerCase()}_base`;
         const cachedBalance = localStorage.getItem(`dog_balance_${networkKey}`);
         if (cachedBalance) {
           document.getElementById('walletDogDisplay').textContent = cachedBalance;
@@ -1926,7 +1886,7 @@
                   document.getElementById('walletDogDisplay').textContent = displayBalance;
                   
         // Cache the balance
-        const networkKey = `${appState.address.toLowerCase()}_${currentNetwork}`;
+        const networkKey = `${appState.address.toLowerCase()}_base`;
         localStorage.setItem(`dog_balance_${networkKey}`, displayBalance);
                   
                   console.log(`✅ Balance updated after claim (attempt ${i + 1}): ${displayBalance} DOG`);
@@ -2045,169 +2005,27 @@
     }
 
     // Network switching function
-    window.switchNetwork = async function(networkName) {
-      console.log(`🔄 Switching to ${networkName} network`);
-      
-      // Update UI
-      document.querySelectorAll('.network-btn').forEach(btn => {
-        btn.classList.remove('active');
-      });
-      document.getElementById(`${networkName}-network`).classList.add('active');
-      
-      // Update current network
-      currentNetwork = networkName;
-      appState.currentNetwork = networkName;
-      
-      // Update contract addresses
-      CONTRACTS.PET = NETWORKS[networkName].contracts.PET;
-      CONTRACTS.GREET = NETWORKS[networkName].contracts.GREET;
-      CONTRACTS.FLIP = NETWORKS[networkName].contracts.FLIP;
-      CONTRACTS.SLOTS = NETWORKS[networkName].contracts.SLOTS;
-      CONTRACTS.LUCKY = NETWORKS[networkName].contracts.LUCKY;
-      CONTRACTS.DOG_TOKEN = NETWORKS[networkName].contracts.DOG_TOKEN;
-      console.log('🔄 Updated CONTRACTS for', networkName, ':', CONTRACTS);
-      console.log('🔍 DOG_TOKEN address:', CONTRACTS.DOG_TOKEN);
-      
-      // Show/hide claim tab based on network
-      const claimTab = document.querySelector('.tab[onclick="showTab(\'claim\')"]');
-      if (networkName === 'monad') {
-        claimTab.style.display = 'block';
-        console.log('✅ Claim tab shown for Monad network');
-      } else {
-        claimTab.style.display = 'none';
-        console.log('❌ Claim tab hidden for Base network');
-      }
-      
-      // Show/hide lucky tab based on network
-      const luckyTab = document.querySelector('.tab[onclick="showTab(\'lucky\')"]');
-      if (networkName === 'base') {
-        luckyTab.style.display = 'block';
-        console.log('✅ Lucky tab shown for Base network');
-      } else {
-        luckyTab.style.display = 'none';
-        console.log('❌ Lucky tab hidden for Monad network');
-      }
-
-        // Show/hide deploy tab based on network
-        const deployTab = document.querySelector('.tab[onclick="showTab(\'deploy\')"]');
-        if (networkName === 'base') {
-          deployTab.style.display = 'block';
-          console.log('✅ Deploy tab shown for Base network');
-        } else {
-          deployTab.style.display = 'block';
-          console.log('✅ Deploy tab shown for Monad network');
-        }
-        
-        // Update deploy fee display based on network
-        const deployFeeElement = document.getElementById('deploy-fee');
-        if (deployFeeElement) {
-          if (networkName === 'base') {
-            deployFeeElement.textContent = '0.0001 ETH';
-          } else {
-            deployFeeElement.textContent = 'FREE';
-          }
-        }
-        
-        // Update tab order based on network
-        const mainTabs = document.getElementById('main-tabs');
-        if (mainTabs) {
-        if (networkName === 'base') {
-          // Base: Pet first, then Deploy, then others
-          mainTabs.innerHTML = `
-            <button class="tab active" onclick="showTab('pet')">🐕 Pet</button>
-            <button class="tab" onclick="showTab('deploy')">🚀 Deploy</button>
-            <button class="tab" onclick="showTab('greet')">👋 Greet</button>
-            <button class="tab" onclick="showTab('flip')">🪙 Flip</button>
-            <button class="tab" onclick="showTab('slots')">🎰 Slots</button>
-            <button class="tab" onclick="showTab('lucky')">🍀 Lucky</button>
-          `;
-          } else {
-            // Monad: Pet first, then others, Deploy last
-            mainTabs.innerHTML = `
-              <button class="tab active" onclick="showTab('pet')">🐕 Pet</button>
-              <button class="tab" onclick="showTab('greet')">👋 Greet</button>
-              <button class="tab" onclick="showTab('flip')">🪙 Flip</button>
-              <button class="tab" onclick="showTab('slots')">🎰 Slots</button>
-              <button class="tab" onclick="showTab('lucky')">🍀 Lucky</button>
-              <button class="tab" onclick="showTab('deploy')">🚀 Deploy</button>
-            `;
-          }
-        }
-      
-      // Force hide claim section on Base network
-      if (networkName === 'base') {
-        const claimSection = document.getElementById('claim-section');
-        if (claimSection) {
-          claimSection.style.display = 'none';
-          console.log('❌ Claim section hidden for Base network');
-        }
-      }
-      
-      // If wallet is connected, switch network
-      if (appState.connected) {
-        try {
-          await ensureCorrectNetwork();
-          
-          // Complete state refresh for new network
-          console.log(`🔄 Refreshing state for ${NETWORKS[networkName].name}...`);
-          
-          // Reset app state
-          appState.xp = 0;
-          appState.slotsCredits = 0;
-          appState.isTransactionPending = false;
-          
-          // Update UI elements that show network info
-          updateNetworkDisplay();
-          
-          // Refresh data for new network with delay
-          setTimeout(async () => {
-            await updateXPDisplay();
-            await updateTokenBalance();
-            console.log(`✅ State refreshed for ${NETWORKS[networkName].name}`);
-          }, 200);
-          
-        } catch (error) {
-          console.error('❌ Network switch error:', error);
-          showError(`Failed to switch to ${NETWORKS[networkName].name}`);
-        }
-      } else {
-        // Just update display if not connected
-        updateNetworkDisplay();
-        console.log(`📱 Network set to ${NETWORKS[networkName].name} (wallet not connected)`);
-      }
-    };
-
-    // Update network display in UI
+    // Update network display in UI (Base Mainnet only)
     function updateNetworkDisplay() {
-      const network = NETWORKS[currentNetwork];
-      
-      // Claim tab is always visible, but functionality differs by network
-      
-      // Update token balance display to show correct network
+      // Update token balance display
       const tokenDisplay = document.querySelector('.token-balance');
       if (tokenDisplay) {
         const networkText = tokenDisplay.querySelector('.network-text');
         if (networkText) {
-          networkText.textContent = `🪙 ${network.name}`;
+          networkText.textContent = `🪙 ${NETWORK.name}`;
         }
       }
       
-      // Update XP display based on network
+      // Update XP display
       const xpDisplay = document.getElementById('xp-display');
-      if (currentNetwork === 'monad') {
-        xpDisplay.innerHTML = '✨ Available XP: <span id="xp">0</span>';
-      } else {
+      if (xpDisplay) {
         xpDisplay.innerHTML = '🎮 Game Score: <span id="xp">0</span>';
       }
       
       // Update slots cost display
       const slotsCost = document.querySelector('.cost-info span');
       if (slotsCost) {
-        if (currentNetwork === 'monad') {
-          slotsCost.textContent = '💰 Pay: 0.1 MONAD = 2 Credits';
-        } else {
-          slotsCost.textContent = '🎰 Play Slots - Direct Game';
-        }
+        slotsCost.textContent = '🎰 Play Slots - Direct Game';
       }
     }
 
@@ -2395,19 +2213,9 @@
         const slotsButton = document.getElementById('slotsButton');
         const originalText = slotsButton.textContent;
         
-        if (currentNetwork === 'monad') {
-          // Monad: Credits system
-          if (appState.slotsCredits > 0) {
-            // USE EXISTING CREDIT
-            await playSlotGame();
-          } else {
-            // BUY CREDITS WITH 0.1 MONAD
-            await buySlotCredits();
-          }
-        } else {
-          // Base: Direct game with fee
-          await playSlotGameDirect();
-        }
+        // Base Mainnet: Direct play system
+        // Direct play (no credits needed)
+        await playSlotGameDirect();
       };
 
       // Buy slot credits with payment - REAL CONTRACT VERSION
@@ -2417,7 +2225,7 @@
         
         // Check if slots contract is deployed
         if (CONTRACTS.SLOTS === "0x0000000000000000000000000000000000000000") {
-          const networkName = NETWORKS[currentNetwork].name;
+          const networkName = NETWORK.name;
           showError(`${networkName} slots contract not deployed yet. Please deploy contracts first.`);
           return;
         }
@@ -2427,7 +2235,7 @@
           slotsButton.disabled = true;
           slotsButton.textContent = '💰 Buying Credits...';
           
-          const paymentText = currentNetwork === 'monad' ? '0.1 MONAD' : '0.001 ETH';
+          const paymentText = '0.001 ETH';
           showStatus('slots-status', `🔐 Please confirm payment of ${paymentText} for 2 game credits...`, 'pending');
           
           // Ensure correct network
@@ -2437,7 +2245,7 @@
           const slotsContract = new ethers.Contract(CONTRACTS.SLOTS, ABIS.SLOTS, appState.signer);
           
           // Send transaction with appropriate payment amount
-          const paymentAmount = currentNetwork === 'monad' ? "0.1" : "0.001"; // 0.1 MONAD or 0.001 ETH
+          const paymentAmount = "0.001"; // 0.001 ETH for Base Mainnet
           const tx = await slotsContract.buyCredits({
             value: ethers.utils.parseEther(paymentAmount),
             gasLimit: 100000
@@ -2483,7 +2291,7 @@
           if (error.message.includes('user rejected')) {
             errorMsg = 'Payment cancelled';
           } else if (error.message.includes('insufficient funds')) {
-            const currency = currentNetwork === 'monad' ? 'MONAD' : 'ETH';
+            const currency = 'ETH';
             errorMsg = `Insufficient ${currency} balance`;
           }
           
@@ -2619,7 +2427,7 @@
         
         // Check if slots contract is deployed
         if (CONTRACTS.SLOTS === "0x0000000000000000000000000000000000000000") {
-          const networkName = NETWORKS[currentNetwork].name;
+          const networkName = NETWORK.name;
           showError(`${networkName} slots contract not deployed yet. Please deploy contracts first.`);
           return;
         }
@@ -2850,16 +2658,13 @@
         console.log('📑 Switching to tab:', tabName);
         
         // Block claim tab on Base network
-        if (tabName === 'claim' && currentNetwork === 'base') {
+        if (tabName === 'claim') {
           console.log('❌ Claim tab blocked on Base network');
           return;
         }
         
         // Block lucky tab on Monad network
-        if (tabName === 'lucky' && currentNetwork === 'monad') {
-          console.log('❌ Lucky tab blocked on Monad network');
-          return;
-        }
+        // Lucky tab available on Base Mainnet
         
         activeTab = tabName;
         
@@ -2877,27 +2682,8 @@
         
         // Handle claim tab based on network
         if (tabName === 'claim') {
-          const claimWarning = document.getElementById('claim-network-warning');
-          if (currentNetwork === 'monad') {
-            claimWarning.style.display = 'none';
-            updateClaimUI();
-            // Update balance with delay for better reliability
-            setTimeout(() => {
-              updateTokenBalance();
-            }, 500);
-          } else {
-            claimWarning.style.display = 'block';
-            // Show Base network message
-            claimWarning.innerHTML = `
-              <h4 style="color: #6366f1; margin-bottom: 10px;">🔄 Cross-Network Claiming</h4>
-              <p style="color: #6366f1; font-size: 14px; margin-bottom: 10px;">
-                You can earn XP on Base and claim $DOG tokens on Monad Testnet!
-              </p>
-              <p style="color: #8b5cf6; font-size: 12px;">
-                Switch to Monad Testnet to convert your ${appState.xp} XP to $DOG tokens.
-              </p>
-            `;
-          }
+          // Claim feature removed - Base Mainnet only
+          // Claim UI removed
         }
         
         // Update slots when switching to slots tab
@@ -2996,7 +2782,7 @@
         slotsCredits: 0,
         provider: null,
         signer: null,
-        currentNetwork: currentNetwork
+        currentNetwork: 'base'
       };
       updateWalletUI();
       await updateXPDisplay();
@@ -3024,25 +2810,34 @@
         return;
       }
       
-      // Get current XP from both networks
+      // Get current XP from Base Mainnet
       const currentTotalXP = await getWalletXP(appState.address);
       
-      // Add XP to current network only
-      const networkKey = `${appState.address.toLowerCase()}_${currentNetwork}`;
-      const currentNetworkXP = parseInt(localStorage.getItem(`wallet_xp_${networkKey}`) || '0');
-      const newNetworkXP = currentNetworkXP + amount;
+      // Add XP to Base Mainnet only
+      const baseKey = `${appState.address.toLowerCase()}_base`;
+      const currentBaseXP = parseInt(localStorage.getItem(`wallet_xp_${baseKey}`) || '0');
+      const newBaseXP = currentBaseXP + amount;
       
       // Update appState with total XP
       appState.xp = currentTotalXP + amount;
       
       // Update display immediately
       document.getElementById('xp').textContent = appState.xp;
+      localStorage.setItem(`wallet_xp_${baseKey}`, newBaseXP.toString());
       
-      // Save XP to current network only
-      saveWalletXP(appState.address, newNetworkXP);
-      
-      // Update claim UI non-blocking
-      requestAnimationFrame(() => updateClaimUI());
+      // Save to Supabase if available
+      if (supabaseClient) {
+        try {
+          await supabaseClient
+            .from('user_xp')
+            .upsert({
+              wallet_address: baseKey,
+              xp: newBaseXP
+            }, { onConflict: 'wallet_address' });
+        } catch (e) {
+          console.error('Error saving XP to Supabase:', e);
+        }
+      }
       
       // Add celebration effect
       const xpElement = document.getElementById('xp');
@@ -3054,7 +2849,7 @@
         xpElement.style.color = 'white';
       }, 500);
       
-      console.log(`✨ XP added to ${currentNetwork}: +${amount}, Network XP: ${newNetworkXP}, Total Available: ${appState.xp}`);
+      console.log(`✨ XP added to Base Mainnet: +${amount}, Base XP: ${newBaseXP}, Total Available: ${appState.xp}`);
     }
 
     function showStatus(id, message, type) {
@@ -3089,7 +2884,7 @@
 
       // Check if contracts are deployed on current network
       if (contractAddress === "0x0000000000000000000000000000000000000000") {
-        const networkName = NETWORKS[currentNetwork].name;
+        const networkName = NETWORK.name;
         showError(`${networkName} contracts not deployed yet. Please deploy contracts first.`);
         return;
       }
@@ -3103,9 +2898,7 @@
         showStatus(statusId, 'Preparing transaction...', 'pending');
 
         // Ensure correct network (only for Monad)
-        if (currentNetwork === 'monad') {
-          await ensureMonadNetwork();
-        }
+        // Base Mainnet only - network check handled by ensureCorrectNetwork
 
         // Create contract instance
         console.log('🔗 Creating contract with signer:', appState.signer);
@@ -3190,7 +2983,7 @@
     }
 
     async function ensureCorrectNetwork() {
-      const network = NETWORKS[currentNetwork];
+      const network = NETWORK;
       
       try {
         const provider = sdk && sdk.wallet && sdk.wallet.ethProvider 
@@ -3243,12 +3036,6 @@
     }
 
     // Legacy function for backward compatibility
-    async function ensureMonadNetwork() {
-      const originalNetwork = currentNetwork;
-      currentNetwork = 'monad';
-      await ensureCorrectNetwork();
-      currentNetwork = originalNetwork;
-    }
 
     // Farcaster Sharing Functions
     function generateShareableContent(type, data = {}) {
@@ -3257,22 +3044,22 @@
       
       const shareTemplates = {
         pet: {
-          text: `Just petted the Monad Dog! 🐕✨\n\nXP earned: ${appState.xp}\n$DOG Balance: ${tokenBalance}\n\nJoin me on Monad Testnet!`,
+          text: `Just petted the dog on Tx App! 🐕✨\n\nXP earned: ${appState.xp}\n\nJoin me on Base Mainnet!`,
           url: `${baseUrl}?ref=pet&xp=${appState.xp}`,
           image: "🐕"
         },
         greet: {
-          text: `GM Monad community! ☀️👋\n\nCommunity XP: ${appState.xp}\n$DOG Tokens: ${tokenBalance}\n\nSpread the love on Monad!`,
+          text: `GM Base community! ☀️👋\n\nCommunity XP: ${appState.xp}\n\nSpread the love on Base Mainnet!`,
           url: `${baseUrl}?ref=greet&xp=${appState.xp}`,
           image: "👋"
         },
         flip: {
-          text: `Just flipped a coin on Monad! 🪙\n\nResult: ${data.result || 'Lucky'}\nXP: ${appState.xp}\n$DOG: ${tokenBalance}`,
+          text: `Just flipped a coin on Tx App! 🪙\n\nResult: ${data.result || 'Lucky'}\nXP: ${appState.xp}\n\nTry on Base Mainnet!`,
           url: `${baseUrl}?ref=flip&result=${data.result}&xp=${appState.xp}`,
           image: "🪙"
         },
         slots: {
-          text: `Just hit the slots on Monad Dog! 🎰\n\nResult: ${data.result || 'Spinning'}\nXP: ${appState.xp}\n$DOG: ${tokenBalance}\n\nTry your luck on Monad!`,
+          text: `Just hit the slots on Tx App! 🎰\n\nResult: ${data.result || 'Spinning'}\nXP: ${appState.xp}\n\nTry your luck on Base Mainnet!`,
           url: `${baseUrl}?ref=slots&xp=${appState.xp}`,
           image: "🎰"
         },
@@ -3282,7 +3069,7 @@
           image: "💰"
         },
         invite: {
-          text: `Playing Monad Dog - the cutest way to explore Monad Testnet! 🐕⛓️\n\n✨ Pet dogs, flip coins, say GM/GN\n🎯 Earn XP and claim $DOG tokens\n💰 Convert XP to tokens (10:1 rate)\n🚀 Real blockchain interactions\n\nJoin me!`,
+          text: `Playing Tx App on Base Mainnet! 🚀\n\n✨ Deploy tokens, pet dogs, flip coins, say GM/GN\n🎯 Earn XP and play games\n🚀 Real blockchain interactions\n\nJoin me!`,
           url: `https://monad-snowy.vercel.app?ref=invite&inviter=${appState.address?.slice(0,6)}`,
           image: "🚀"
         },
@@ -3437,7 +3224,7 @@
       const achievement = {
         icon: '🚀',
         title: 'Invite Friends!',
-        description: 'Share Monad Dog with your friends and build the community together!',
+        description: 'Share Tx App with your friends and build the community together!',
         type: 'invite',
         data: {}
       };
@@ -3693,7 +3480,7 @@
         return;
       }
       
-      const networkName = appState.currentNetwork === 'base' ? 'Base Mainnet' : 'Monad Testnet';
+      const networkName = 'Base Mainnet';
       const achievement = {
         icon: '🚀',
         title: 'Token Deployed!',
@@ -3707,7 +3494,7 @@
     
     // Share Deploy Feature Function
     window.shareDeployFeature = function() {
-      const networkName = appState.currentNetwork === 'base' ? 'Base Mainnet' : 'Monad Testnet';
+      const networkName = 'Base Mainnet';
       const feeText = appState.currentNetwork === 'base' ? '0.0001 ETH fee' : 'FREE';
       const achievement = {
         icon: '🚀',
