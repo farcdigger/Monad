@@ -1753,7 +1753,7 @@
         appState.xp = 0;
         document.getElementById('xp').textContent = '0';
         
-        // ✅ Save XP as 0 to BOTH networks immediately
+        // ✅ Save XP as 0 to Base Mainnet (localStorage)
         const baseKey = `${appState.address.toLowerCase()}_base`;
         
         // Reset Base XP (localStorage only)
