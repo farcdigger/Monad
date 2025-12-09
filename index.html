@@ -5,9 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tx App</title>
 
-<!-- Supabase Client -->
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-  
   <!-- Farcaster Manifest Link -->
   <link rel="manifest" href="/farcaster.json">
   <link rel="icon" type="image/png" href="https://monad-snowy.vercel.app/.well-known/icon.png">
@@ -1268,21 +1265,9 @@
   </div>
 
   <script>
-    // Wait for Supabase to load
+    // Initialize app
     window.addEventListener('DOMContentLoaded', function() {
-      // Supabase Configuration
-      const SUPABASE_URL = 'https://uhqszfoekqrjtybrwqzt.supabase.co';
-      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVocXN6Zm9la3FyanR5YnJ3cXp0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA4MDMxNTAsImV4cCI6MjA2NjM3OTE1MH0.gGch8B6AlvGrZTDVjfd0xidVnh_Dsua4qRxbaixBqM0';
-      
-      // Initialize Supabase
-      let supabaseClient;
-      if (window.supabase) {
-        const { createClient } = window.supabase;
-        supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        console.log('✅ Supabase initialized');
-      } else {
-        console.error('❌ Supabase not loaded');
-      }
+      // XP stored in localStorage only (no Supabase)
     
       // Initialize modal close functions globally
       window.closeAchievementModal = function() {
@@ -1444,55 +1429,20 @@
     // Initialize SDK
     let sdk = null;
     
-    // Supabase Functions for XP Management - Cross-network XP
+    // XP Management Functions - localStorage only (persistent, never deleted)
     async function getWalletXP(address) {
       if (!address) return 0;
       
       try {
-        // Get XP from Base Mainnet only
-        const baseKey = `${address.toLowerCase()}_base`;
-        
-        let totalXP = 0;
-        
-        // Check if Supabase is available
-        if (!supabaseClient) {
-          console.log('Supabase not available, using localStorage fallback');
-          const baseXP = parseInt(localStorage.getItem(`wallet_xp_${baseKey}`) || '0');
-          totalXP = baseXP;
-          console.log(`📊 Total XP (localStorage): Base=${baseXP}, Total=${totalXP}`);
-          return totalXP;
-        }
-
-        // Get XP from Base Mainnet from Supabase
-        const baseData = await supabaseClient
-          .from('user_xp')
-          .select('xp')
-          .eq('wallet_address', baseKey)
-          .single();
-        
-        const baseXP = baseData.data?.xp || 0;
-        
-        // If Supabase has no data, fallback to localStorage
-        if (baseXP === 0) {
-          console.log('📊 Supabase has no data, using localStorage fallback');
-          const baseLocalXP = parseInt(localStorage.getItem(`wallet_xp_${baseKey}`) || '0');
-          totalXP = baseLocalXP;
-          console.log(`📊 Total XP (localStorage fallback): Base=${baseLocalXP}, Total=${totalXP}`);
-        } else {
-          totalXP = baseXP;
-          console.log(`📊 Total XP (Supabase): Base=${baseXP}, Total=${totalXP}`);
-        }
-        
-        return totalXP;
-        
-      } catch (e) {
-        console.error('Error fetching XP:', e);
-        // Fallback to localStorage
+        // Get XP from Base Mainnet only (localStorage)
         const baseKey = `${address.toLowerCase()}_base`;
         const baseXP = parseInt(localStorage.getItem(`wallet_xp_${baseKey}`) || '0');
-        totalXP = baseXP;
-        console.log(`📊 Total XP (fallback): Base=${baseXP}, Total=${totalXP}`);
-        return totalXP;
+        console.log(`📊 Total XP (localStorage): Base=${baseXP}, Total=${baseXP}`);
+        return baseXP;
+      } catch (e) {
+        console.error('Error fetching XP:', e);
+        // Fallback to 0 if error
+        return 0;
       }
     }
 
@@ -1501,29 +1451,9 @@
       
       const networkKey = `${address.toLowerCase()}_base`;
       
-      // Always save to localStorage first (immediate)
+      // Save to localStorage only (persistent, never deleted)
       localStorage.setItem(`wallet_xp_${networkKey}`, xp.toString());
-      
-      // Then try Supabase (async, non-blocking)
-      if (supabaseClient) {
-        supabaseClient
-          .from('user_xp')
-          .upsert({
-            wallet_address: networkKey,
-            xp: xp,
-            updated_at: new Date().toISOString()
-          }, {
-            onConflict: 'wallet_address'
-          })
-          .then(({ error }) => {
-            if (!error) {
-              console.log(`💾 XP saved to Supabase for ${networkKey}: ${xp}`);
-            }
-          })
-          .catch(e => {
-            console.error('Error saving XP to Supabase:', e);
-          });
-      }
+      console.log(`💾 XP saved to localStorage for ${networkKey}: ${xp}`);
     }
 
     // ✅ SLOTS CREDITS MANAGEMENT - Updated with real contract integration
@@ -1824,33 +1754,11 @@
         document.getElementById('xp').textContent = '0';
         
         // ✅ Save XP as 0 to BOTH networks immediately
-        const monadKey = `${appState.address.toLowerCase()}_monad`;
         const baseKey = `${appState.address.toLowerCase()}_base`;
         
-        // Reset Monad XP
-        localStorage.setItem(`wallet_xp_${monadKey}`, '0');
-        // Reset Base XP  
+        // Reset Base XP (localStorage only)
         localStorage.setItem(`wallet_xp_${baseKey}`, '0');
-        
-        // Save to Supabase for both networks
-        if (supabaseClient) {
-          await Promise.all([
-            supabaseClient
-              .from('user_xp')
-              .upsert({
-                wallet_address: monadKey,
-                xp: 0,
-                updated_at: new Date().toISOString()
-              }, { onConflict: 'wallet_address' }),
-            supabaseClient
-              .from('user_xp')
-              .upsert({
-                wallet_address: baseKey,
-                xp: 0,
-                updated_at: new Date().toISOString()
-              }, { onConflict: 'wallet_address' })
-          ]);
-        }
+        console.log('💾 XP reset in localStorage');
         
         console.log('🔄 XP reset to 0 on both Monad and Base networks');
         
@@ -2817,21 +2725,10 @@
       
       // Update display immediately
       document.getElementById('xp').textContent = appState.xp;
-      localStorage.setItem(`wallet_xp_${baseKey}`, newBaseXP.toString());
       
-      // Save to Supabase if available
-      if (supabaseClient) {
-        try {
-          await supabaseClient
-            .from('user_xp')
-            .upsert({
-              wallet_address: baseKey,
-              xp: newBaseXP
-            }, { onConflict: 'wallet_address' });
-        } catch (e) {
-          console.error('Error saving XP to Supabase:', e);
-        }
-      }
+      // Save to localStorage (persistent, never deleted)
+      localStorage.setItem(`wallet_xp_${baseKey}`, newBaseXP.toString());
+      console.log(`💾 XP saved to localStorage: ${newBaseXP}`);
       
       // Add celebration effect
       const xpElement = document.getElementById('xp');
