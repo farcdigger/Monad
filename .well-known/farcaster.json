@@ -21,7 +21,7 @@
     "ogDescription": "Deploy tokens, play games, and earn XP on Base Mainnet",
     "ogImageUrl": "https://monad-snowy.vercel.app/.well-known/share.png",
     "primaryCategory": "games",
-    "tags": ["base", "farcaster", "miniapp", "blockchain", "game", "deploy", "tokens"],
+    "tags": ["base", "farcaster", "blockchain", "game", "tokens"],
     "noindex": false,
     "requiredCapabilities": [
       "actions.signIn",
